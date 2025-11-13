@@ -1,0 +1,61 @@
+[
+  {
+    "word_content": "abandon",
+    "word_level": "B1",
+    "part_of_speech": ["verb", "noun"],
+    "chinese_meaning": "放弃；遗弃",
+    "example_sentence": "I will not abandon my dreams.",
+    "pos_changes": [
+      { "change_form": "abandoned", "change_name": "过去式" },
+      { "change_form": "abandoning", "change_name": "现在分词" },
+      { "change_form": "abandons", "change_name": "第三人称单数" }
+    ],
+    "phrases": [
+      { "phrase_content": "abandon hope", "phrase_function": "动词短语", "phrase_meaning": "放弃希望" },
+      { "phrase_content": "abandon ship", "phrase_function": "动词短语", "phrase_meaning": "弃船" }
+    ]
+  },
+  {
+    "word_content": "ability",
+    "word_level": "A2",
+    "part_of_speech": ["noun"],
+    "chinese_meaning": "能力；才能",
+    "example_sentence": "She has the ability to succeed.",
+    "pos_changes": [
+      { "change_form": "abilities", "change_name": "复数形式" }
+    ],
+    "phrases": [
+      { "phrase_content": "have the ability to", "phrase_function": "短语", "phrase_meaning": "有能力做某事" }
+    ]
+  },
+  {
+    "word_content": "run",
+    "word_level": "A1",
+    "part_of_speech": ["verb", "noun"],
+    "chinese_meaning": "跑；运行",
+    "example_sentence": "I run every morning.",
+    "pos_changes": [
+      { "change_form": "running", "change_name": "现在分词" },
+      { "change_form": "ran", "change_name": "过去式" },
+      { "change_form": "run", "change_name": "过去分词" }
+    ],
+    "phrases": [
+      { "phrase_content": "run away", "phrase_function": "动词短语", "phrase_meaning": "逃跑；逃离" },
+      { "phrase_content": "run into", "phrase_function": "动词短语", "phrase_meaning": "偶然遇到；碰上" },
+      { "phrase_content": "run out of", "phrase_function": "动词短语", "phrase_meaning": "用完；缺乏" }
+    ]
+  },
+  {
+    "word_content": "absolute",
+    "word_level": "B1",
+    "part_of_speech": ["adjective", "noun"],
+    "chinese_meaning": "绝对的；完全的",
+    "example_sentence": "That is an absolute truth.",
+    "pos_changes": [
+      { "change_form": "absolutely", "change_name": "副词形式" }
+    ],
+    "phrases": [
+      { "phrase_content": "in absolute terms", "phrase_function": "短语", "phrase_meaning": "绝对来讲" }
+    ]
+  }
+]
