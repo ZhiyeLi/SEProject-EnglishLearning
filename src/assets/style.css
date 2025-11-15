@@ -1,0 +1,4 @@
+/* src/assets/css/main.css 或 src/style.css */
+@tailwind base;   /* 基础样式（如默认标签样式） */
+@tailwind components;  /* 组件样式（如按钮、卡片等） */
+@tailwind utilities;   /* 工具类样式（如 flex、text-blue-500 等） */

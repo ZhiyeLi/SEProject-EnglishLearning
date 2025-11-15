@@ -1,0 +1,38 @@
+/* src/components/styles/_variables.css */
+/* 1. 主题色变量（和你项目的 emerald 色系对齐，后续想换色只改这里） */
+:root {
+  --color-primary: #10b981;    /* 主色：按钮、激活状态（emerald-500） */
+  --color-primary-hover: #059669;  /* 主色 hover：按钮 hover 效果（emerald-600） */
+  --color-secondary: #ecfdf5;  /* 辅助色：背景、次要组件（emerald-50） */
+  --color-text-primary: #047857;  /* 强调文字色（emerald-700） */
+  --color-text-normal: #374151;  /* 普通文字色（gray-700） */
+  --color-text-light: #6b7280;  /* 浅色文字（gray-500） */
+  --color-warning: #ef4444;     /* 警告色（red-500，比如通知红点） */
+}
+
+/* 2. 间距变量（统一组件内/组件间间距，视觉更规整） */
+:root {
+  --spacing-xs: 4px;    /* 超小间距（比如图标和文字之间） */
+  --spacing-sm: 8px;    /* 小间距（比如列表项内边距） */
+  --spacing-md: 16px;   /* 中间距（比如卡片内边距） */
+  --spacing-lg: 24px;   /* 大间距（比如组件之间的间距） */
+  --spacing-xl: 32px;   /* 超大间距（比如页面上下边距） */
+}
+
+/* 3. 字体大小变量（统一字体层级） */
+:root {
+  --font-xs: 12px;      /* 超小文字（比如提示文字） */
+  --font-sm: 14px;      /* 小文字（比如辅助说明） */
+  --font-base: 16px;    /* 普通文字（默认文字大小） */
+  --font-lg: 18px;      /* 大文字（比如卡片标题） */
+  --font-xl: 20px;      /* 超大文字（比如页面主标题） */
+}
+
+/* 4. 边框/圆角变量（统一组件样式） */
+:root {
+  --border-width: 1px;  /* 边框宽度 */
+  --border-color: #e5e7eb;  /* 边框颜色（gray-200） */
+  --radius-sm: 4px;     /* 小圆角（比如按钮） */
+  --radius-md: 8px;     /* 中圆角（比如卡片） */
+  --radius-lg: 16px;    /* 大圆角（比如统计卡片、弹窗） */
+}
