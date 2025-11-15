@@ -22,3 +22,14 @@ yarn lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+
+To run this demo, First install:
+
+npm install --legacy-peer-deps
+
+npm install -g yarn
+
+Then start services:
+
+npm run serve
