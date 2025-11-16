@@ -107,7 +107,7 @@
         <div class="max-w-5xl mx-auto space-y-6">
           <!-- 打卡统计卡片：清空具体数字，保留框架 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 relative overflow-hidden transform transition-all duration-300 hover:shadow-md">
-            <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 rounded-full -mr-16 -mt-16 opacity-20"></i>
+            <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 rounded-full -mr-16 -mt-16 opacity-20"></div>
             
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
               <div>
