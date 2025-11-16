@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50 flex flex-col">
-
     <!-- 引入NavBar组件，自定义右侧操作按钮 -->
     <NavBar>
       <template #actions>
@@ -21,7 +20,6 @@
 
     <!-- 主内容区 -->
     <main class="flex-grow flex flex-col md:flex-row">
-
       <!-- 左侧好友列表：使用FriendItem组件 -->
       <aside class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20">
         <div class="p-5 h-full flex flex-col">
@@ -37,14 +35,16 @@
           
           <!-- 好友列表区域：使用FriendItem -->
           <div class="flex-grow overflow-y-auto -mx-2 px-2">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 mt-2">好友列表</h3>
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 mt-2">
+              好友列表
+            </h3>
             
             <ul class="space-y-2">
               <FriendItem 
                 name="示例好友" 
                 avatar="https://picsum.photos/seed/friend1/100/100" 
                 status="online" 
-                extraInfo="今日已背50个单词"
+                extra-info="今日已背50个单词"
               >
                 <template #actions>
                   <button class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors">
@@ -52,23 +52,49 @@
                   </button>
                 </template>
               </FriendItem>
-              <li class="flex items-center justify-center p-3 text-gray-400 text-sm">
-                可添加更多好友
+              <li>
+                <button 
+                  @click="handleAddFriend"
+                  class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group"
+                >
+                  <i class="fas fa-plus-circle mr-2 group-hover:scale-110 transition-transform"></i>
+                  可添加更多好友
+                </button>
               </li>
             </ul>
           </div>
           
-          <!-- 底部功能选项：保留 -->
+          <!-- 底部功能選項：好友 在左、聊天 在中間（預設選中好友） -->
           <div class="border-t border-gray-100 mt-4 pt-3 flex justify-around">
-            <button class="flex flex-col items-center text-emerald-600 hover:text-emerald-700 transition-colors py-1">
-              <i class="fas fa-comment text-xl mb-1"></i>
-              <span class="text-sm">聊天</span>
-            </button>
-            <button class="flex flex-col items-center text-gray-600 hover:text-emerald-600 transition-colors py-1">
+            <button
+              @click="gotoHome"
+              :class="[
+                'flex flex-col items-center py-1 transition-colors',
+                activeTab === 'friends' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
+              ]"
+            >
               <i class="fas fa-users text-xl mb-1"></i>
               <span class="text-sm">好友</span>
             </button>
-            <button class="flex flex-col items-center text-gray-600 hover:text-emerald-600 transition-colors py-1">
+
+              <button
+                @click="gotoChat"
+                :class="[
+                  'flex flex-col items-center py-1 transition-colors',
+                  activeTab === 'chat' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
+                ]"
+              >
+                <i class="fas fa-comment text-xl mb-1"></i>
+                <span class="text-sm">聊天</span>
+              </button>
+
+            <button
+              @click="activeTab = 'rank'"
+              :class="[
+                'flex flex-col items-center py-1 transition-colors',
+                activeTab === 'rank' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
+              ]"
+            >
               <i class="fas fa-trophy text-xl mb-1"></i>
               <span class="text-sm">排行榜</span>
             </button>
@@ -90,9 +116,15 @@
                   <span class="ml-2 text-yellow-500 animate-pulse"><i class="fas fa-fire"></i></span>
                 </h2>
                 <ul class="space-y-2 text-gray-700 text-base">
-                  <li class="flex items-center"><i class="fas fa-plus-circle text-emerald-500 mr-2"></i>今日新学 <span class="font-semibold">-- 个单词</span></li>
-                  <li class="flex items-center"><i class="fas fa-sync text-yellow-500 mr-2"></i>今日复习 <span class="font-semibold">-- 个单词</span></li>
-                  <li class="flex items-center"><i class="fas fa-calendar-alt text-emerald-500 mr-2"></i>明日需复习 <span class="font-semibold">-- 个单词</span></li>
+                  <li class="flex items-center">
+                    <i class="fas fa-plus-circle text-emerald-500 mr-2"></i>今日新学 <span class="font-semibold">-- 个单词</span>
+                  </li>
+                  <li class="flex items-center">
+                    <i class="fas fa-sync text-yellow-500 mr-2"></i>今日复习 <span class="font-semibold">-- 个单词</span>
+                  </li>
+                  <li class="flex items-center">
+                    <i class="fas fa-calendar-alt text-emerald-500 mr-2"></i>明日需复习 <span class="font-semibold">-- 个单词</span>
+                  </li>
                 </ul>
               </div>
               
@@ -101,7 +133,7 @@
                   <div class="w-28 h-28 bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-300 rounded-full flex items-center justify-center shadow-md">
                     <i class="fas fa-paw text-4xl text-white"></i>
                   </div>
-                  <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 rounded-full shadow-sm"></div>
+                  <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 rounded-full shadow-sm" />
                 </div>
                 
                 <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base">
@@ -114,7 +146,7 @@
           <!-- 计划时间表：使用CustomButton -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 transform transition-all duration-300 hover:shadow-md">
             <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <i class="fas fa-calendar-check text-emerald-500 mr-2"></i> 计划时间表
+              <i class="fas fa-calendar-check text-emerald-500 mr-2"></i>计划时间表
             </h3>
             <p class="text-lg font-bold text-sky-500 mb-4">2025年xx月xx日</p>
             
@@ -178,8 +210,12 @@
                   >
                 </div>
                 <div class="flex-grow">
-                  <h4 class="font-bold text-gray-800 text-xl group-hover:text-emerald-600 transition-colors">如何有效提高英语听力水平</h4>
-                  <p class="text-base text-gray-600 mt-2 line-clamp-2">本文介绍了几种实用的英语听力训练方法，帮助学习者快速提升听力理解能力，包括精听与泛听结合、影子跟读法等技巧，适合各阶段英语学习者参考。</p>
+                  <h4 class="font-bold text-gray-800 text-xl group-hover:text-emerald-600 transition-colors">
+                    如何有效提高英语听力水平
+                  </h4>
+                  <p class="text-base text-gray-600 mt-2 line-clamp-2">
+                    本文介绍了几种实用的英语听力训练方法，帮助学习者快速提升听力理解能力，包括精听与泛听结合、影子跟读法等技巧，适合各阶段英语学习者参考。
+                  </p>
                   <div class="mt-3 text-sm text-gray-500 flex items-center justify-between">
                     <div>
                       <span class="mr-4"><i class="far fa-eye mr-1"></i> 2.3k 阅读</span>
@@ -200,8 +236,12 @@
                   >
                 </div>
                 <div class="flex-grow">
-                  <h4 class="font-bold text-gray-800 text-xl group-hover:text-emerald-600 transition-colors">高考英语作文高分技巧</h4>
-                  <p class="text-base text-gray-600 mt-2 line-clamp-2">掌握这些写作技巧，让你的英语作文在考试中脱颖而出，轻松获得高分。从结构布局到高级词汇运用，全面解析评分要点和得分技巧。</p>
+                  <h4 class="font-bold text-gray-800 text-xl group-hover:text-emerald-600 transition-colors">
+                    高考英语作文高分技巧
+                  </h4>
+                  <p class="text-base text-gray-600 mt-2 line-clamp-2">
+                    掌握这些写作技巧，让你的英语作文在考试中脱颖而出，轻松获得高分。从结构布局到高级词汇运用，全面解析评分要点和得分技巧。
+                  </p>
                   <div class="mt-3 text-sm text-gray-500 flex items-center justify-between">
                     <div>
                       <span class="mr-4"><i class="far fa-eye mr-1"></i> 3.1k 阅读</span>
@@ -222,8 +262,12 @@
                   >
                 </div>
                 <div class="flex-grow">
-                  <h4 class="font-bold text-gray-800 text-xl group-hover:text-emerald-600 transition-colors">30天掌握英语语法核心知识点</h4>
-                  <p class="text-base text-gray-600 mt-2 line-clamp-2">系统化学习语法知识，30天计划帮助你构建完整的英语语法体系，从基础句型到复杂句式，循序渐进打好语法基础，适合中高考学生。</p>
+                  <h4 class="font-bold text-gray-800 text-xl group-hover:text-emerald-600 transition-colors">
+                    30天掌握英语语法核心知识点
+                  </h4>
+                  <p class="text-base text-gray-600 mt-2 line-clamp-2">
+                    系统化学习语法知识，30天计划帮助你构建完整的英语语法体系，从基础句型到复杂句式，循序渐进打好语法基础，适合中高考学生。
+                  </p>
                   <div class="mt-3 text-sm text-gray-500 flex items-center justify-between">
                     <div>
                       <span class="mr-4"><i class="far fa-eye mr-1"></i> 1.8k 阅读</span>
@@ -247,14 +291,19 @@
           </h3>
           
           <div class="bg-emerald-50 rounded-lg p-3 mb-3 border border-emerald-100">
-            <div class="font-medium text-gray-800 text-base">高考3500词</div>
+            <div class="font-medium text-gray-800 text-base">
+              高考3500词
+            </div>
             <div class="text-base text-gray-600 mt-2 space-y-1">
               <p class="flex justify-between">
                 <span>已背单词</span>
                 <span class="font-medium text-emerald-600">1,280 个</span>
               </p>
               <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 36%"></div>
+                <div
+                  class="bg-emerald-500 h-1.5 rounded-full"
+                  style="width: 36%"
+                />
               </div>
               <p class="flex justify-between mt-2">
                 <span>剩余单词</span>
@@ -282,7 +331,9 @@
               <i class="fas fa-robot text-emerald-600 text-3xl"></i>
             </div>
             
-            <p class="text-base text-gray-600 text-center mb-4 px-2">有任何语法或作文问题，随时问我哦~</p>
+            <p class="text-base text-gray-600 text-center mb-4 px-2">
+              有任何语法或作文问题，随时问我哦~
+            </p>
             
             <CustomButton 
               type="primary" 
@@ -301,7 +352,8 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import NavBar from '@/components/common/NavBar.vue';
 import FriendItem from '@/components/business/FriendItem.vue';
 import EndBar from '@/components/common/EndBar.vue';
@@ -318,6 +370,22 @@ onMounted(() => {
     }
   });
 });
+
+// 底部 tab 狀態：預設選中好友
+const activeTab = ref('friends');
+
+const router = useRouter();
+
+function gotoChat() {
+  activeTab.value = 'chat';
+  // push to chat route
+  router.push({ name: 'Chat' }).catch(() => {});
+}
+
+function gotoHome() {
+  activeTab.value = 'friends';
+  router.push({ name: 'Home' }).catch(() => {});
+}
 </script>
 
 <style>
