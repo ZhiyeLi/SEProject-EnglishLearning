@@ -1,16 +1,10 @@
 <template>
-  <Main_interface msg="Welcome to Your Vue.js App"/>
+  <router-view />
 </template>
 
 <script>
-import Main_interface from './views/Main_interface.vue'
-
-
 export default {
-  name: 'App',
-  components: {
-    Main_interface
-  }
+  name: 'App'
 }
 </script>
 
