@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 flex flex-col">
     <!-- 引入NavBar组件，自定义右侧操作按钮 -->
-    <NavBar>
+    <NavBar :navItems="navItems">
       <template #actions>
         <button class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group">
           <i class="fas fa-lightbulb text-lg"></i>
@@ -340,6 +340,7 @@
               icon="fa-comments" 
               text="开始对话" 
               class="w-full py-2.5 rounded-lg transition-all shadow hover:shadow-md transform hover:-translate-y-0.5 text-base"
+              @click="gotoAiChat"
             />
           </div>
         </div>
@@ -386,6 +387,19 @@ function gotoHome() {
   activeTab.value = 'friends';
   router.push({ name: 'Home' }).catch(() => {});
 }
+
+function gotoAiChat() {
+  router.push({ name: 'AiChat' }).catch(() => {});
+}
+
+const navItems = [
+  { label: '首页', onClick: gotoHome, isActive: true },
+  { label: '课程', path: '#' },
+  { label: '题库', path: '#' },
+  { label: '时间表', path: '#' },
+  { label: '单词打卡', path: '#' },
+  { label: 'AI伴学', onClick: gotoAiChat }
+];
 </script>
 
 <style>

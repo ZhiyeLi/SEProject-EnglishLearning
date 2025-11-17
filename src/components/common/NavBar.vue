@@ -17,7 +17,20 @@
           <!-- 导航菜单（可通过props自定义） -->
           <nav class="hidden md:flex space-x-1">
             <template v-for="(item, index) in navItems" :key="index">
-              <a :href="item.path" class="font-medium px-4 py-2 border-b-2 rounded-t-md transition-colors text-base" :class="item.isActive ? 'text-emerald-600 border-emerald-600' : 'text-gray-600 hover:text-emerald-600 border-transparent hover:border-emerald-300'">
+              <button 
+                v-if="item.onClick"
+                @click="item.onClick"
+                class="font-medium px-4 py-2 border-b-2 rounded-t-md transition-colors text-base" 
+                :class="item.isActive ? 'text-emerald-600 border-emerald-600' : 'text-gray-600 hover:text-emerald-600 border-transparent hover:border-emerald-300'"
+              >
+                {{ item.label }}
+              </button>
+              <a 
+                v-else
+                :href="item.path" 
+                class="font-medium px-4 py-2 border-b-2 rounded-t-md transition-colors text-base" 
+                :class="item.isActive ? 'text-emerald-600 border-emerald-600' : 'text-gray-600 hover:text-emerald-600 border-transparent hover:border-emerald-300'"
+              >
                 {{ item.label }}
               </a>
             </template>

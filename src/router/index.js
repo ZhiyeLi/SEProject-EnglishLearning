@@ -10,6 +10,11 @@ const routes = [
     path: '/chat',
     name: 'Chat',
     component: () => import('@/views/Chat.vue')
+  },
+  {
+    path: '/ai-chat',
+    name: 'AiChat',
+    component: () => import('@/views/AiChat.vue')
   }
 ]
 
