@@ -318,7 +318,8 @@ const navItems = ref([
   { label: '课程', path: '#' },
   { label: '题库', path: '#' },
   { label: '时间表', path: '#' },
-  { label: '单词打卡', onClick: () => {}, isActive: true }
+  { label: '单词打卡', onClick: () => {}, isActive: true },
+  { label: 'AI伴学', onClick: () => gotoAiChat(), isActive: false }
 ])
 
 // 计算属性
@@ -425,6 +426,10 @@ function switchWordType() {
  */
 function goHome() {
   router.push({ name: 'Home' }).catch(() => {})
+}
+
+function gotoAiChat() {
+  router.push({ name: 'AiChat' }).catch(() => {})
 }
 
 /**

@@ -108,7 +108,7 @@
         <!-- 聊天头部 -->
         <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 border-b border-gray-200 p-4 flex items-center shadow-sm">
           <button 
-            @click="gotoHome"
+            @click="gotoWordCheckIn"
             class="text-white hover:text-emerald-100 p-2 rounded-full hover:bg-emerald-400 transition-colors mr-3"
           >
             <i class="fas fa-arrow-left text-lg"></i>
@@ -384,6 +384,10 @@ const gotoHome = () => {
   router.push({ name: 'Home' }).catch(() => {})
 }
 
+const gotoWordCheckIn = () => {
+  router.push({ name: 'WordCheckIn' }).catch(() => {})
+}
+
 const gotoChat = () => {
   activeTab.value = 'chat'
   router.push({ name: 'Chat' }).catch(() => {})
@@ -398,7 +402,7 @@ const navItems = [
   { label: '课程', path: '#' },
   { label: '题库', path: '#' },
   { label: '时间表', path: '#' },
-  { label: '单词打卡', path: '#' },
+  { label: '单词打卡', onClick: gotoWordCheckIn, isActive: false },
   { label: 'AI伴学', onClick: gotoAiChat, isActive: true }
 ]
 
