@@ -1,27 +1,40 @@
 <template>
-  <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30 transition-all duration-300" :class="{ 'shadow': isScrolled }">
+  <header
+    class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30 transition-all duration-300"
+    :class="{ 'shadow': isScrolled }"
+  >
     <div class="container mx-auto px-2">
       <div class="flex items-center justify-between py-3">
         <div class="flex items-center">
           <!-- 用户信息（可配置是否显示） -->
-          <div v-if="showUserInfo" class="flex items-center mr-8">
+          <div
+            v-if="showUserInfo"
+            class="flex items-center mr-8"
+          >
             <div class="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-xl shadow-md hover:shadow-lg transition-shadow">
               {{ userAvatarText }}
             </div>
             <div class="ml-3">
-              <div class="bg-emerald-50 px-2 py-0.5 rounded text-base text-emerald-700">{{ userName }}</div>
-              <div class="text-base text-gray-600">{{ userTag }}</div>
+              <div class="bg-emerald-50 px-2 py-0.5 rounded text-base text-emerald-700">
+                {{ userName }}
+              </div>
+              <div class="text-base text-gray-600">
+                {{ userTag }}
+              </div>
             </div>
           </div>
           
           <!-- 导航菜单（可通过props自定义） -->
           <nav class="hidden md:flex space-x-1">
-            <template v-for="(item, index) in navItems" :key="index">
+            <template
+              v-for="(item, index) in navItems"
+              :key="index"
+            >
               <button 
                 v-if="item.onClick"
+                class="font-medium px-4 py-2 border-b-2 rounded-t-md transition-colors text-base"
+                :class="item.isActive ? 'text-emerald-600 border-emerald-600' : 'text-gray-600 hover:text-emerald-600 border-transparent hover:border-emerald-300'" 
                 @click="item.onClick"
-                class="font-medium px-4 py-2 border-b-2 rounded-t-md transition-colors text-base" 
-                :class="item.isActive ? 'text-emerald-600 border-emerald-600' : 'text-gray-600 hover:text-emerald-600 border-transparent hover:border-emerald-300'"
               >
                 {{ item.label }}
               </button>
@@ -39,7 +52,7 @@
         
         <!-- 右侧功能按钮（通过插槽自定义） -->
         <div class="flex items-center space-x-2">
-          <slot name="actions"></slot>
+          <slot name="actions" />
         </div>
       </div>
     </div>
