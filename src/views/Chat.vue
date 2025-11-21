@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 flex flex-col">
     <!-- 保留NavBar组件 -->
-    <NavBar :navItems="navItems">
+    <NavBar :nav-items="navItems">
       <template #actions>
         <button class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group">
           <i class="fas fa-lightbulb text-lg" />
@@ -55,8 +55,8 @@
               </FriendItem>
               <li>
                 <button 
-                  @click="handleAddFriend"
                   class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group"
+                  @click="handleAddFriend"
                 >
                   <i class="fas fa-plus-circle mr-2 group-hover:scale-110 transition-transform" />
                   可添加更多好友
@@ -68,33 +68,33 @@
           <!-- 底部功能选项：添加了点击事件 -->
           <div class="border-t border-gray-100 mt-4 pt-3 flex justify-around">
             <button
-              @click="gotoHome"
               :class="[
                 'flex flex-col items-center py-1 transition-colors',
                 activeTab === 'friends' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
               ]"
+              @click="gotoHome"
             >
               <i class="fas fa-users text-xl mb-1" />
               <span class="text-sm">好友</span>
             </button>
 
             <button
-              @click="gotoChat"
               :class="[
                 'flex flex-col items-center py-1 transition-colors',
                 activeTab === 'chat' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
               ]"
+              @click="gotoChat"
             >
               <i class="fas fa-comment text-xl mb-1" />
               <span class="text-sm">聊天</span>
             </button>
 
             <button
-              @click="activeTab = 'rank'"
               :class="[
                 'flex flex-col items-center py-1 transition-colors',
                 activeTab === 'rank' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
               ]"
+              @click="activeTab = 'rank'"
             >
               <i class="fas fa-trophy text-xl mb-1" />
               <span class="text-sm">排行榜</span>
@@ -107,22 +107,25 @@
       <div class="flex-grow flex flex-col bg-gray-100 overflow-hidden">
         <!-- 聊天头部 -->
         <div class="bg-white border-b border-gray-200 p-4 flex items-center shadow-sm">
-            
-            <button 
-                @click="gotoHome"
-                class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors mr-2"
-    >
-                <i class="fas fa-arrow-left text-lg" />
-            </button>
+          <button 
+            class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors mr-2"
+            @click="gotoHome"
+          >
+            <i class="fas fa-arrow-left text-lg" />
+          </button>
 
           <div class="flex-grow">
-            <h3 class="font-semibold text-gray-800">示例好友</h3>
+            <h3 class="font-semibold text-gray-800">
+              示例好友
+            </h3>
           </div>
         </div>
         
         <!-- 聊天消息区域 -->
-        <div class="flex-grow p-4 overflow-y-auto" ref="chatContainer">
-          
+        <div
+          ref="chatContainer"
+          class="flex-grow p-4 overflow-y-auto"
+        >
           <!-- 对方消息 -->
           <div class="flex items-start mb-4 animate-fadeIn">
             <img 
@@ -132,7 +135,9 @@
             >
             <div class="max-w-[70%]">
               <div class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm">
-                <p class="text-gray-800">测试聊天信息</p>
+                <p class="text-gray-800">
+                  测试聊天信息
+                </p>
               </div>
             </div>
           </div>
@@ -170,10 +175,10 @@
               placeholder="输入消息..." 
               class="flex-grow border border-gray-200 rounded-lg rounded-tr-none p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none max-h-40"
               @keydown.enter.exact.prevent="sendMessage"
-            ></textarea>
+            />
             <button 
-              @click="sendMessage"
               class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-lg rounded-tl-none font-medium transition-all shadow-sm hover:shadow transform hover:-translate-y-0.5 ml-1"
+              @click="sendMessage"
             >
               <i class="fas fa-paper-plane" />
             </button>
