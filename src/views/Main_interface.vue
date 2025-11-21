@@ -136,9 +136,9 @@
                   <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 rounded-full shadow-sm" />
                 </div>
                 
-                <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base">
-                  开始背单词 <i class="fas fa-arrow-right ml-1"></i>
-                </button>
+              <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base" @click="startWordCheckIn">
+                开始背单词 <i class="fas fa-arrow-right ml-1"></i>
+              </button>
               </div>
             </div>
           </div>
@@ -355,12 +355,16 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { wordProgressManager } from '@/utils/wordData.js'
 import NavBar from '@/components/common/NavBar.vue';
 import FriendItem from '@/components/business/FriendItem.vue';
 import EndBar from '@/components/common/EndBar.vue';
 import CustomButton from '@/components/common/CustomButton.vue';
 
 onMounted(() => {
+  // 初始化单词打卡数据
+  wordProgressManager.initProgress()
+  
   // 页面滚动时导航栏样式变化（保持原样）
   const header = document.querySelector('header');
   window.addEventListener('scroll', () => {
@@ -392,12 +396,28 @@ function gotoAiChat() {
   router.push({ name: 'AiChat' }).catch(() => {});
 }
 
+function startWordCheckIn() {
+  // 检查用户是否已选择过词汇类型
+  const selectedType = wordProgressManager.getSelectedType()
+  
+  if (selectedType) {
+    // 如果已选择过，直接进入打卡页面
+    router.push({ 
+      name: 'WordCheckIn',
+      params: { typeId: selectedType.typeId }
+    }).catch(() => {})
+  } else {
+    // 如果没选择过，先进入类型选择页面
+    router.push({ name: 'WordTypeSelection' }).catch(() => {})
+  }
+}
+
 const navItems = [
   { label: '首页', onClick: gotoHome, isActive: true },
   { label: '课程', path: '#' },
   { label: '题库', path: '#' },
   { label: '时间表', path: '#' },
-  { label: '单词打卡', path: '#' },
+  { label: '单词打卡', onClick: startWordCheckIn },
   { label: 'AI伴学', onClick: gotoAiChat }
 ];
 </script>
