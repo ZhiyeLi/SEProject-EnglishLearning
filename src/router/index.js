@@ -15,6 +15,16 @@ const routes = [
     path: '/ai-chat',
     name: 'AiChat',
     component: () => import('@/views/AiChat.vue')
+  },
+  {
+    path: '/word-type-selection',
+    name: 'WordTypeSelection',
+    component: () => import('@/views/WordTypeSelection.vue')
+  },
+  {
+    path: '/word-check-in/:typeId?',
+    name: 'WordCheckIn',
+    component: () => import('@/views/WordCheckIn.vue')
   }
 ]
 
