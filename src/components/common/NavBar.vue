@@ -37,7 +37,7 @@
             @click="toggleDropdown"
           >
             <img 
-              src="https://picsum.photos/seed/user/100/100" 
+              :src="userStore.userInfo.avatar" 
               alt="用户头像" 
               class="w-full h-full object-cover"
             >
@@ -52,18 +52,18 @@
           <div class="px-5 py-4 border-b border-gray-100">
               <div class="flex items-center">
                 <img 
-                  src="https://picsum.photos/seed/user/100/100" 
+                  :src="userStore.userInfo.avatar" 
                   alt="用户头像" 
                   class="w-12 h-12 rounded-full mr-4 object-cover"
                 >
                 <div>
-                  <p class="text-base font-medium text-gray-800">用户昵称</p>
-                  <p class="text-sm text-gray-500">user123456</p> <!-- 用户ID -->
+                  <p class="text-base font-medium text-gray-800">{{ userStore.userInfo.name }}</p>
+                  <p class="text-sm text-gray-500">{{ userStore.userInfo.id }}</p> <!-- 用户ID -->
                 </div>
               </div>
             </div>  
           <button 
-              class="w-full text-left px-5 py-3 text-base text-gray-700 hover:bg-gray-100 transition-colors"
+              class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               @click="gotoProfile"
             >
               <i class="fas fa-user mr-3"></i>个人主页
@@ -100,6 +100,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/store/modules/user'; // 引入Pinia用户状态
 
 // 接收父组件传递的导航项
 const props = defineProps({
@@ -112,6 +113,7 @@ const props = defineProps({
 const router = useRouter();
 const showDropdown = ref(false);
 const dropdownRef = ref(null);
+const userStore = useUserStore(); // 注入用户状态
 
 const gotoHome = () => {
   router.push('/').catch(() => {});

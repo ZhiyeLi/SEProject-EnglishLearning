@@ -3,7 +3,7 @@
     <!-- 复用组件库的 NavBar（完整显示导航项，支持Logo返回首页） -->
     <NavBar 
       :nav-items="navItems" 
-      :user-info="userInfo"
+      :user-info="userStore.userInfo" 
     />
     
     <!-- 返回首页按钮（保留，放在导航栏下方） -->
@@ -17,7 +17,7 @@
       </button>
     </div>
     
-    <!-- 个人主页头部横幅 -->
+    <!-- 个人主页头部横幅（待修改） -->
     <!-- <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-48 md:h-64 relative"> -->
       <!-- 背景装饰 -->
     <!-- </div> -->
@@ -29,10 +29,10 @@
         <div class="flex-shrink-0">
           <div class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white shadow-md overflow-hidden">
             <img 
-              :src="userInfo.avatar" 
+              :src="userStore.userInfo.avatar"  
               alt="用户头像" 
               class="w-full h-full object-cover"
-            >
+            ><!-- 绑定Pinia中的头像 -->
           </div>
         </div>
         
@@ -40,20 +40,27 @@
         <div class="flex-grow">
           <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div>
-              <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ userInfo.name }}</h1>
-              <p class="text-gray-600 mt-1">最近状态：正在学习英语四级词汇</p>
+              <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ userStore.userInfo.name }}</h1>
+              <p class="text-gray-600 mt-1">{{ userStore.userInfo.signature }}</p>
+              <div>email:
+                <span class="text-gray-600 mt-1">{{ userStore.userInfo.email }}</span>
+              </div>
+              <div>phone:
+                <span class="text-gray-600 mt-1">{{ userStore.userInfo.phone }}</span>
+              </div>
               <div class="flex items-center mt-3 text-sm text-gray-500">
                 <span class="flex items-center mr-4">
-                  <i class="fas fa-calendar-alt mr-1"></i> 加入于 2023年
+                  <i class="fas fa-calendar-alt mr-1"></i> 加入于 {{ userStore.userInfo.joinTime }}
                 </span>
                 <span class="flex items-center">
-                  <i class="fas fa-map-marker-alt mr-1"></i> 学习区
+                  <i class="fas fa-map-marker-alt mr-1"></i> {{ userStore.userInfo.location }}
                 </span>
               </div>
             </div>
             
             <button 
               class="self-start md:self-auto px-5 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
+              @click="isEditOpen = true"
             >
               编辑资料
             </button>
@@ -192,24 +199,25 @@
     
     <!-- 复用组件库的 EndBar（页脚） -->
     <EndBar class="mt-auto" />
+    <!-- 编辑资料对话框（引入组件） -->
+    <EditProfile 
+      v-model:open="isEditOpen" 
+    /><!-- 双向绑定对话框显示状态 -->
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/store/modules/user'; // 引入Pinia用户状态
 // 引入组件库的 NavBar 和 EndBar（路径根据实际组件库位置调整）
 import NavBar from '@/components/common/NavBar.vue';
 import EndBar from '@/components/common/EndBar.vue';
+import EditProfile from '@/components/profile/EditProfile.vue'; // 引入编辑组件
 
 const router = useRouter();
-
-// 1. 模拟用户信息（实际项目中可从全局状态/Pinia/Vuex或接口获取）
-const userInfo = ref({
-  name: '张三',
-  id: 'user123456',
-  avatar: 'https://picsum.photos/seed/zhang3/100/100'
-});
+const userStore = useUserStore(); // 注入用户状态
+const isEditOpen = ref(false); // 控制编辑对话框显示/隐藏
 
 const gotoHome = () => {
   router.push('/').catch(() => {});
@@ -227,14 +235,13 @@ const gotoTimeTable = () => {
   router.push({ name: "TimeTable" }).catch(() => {});
 };
 
-// 2. 导航项配置（与首页保持一致，传递给 NavBar 组件）
 const navItems = [
   { label: "首页", onClick: gotoHome, isActive: false },
   { label: "课程", path: "#" },
   { label: "题库", path: "#" },
   { label: "时间表", onClick: gotoTimeTable },
   { label: "单词打卡", onClick: gotoWordCheckIn, isActive: false },
-  { label: "AI伴学", onClick: gotoAiChat, isActive: true },
+  { label: "AI伴学", onClick: gotoAiChat, isActive: false },
 ];
 
 </script>
