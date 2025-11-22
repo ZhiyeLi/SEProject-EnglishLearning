@@ -1,58 +1,96 @@
 <template>
-  <header
-    class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30 transition-all duration-300"
-    :class="{ 'shadow': isScrolled }"
-  >
-    <div class="container mx-auto px-2">
-      <div class="flex items-center justify-between py-3">
-        <div class="flex items-center">
-          <!-- 用户信息（可配置是否显示） -->
-          <div
-            v-if="showUserInfo"
-            class="flex items-center mr-8"
-          >
-            <div class="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-xl shadow-md hover:shadow-lg transition-shadow">
-              {{ userAvatarText }}
-            </div>
-            <div class="ml-3">
-              <div class="bg-emerald-50 px-2 py-0.5 rounded text-base text-emerald-700">
-                {{ userName }}
-              </div>
-              <div class="text-base text-gray-600">
-                {{ userTag }}
-              </div>
-            </div>
-          </div>
-          
-          <!-- 导航菜单（可通过props自定义） -->
-          <nav class="hidden md:flex space-x-1">
-            <template
-              v-for="(item, index) in navItems"
-              :key="index"
-            >
-              <button 
-                v-if="item.onClick"
-                class="font-medium px-4 py-2 border-b-2 rounded-t-md transition-colors text-base"
-                :class="item.isActive ? 'text-emerald-600 border-emerald-600' : 'text-gray-600 hover:text-emerald-600 border-transparent hover:border-emerald-300'" 
-                @click="item.onClick"
-              >
-                {{ item.label }}
-              </button>
-              <a 
-                v-else
-                :href="item.path" 
-                class="font-medium px-4 py-2 border-b-2 rounded-t-md transition-colors text-base" 
-                :class="item.isActive ? 'text-emerald-600 border-emerald-600' : 'text-gray-600 hover:text-emerald-600 border-transparent hover:border-emerald-300'"
-              >
-                {{ item.label }}
-              </a>
-            </template>
-          </nav>
+  <header class="bg-white border-b border-gray-200 shadow-sm transition-all duration-300">
+    <div class="flex items-center justify-between h-20 px-4">
+      <!-- 左侧Logo和导航链接 -->
+      <div class="flex items-center space-x-6">
+        <!-- Logo -->
+        <div class="flex items-center" @click="gotoHome">
+          <i class="fas fa-language text-emerald-600 text-3xl mr-3"></i>
+          <span class="text-2xl font-bold text-gray-800">英语学习平台</span>
         </div>
-        
-        <!-- 右侧功能按钮（通过插槽自定义） -->
-        <div class="flex items-center space-x-2">
-          <slot name="actions" />
+
+        <!-- 导航链接 -->
+        <nav class="flex space-x-2 ml-10">
+          <button
+            v-for="(item, index) in navItems"
+            :key="index"
+            @click="handleNavClick(item)"
+            class="px-4 py-3 text-sm font-medium rounded-md transition-colors"
+            :class="item.isActive 
+              ? 'text-emerald-600 bg-emerald-50' 
+              : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'"
+          >
+            {{ item.label }}
+          </button>
+        </nav>
+      </div>
+
+      <!-- 右侧用户操作区 -->
+      <div class="flex items-center space-x-1">
+        <!-- 插槽：用于自定义右侧操作按钮 -->
+        <slot name="actions"></slot>
+
+        <!-- 用户头像和下拉菜单 -->
+        <div class="relative ml-4">
+          <button 
+            class="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-emerald-500 transition-colors"
+            @click="toggleDropdown"
+          >
+            <img 
+              src="https://picsum.photos/seed/user/100/100" 
+              alt="用户头像" 
+              class="w-full h-full object-cover"
+            >
+          </button>
+          
+          <!-- 下拉菜单 -->
+          <div 
+            v-if="showDropdown"
+            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 animate-fadeIn"
+            ref="dropdownRef"
+          >
+          <div class="px-5 py-4 border-b border-gray-100">
+              <div class="flex items-center">
+                <img 
+                  src="https://picsum.photos/seed/user/100/100" 
+                  alt="用户头像" 
+                  class="w-12 h-12 rounded-full mr-4 object-cover"
+                >
+                <div>
+                  <p class="text-base font-medium text-gray-800">用户昵称</p>
+                  <p class="text-sm text-gray-500">user123456</p> <!-- 用户ID -->
+                </div>
+              </div>
+            </div>  
+          <button 
+              class="w-full text-left px-5 py-3 text-base text-gray-700 hover:bg-gray-100 transition-colors"
+              @click="gotoProfile"
+            >
+              <i class="fas fa-user mr-3"></i>个人主页
+            </button>
+            <button 
+              class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <i class="fas fa-comment mr-2"></i>设置最近状态
+            </button>
+            <div class="border-t border-gray-100 my-1"></div>
+            <button 
+              class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <i class="fas fa-cog mr-2"></i>设置
+            </button>
+            <button 
+              class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <i class="fas fa-paint-brush mr-2"></i>外观设置
+            </button>
+            <div class="border-t border-gray-100 my-1"></div>
+            <button 
+              class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <i class="fas fa-sign-out-alt mr-2"></i>登出
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -60,41 +98,96 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, watchEffect } from 'vue';
+import { useRouter } from 'vue-router';
 
+// 接收父组件传递的导航项
 const props = defineProps({
-  showUserInfo: {
-    type: Boolean,
-    default: true
-  },
-  userName: {
-    type: String,
-    default: 'ID_English'
-  },
-  userAvatarText: {
-    type: String,
-    default: 'A'
-  },
-  userTag: {
-    type: String,
-    default: '每天进步一点点 ✨'
-  },
   navItems: {
     type: Array,
-    default: () => [
-      { label: '首页', path: '#', isActive: true },
-      { label: '课程', path: '#' },
-      { label: '题库', path: '#' },
-      { label: '时间表', path: '#' },
-      { label: '单词打卡', path: '#' }
-    ]
+    default: () => []
   }
 });
 
-const isScrolled = ref(false);
+const router = useRouter();
+const showDropdown = ref(false);
+const dropdownRef = ref(null);
+
+const gotoHome = () => {
+  router.push('/').catch(() => {});
+  showDropdown.value = false; // 关闭下拉菜单（如果打开）
+};
+
+// 切换下拉菜单显示状态
+const toggleDropdown = () => {
+  showDropdown.value = !showDropdown.value;
+};
+
+// 跳转到个人主页
+const gotoProfile = () => {
+  showDropdown.value = false;
+  router.push({ name: 'Profile' }).catch(() => {});
+};
+
+// 处理导航项点击
+const handleNavClick = (item) => {
+  if (item.onClick) {
+    item.onClick();
+  } else if (item.path && item.path !== '#') {
+    router.push(item.path).catch(() => {});
+  }
+  // 关闭下拉菜单（如果打开）
+  showDropdown.value = false;
+};
+
+// 点击外部关闭下拉菜单
+const handleClickOutside = (event) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target) &&
+      !event.target.closest('.rounded-full.overflow-hidden')) {
+    showDropdown.value = false;
+  }
+};
+
+// 监听滚动事件，改变导航栏样式
+const handleScroll = () => {
+  const header = document.querySelector('header');
+  if (header) {
+    if (window.scrollY > 10) {
+      header.classList.add('shadow');
+    } else {
+      header.classList.remove('shadow');
+    }
+  }
+};
+
+// 组件挂载时添加事件监听
 onMounted(() => {
-  window.addEventListener('scroll', () => {
-    isScrolled.value = window.scrollY > 10;
-  });
+  document.addEventListener('click', handleClickOutside);
+  window.addEventListener('scroll', handleScroll);
+  
+  // 初始检查滚动位置
+  handleScroll();
+});
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener('scroll', handleScroll);
+});
+
+// 监听导航项变化，确保正确高亮当前页
+watchEffect(() => {
+  // 可以在这里添加路由与导航项的同步逻辑
 });
 </script>
+
+<style scoped>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+</style>
