@@ -31,6 +31,11 @@ const routes = [
     name: "TimeTable",
     component: () => import("@/views/TimeTable.vue"),
   },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import("@/views/Profile.vue"),
+  }
 ];
 
 const router = createRouter({
