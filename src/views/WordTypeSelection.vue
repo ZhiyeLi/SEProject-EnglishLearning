@@ -3,10 +3,10 @@
     <!-- 返回按钮 -->
     <div class="absolute top-6 left-6">
       <button 
-        @click="goBack"
         class="flex items-center text-gray-600 hover:text-emerald-600 transition-colors p-2 rounded-lg hover:bg-white/50"
+        @click="goBack"
       >
-        <i class="fas fa-arrow-left mr-2"></i>
+        <i class="fas fa-arrow-left mr-2" />
         返回
       </button>
     </div>
@@ -14,9 +14,11 @@
     <!-- 头部标题 -->
     <div class="text-center mb-12 mt-8">
       <h1 class="text-4xl font-bold text-gray-800 mb-3">
-        <i class="fas fa-book-open text-emerald-500 mr-2"></i>选择词汇类型
+        <i class="fas fa-book-open text-emerald-500 mr-2" />选择词汇类型
       </h1>
-      <p class="text-lg text-gray-600">选择您想要背诵的单词类型</p>
+      <p class="text-lg text-gray-600">
+        选择您想要背诵的单词类型
+      </p>
     </div>
 
     <!-- 词汇类型选择卡片网格 -->
@@ -24,8 +26,8 @@
       <div
         v-for="(type, key) in wordTypes"
         :key="key"
-        @click="selectType(type)"
         class="group cursor-pointer"
+        @click="selectType(type)"
       >
         <!-- 卡片容器 -->
         <div
@@ -36,14 +38,14 @@
           <div
             class="absolute top-0 right-0 w-32 h-32 rounded-full opacity-20 -mr-16 -mt-16"
             :class="`bg-${type.color}-400`"
-          ></div>
+          />
 
           <!-- 选中标记 -->
           <div
             v-if="selectedType?.id === type.id"
             class="absolute top-4 right-4 w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-md"
           >
-            <i class="fas fa-check"></i>
+            <i class="fas fa-check" />
           </div>
 
           <!-- 卡片内容 -->
@@ -58,19 +60,26 @@
                 <i
                   class="text-4xl"
                   :class="[`fas ${type.icon}`, `text-${type.color}-600`]"
-                ></i>
+                />
               </div>
 
               <!-- 标题和描述 -->
-              <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ type.name }}</h2>
-              <p class="text-gray-600 text-base mb-4">{{ type.description }}</p>
+              <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                {{ type.name }}
+              </h2>
+              <p class="text-gray-600 text-base mb-4">
+                {{ type.description }}
+              </p>
             </div>
 
             <!-- 下半部分：统计信息 -->
             <div class="pt-4 border-t border-gray-100">
               <div class="flex items-center justify-between mb-3">
                 <span class="text-gray-600 font-medium">总词汇数</span>
-                <span class="text-2xl font-bold" :class="`text-${type.color}-600`">
+                <span
+                  class="text-2xl font-bold"
+                  :class="`text-${type.color}-600`"
+                >
                   {{ type.totalWords }}
                 </span>
               </div>
@@ -90,7 +99,7 @@
                     :style="{
                       width: getProgressPercentage(type.id) + '%'
                     }"
-                  ></div>
+                  />
                 </div>
               </div>
 
@@ -116,24 +125,27 @@
     <!-- 底部操作按钮 -->
     <div class="mt-12 flex gap-4">
       <button
-        @click="goBack"
         class="px-8 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all transform hover:-translate-y-0.5"
+        @click="goBack"
       >
-        <i class="fas fa-times mr-2"></i>取消
+        <i class="fas fa-times mr-2" />取消
       </button>
       <button
-        @click="confirmSelection"
         :disabled="!selectedType"
         class="px-8 py-3 rounded-lg bg-emerald-500 text-white font-medium hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+        @click="confirmSelection"
       >
-        <i class="fas fa-check-circle mr-2"></i>确认选择
+        <i class="fas fa-check-circle mr-2" />确认选择
       </button>
     </div>
 
     <!-- 提示信息 -->
-    <div v-if="!selectedType" class="mt-8 text-center text-gray-600">
+    <div
+      v-if="!selectedType"
+      class="mt-8 text-center text-gray-600"
+    >
       <p class="text-base">
-        <i class="fas fa-info-circle mr-2"></i>请选择一个词汇类型开始学习
+        <i class="fas fa-info-circle mr-2" />请选择一个词汇类型开始学习
       </p>
     </div>
   </div>
