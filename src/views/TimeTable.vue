@@ -284,7 +284,7 @@ const router = useRouter();
 // 导航项
 const navItems = [
   { label: "首页", onClick: () => gotoHome() },
-  { label: "课程", path: "#" },
+  { label: "课程", onClick: () => gotoCourse() },
   { label: "题库", path: "#" },
   { label: "时间表", path: "#", isActive: true },
   { label: "单词打卡", onClick: () => startWordCheckIn() },
@@ -539,6 +539,9 @@ function savePlans(newPlans) {
 // 返回首页
 function gotoHome() {
   router.push({ name: "Home" }).catch(() => {});
+}
+function gotoCourse(){
+  router.push({ name: "Course" }).catch(() => {});
 }
 
 // 跳转到AI伴学
