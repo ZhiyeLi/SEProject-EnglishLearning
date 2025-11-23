@@ -32,114 +32,18 @@
 
     <!-- 主内容区 -->
     <main class="flex-grow flex flex-col md:flex-row">
-      <!-- 左侧好友列表 -->
-      <aside
-        class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20"
-      >
-        <div class="p-5 h-full flex flex-col">
-          <!-- 搜索框 -->
-          <div class="relative mb-6">
-            <input
-              type="text"
-              placeholder="搜索好友..."
-              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
-            >
-            <i
-              class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"
-            />
-          </div>
+      <!-- 左侧好友列表已移除：AI 伴学页面现在为纯 AI 聊天界面 -->
 
-          <!-- 好友列表区域 -->
-          <div class="flex-grow overflow-y-auto -mx-2 px-2">
-            <h3
-              class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 mt-2"
-            >
-              好友列表
-            </h3>
-
-            <ul class="space-y-2">
-              <FriendItem
-                name="示例好友"
-                avatar="https://picsum.photos/seed/friend1/100/100"
-                status="online"
-                extra-info="正在输入..."
-                class="bg-emerald-50 border-l-4 border-emerald-500"
-              >
-                <template #actions>
-                  <button
-                    class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
-                  >
-                    <i class="fas fa-comment" />
-                  </button>
-                </template>
-              </FriendItem>
-              <li>
-                <button
-                  class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group"
-                  @click="handleAddFriend"
-                >
-                  <i
-                    class="fas fa-plus-circle mr-2 group-hover:scale-110 transition-transform"
-                  />
-                  可添加更多好友
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          <!-- 底部功能选项 -->
-          <div class="border-t border-gray-100 mt-4 pt-3 flex justify-around">
-            <button
-              :class="[
-                'flex flex-col items-center py-1 transition-colors',
-                activeTab === 'friends'
-                  ? 'text-emerald-600 hover:text-emerald-700'
-                  : 'text-gray-600 hover:text-emerald-600',
-              ]"
-              @click="gotoHome"
-            >
-              <i class="fas fa-users text-xl mb-1" />
-              <span class="text-sm">好友</span>
-            </button>
-
-            <button
-              :class="[
-                'flex flex-col items-center py-1 transition-colors',
-                activeTab === 'chat'
-                  ? 'text-emerald-600 hover:text-emerald-700'
-                  : 'text-gray-600 hover:text-emerald-600',
-              ]"
-              @click="gotoChat"
-            >
-              <i class="fas fa-comment text-xl mb-1" />
-              <span class="text-sm">聊天</span>
-            </button>
-
-            <button
-              :class="[
-                'flex flex-col items-center py-1 transition-colors',
-                activeTab === 'rank'
-                  ? 'text-emerald-600 hover:text-emerald-700'
-                  : 'text-gray-600 hover:text-emerald-600',
-              ]"
-              @click="activeTab = 'rank'"
-            >
-              <i class="fas fa-trophy text-xl mb-1" />
-              <span class="text-sm">排行榜</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      <!-- 中间内容区：AI聊天 -->
-      <div class="flex-grow flex flex-col bg-white overflow-hidden">
+      <!-- 中间内容区：AI聊天（居中矩形容器） -->
+      <div class="flex-grow flex justify-center items-start bg-transparent p-6">
+        <div class="w-full max-w-5xl h-[600px] bg-white shadow-sm rounded-lg overflow-hidden flex flex-col">
         <!-- 聊天头部 -->
         <div
           class="bg-gradient-to-r from-emerald-500 to-emerald-600 border-b border-gray-200 p-4 flex items-center shadow-sm"
         >
           <button
             class="text-white hover:text-emerald-100 p-2 rounded-full hover:bg-emerald-400 transition-colors mr-3"
-            @click="gotoWordCheckIn"
+            @click="gotoHome"
           >
             <i class="fas fa-arrow-left text-lg" />
           </button>
@@ -241,27 +145,6 @@
 
         <!-- 消息输入区域 -->
         <div class="border-t border-gray-200 bg-white p-4">
-          <!-- 设置行 -->
-          <div class="mb-4 flex gap-2">
-            <input
-              v-model="apiKeyLocal"
-              type="password"
-              placeholder="API Key（将保存在本地）"
-              class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-            <input
-              v-model="baseUrlLocal"
-              placeholder="Base URL（例如 https://api.openai.com）"
-              class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-            <button
-              class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors text-sm"
-              @click="saveSettings"
-            >
-              保存
-            </button>
-          </div>
-
           <!-- 输入行 -->
           <div class="flex gap-2">
             <input
@@ -279,6 +162,7 @@
             </button>
           </div>
         </div>
+        </div>
       </div>
     </main>
 
@@ -291,7 +175,7 @@
 import { ref, onMounted, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "@/components/common/NavBar.vue";
-import FriendItem from "@/components/business/FriendItem.vue";
+// Friend list removed for AI 学习助手页面；组件在其他页面仍可用
 import EndBar from "@/components/common/EndBar.vue";
 
 const router = useRouter();
@@ -316,21 +200,17 @@ const messages = ref([
 ]);
 const assistantTyping = ref(false);
 
-// 本地保存的 API 设置
-const apiKeyLocal = ref(localStorage.getItem("ai_api_key") || "");
-const baseUrlLocal = ref(localStorage.getItem("ai_base_url") || "");
+// ===== 在此处手动输入你的 API Key 和 Base URL =====
+const API_KEY = "sk-RhMyaUYgYl3SfJ5VBThIHPinG5uNd4HIfUR4PP5DS47SJjR0"; // 例如: "sk-xxxxxxxxxxxxx"
+const BASE_URL = "https://api.deepbricks.ai"; // 例如: "https://api.openai.com"
+// ====================================================
 
 const canSend = computed(
   () =>
     userInput.value.trim().length > 0 &&
-    (apiKeyLocal.value || baseUrlLocal.value)
+    API_KEY &&
+    BASE_URL
 );
-
-const saveSettings = () => {
-  localStorage.setItem("ai_api_key", apiKeyLocal.value);
-  localStorage.setItem("ai_base_url", baseUrlLocal.value);
-  alert("已保存到本地存储（仅本机）。");
-};
 
 const formatMessage = (text) => {
   // 简单换行支持
@@ -414,11 +294,11 @@ function sanitizeChunk(chunk, existingText) {
 
 // 发送到用户提供的 base URL
 async function callApiStream(userText, onChunk) {
-  const apiKey = apiKeyLocal.value;
-  const baseUrl = baseUrlLocal.value.replace(/\/$/, "");
-  if (!baseUrl) throw new Error("请先设置 Base URL");
+  if (!API_KEY || !BASE_URL) {
+    throw new Error("请在代码中设置 API_KEY 和 BASE_URL");
+  }
 
-  const url = baseUrl + "/v1/chat/completions";
+  const url = BASE_URL.replace(/\/$/, "") + "/v1/chat/completions";
   const payload = {
     model: "gpt-3.5-turbo",
     messages: [
@@ -432,7 +312,7 @@ async function callApiStream(userText, onChunk) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+      Authorization: `Bearer ${API_KEY}`,
     },
     body: JSON.stringify(payload),
   });
@@ -492,7 +372,6 @@ async function callApiStream(userText, onChunk) {
 }
 
 // 路由跳转
-const activeTab = ref("ai-chat");
 
 const gotoHome = () => {
   router.push({ name: "Home" }).catch(() => {});
@@ -502,10 +381,7 @@ const gotoWordCheckIn = () => {
   router.push({ name: "WordCheckIn" }).catch(() => {});
 };
 
-const gotoChat = () => {
-  activeTab.value = "chat";
-  router.push({ name: "Chat" }).catch(() => {});
-};
+// gotoChat 已移除：AI 伴学页面不再包含好友聊天或切换到聊天页
 
 const gotoAiChat = () => {
   router.push({ name: "AiChat" }).catch(() => {});
@@ -524,9 +400,7 @@ const navItems = [
   { label: "AI伴学", onClick: gotoAiChat, isActive: true },
 ];
 
-const handleAddFriend = () => {
-  console.log("添加好友");
-};
+// 好友操作已从 AI 页面移除
 </script>
 
 <style scoped>
