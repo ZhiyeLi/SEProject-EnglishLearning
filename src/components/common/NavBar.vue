@@ -4,11 +4,8 @@
       <!-- 左侧Logo和导航链接 -->
       <div class="flex items-center space-x-6">
         <!-- Logo -->
-        <div
-          class="flex items-center"
-          @click="gotoHome"
-        >
-          <i class="fas fa-language text-emerald-600 text-3xl mr-3" />
+        <div class="flex items-center" @click="gotoHome">
+          <i class="fas fa-language text-emerald-600 text-3xl mr-3"></i>
           <span class="text-2xl font-bold text-gray-800">英语学习平台</span>
         </div>
 
@@ -17,11 +14,11 @@
           <button
             v-for="(item, index) in navItems"
             :key="index"
+            @click="handleNavClick(item)"
             class="px-4 py-3 text-sm font-medium rounded-md transition-colors"
             :class="item.isActive 
               ? 'text-emerald-600 bg-emerald-50' 
               : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'"
-            @click="handleNavClick(item)"
           >
             {{ item.label }}
           </button>
@@ -31,7 +28,7 @@
       <!-- 右侧用户操作区 -->
       <div class="flex items-center space-x-1">
         <!-- 插槽：用于自定义右侧操作按钮 -->
-        <slot name="actions" />
+        <slot name="actions"></slot>
 
         <!-- 用户头像和下拉菜单 -->
         <div class="relative ml-4">
@@ -49,10 +46,10 @@
           <!-- 下拉菜单 -->
           <div 
             v-if="showDropdown"
-            ref="dropdownRef"
             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 animate-fadeIn"
+            ref="dropdownRef"
           >
-            <div class="px-5 py-4 border-b border-gray-100">
+          <div class="px-5 py-4 border-b border-gray-100">
               <div class="flex items-center">
                 <img 
                   :src="userStore.userInfo.avatar" 
@@ -60,42 +57,38 @@
                   class="w-12 h-12 rounded-full mr-4 object-cover"
                 >
                 <div>
-                  <p class="text-base font-medium text-gray-800">
-                    {{ userStore.userInfo.name }}
-                  </p>
-                  <p class="text-sm text-gray-500">
-                    {{ userStore.userInfo.id }}
-                  </p> <!-- 用户ID -->
+                  <p class="text-base font-medium text-gray-800">{{ userStore.userInfo.name }}</p>
+                  <p class="text-sm text-gray-500">{{ userStore.userInfo.id }}</p> <!-- 用户ID -->
                 </div>
               </div>
             </div>  
-            <button 
+          <button 
               class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               @click="gotoProfile"
             >
-              <i class="fas fa-user mr-3" />个人主页
+              <i class="fas fa-user mr-3"></i>个人主页
             </button>
             <button 
               class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             >
-              <i class="fas fa-comment mr-2" />设置最近状态
+              <i class="fas fa-comment mr-2"></i>设置最近状态
             </button>
-            <div class="border-t border-gray-100 my-1" />
+            <div class="border-t border-gray-100 my-1"></div>
             <button 
               class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             >
-              <i class="fas fa-cog mr-2" />设置
+              <i class="fas fa-cog mr-2"></i>设置
             </button>
             <button 
               class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             >
-              <i class="fas fa-paint-brush mr-2" />外观设置
+              <i class="fas fa-paint-brush mr-2"></i>外观设置
             </button>
-            <div class="border-t border-gray-100 my-1" />
+            <div class="border-t border-gray-100 my-1"></div>
             <button 
               class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
             >
-              <i class="fas fa-sign-out-alt mr-2" />登出
+              <i class="fas fa-sign-out-alt mr-2"></i>登出
             </button>
           </div>
         </div>

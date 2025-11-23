@@ -514,12 +514,10 @@ const gotoAiChat = () => {
 const gotoTimeTable = () => {
   router.push({ name: "TimeTable" }).catch(() => {});
 };
-const gotoCourse = () =>{
-  router.push({ name: "Course"}).catch(() => {});
-}
+
 const navItems = [
   { label: "首页", onClick: gotoHome, isActive: false },
-  { label: "课程", onClick: gotoCourse, isActive: false},
+  { label: "课程", path: "#" },
   { label: "题库", path: "#" },
   { label: "时间表", onClick: gotoTimeTable },
   { label: "单词打卡", onClick: gotoWordCheckIn, isActive: false },

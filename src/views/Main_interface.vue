@@ -5,7 +5,6 @@
       <template #actions>
         <button
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-          aria-label="查看学习建议"
         >
           <i class="fas fa-lightbulb text-lg" />
           <span
@@ -14,7 +13,6 @@
         </button>
         <button
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-          aria-label="打开设置"
         >
           <i class="fas fa-cog text-lg" />
           <span
@@ -23,7 +21,6 @@
         </button>
         <button
           class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors"
-          aria-label="查看通知（3条未读）"
         >
           <i class="fas fa-bell text-lg" />
           <span
@@ -35,23 +32,20 @@
 
     <!-- 主内容区 -->
     <main class="flex-grow flex flex-col md:flex-row">
-      <!-- 左侧好友列表：添加aria-label解决无障碍问题（问题1） -->
+      <!-- 左侧好友列表：使用FriendItem组件 -->
       <aside
         class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20"
-        aria-label="好友列表侧边栏（包含搜索好友和好友列表）"
       >
         <div class="p-5 h-full flex flex-col">
-          <!-- 搜索框：添加aria-label解决交互元素无障碍问题（问题2） -->
+          <!-- 搜索框：保留 -->
           <div class="relative mb-6">
             <input
               type="text"
               placeholder="搜索好友..."
               class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
-              aria-label="搜索好友"
             >
             <i
               class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"
-              aria-hidden="true"
             />
           </div>
 
@@ -73,24 +67,18 @@
                 <template #actions>
                   <button
                     class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
-                    aria-label="与示例好友聊天"
                   >
-                    <i
-                      class="fas fa-comment"
-                      aria-hidden="true"
-                    />
+                    <i class="fas fa-comment" />
                   </button>
                 </template>
               </FriendItem>
               <li>
                 <button
                   class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group"
-                  aria-label="添加更多好友"
                   @click="handleAddFriend"
                 >
                   <i
                     class="fas fa-plus-circle mr-2 group-hover:scale-110 transition-transform"
-                    aria-hidden="true"
                   />
                   可添加更多好友
                 </button>
@@ -98,7 +86,7 @@
             </ul>
           </div>
 
-          <!-- 底部功能選項 -->
+          <!-- 底部功能選項：好友 在左、聊天 在中間（預設選中好友） -->
           <div class="border-t border-gray-100 mt-4 pt-3 flex justify-around">
             <button
               :class="[
@@ -107,13 +95,9 @@
                   ? 'text-emerald-600 hover:text-emerald-700'
                   : 'text-gray-600 hover:text-emerald-600',
               ]"
-              aria-label="切换到好友页面"
               @click="gotoHome"
             >
-              <i
-                class="fas fa-users text-xl mb-1"
-                aria-hidden="true"
-              />
+              <i class="fas fa-users text-xl mb-1" />
               <span class="text-sm">好友</span>
             </button>
 
@@ -124,13 +108,9 @@
                   ? 'text-emerald-600 hover:text-emerald-700'
                   : 'text-gray-600 hover:text-emerald-600',
               ]"
-              aria-label="切换到聊天页面"
               @click="gotoChat"
             >
-              <i
-                class="fas fa-comment text-xl mb-1"
-                aria-hidden="true"
-              />
+              <i class="fas fa-comment text-xl mb-1" />
               <span class="text-sm">聊天</span>
             </button>
 
@@ -141,13 +121,9 @@
                   ? 'text-emerald-600 hover:text-emerald-700'
                   : 'text-gray-600 hover:text-emerald-600',
               ]"
-              aria-label="切换到排行榜页面"
               @click="activeTab = 'rank'"
             >
-              <i
-                class="fas fa-trophy text-xl mb-1"
-                aria-hidden="true"
-              />
+              <i class="fas fa-trophy text-xl mb-1" />
               <span class="text-sm">排行榜</span>
             </button>
           </div>
@@ -173,29 +149,21 @@
                   class="text-2xl font-bold text-emerald-600 mb-3 flex items-center"
                 >
                   已连续打卡 -- 天！！！
-                  <span class="ml-2 text-yellow-500 animate-pulse"><i
-                    class="fas fa-fire"
-                    aria-hidden="true"
-                  /></span>
+                  <span class="ml-2 text-yellow-500 animate-pulse"><i class="fas fa-fire" /></span>
                 </h2>
                 <ul class="space-y-2 text-gray-700 text-base">
                   <li class="flex items-center">
                     <i
                       class="fas fa-plus-circle text-emerald-500 mr-2"
-                      aria-hidden="true"
                     />今日新学 <span class="font-semibold">-- 个单词</span>
                   </li>
                   <li class="flex items-center">
-                    <i
-                      class="fas fa-sync text-yellow-500 mr-2"
-                      aria-hidden="true"
-                    />今日复习
+                    <i class="fas fa-sync text-yellow-500 mr-2" />今日复习
                     <span class="font-semibold">-- 个单词</span>
                   </li>
                   <li class="flex items-center">
                     <i
                       class="fas fa-calendar-alt text-emerald-500 mr-2"
-                      aria-hidden="true"
                     />明日需复习 <span class="font-semibold">-- 个单词</span>
                   </li>
                 </ul>
@@ -206,10 +174,7 @@
                   <div
                     class="w-28 h-28 bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-300 rounded-full flex items-center justify-center shadow-md"
                   >
-                    <i
-                      class="fas fa-paw text-4xl text-white"
-                      aria-hidden="true"
-                    />
+                    <i class="fas fa-paw text-4xl text-white" />
                   </div>
                   <div
                     class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 rounded-full shadow-sm"
@@ -218,13 +183,9 @@
 
                 <button
                   class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base"
-                  aria-label="开始背单词"
                   @click="startWordCheckIn"
                 >
-                  开始背单词 <i
-                    class="fas fa-arrow-right ml-1"
-                    aria-hidden="true"
-                  />
+                  开始背单词 <i class="fas fa-arrow-right ml-1" />
                 </button>
               </div>
             </div>
@@ -239,7 +200,6 @@
             >
               <i
                 class="fas fa-calendar-check text-emerald-500 mr-2"
-                aria-hidden="true"
               />计划时间表
             </h3>
             <p class="text-lg font-bold text-sky-500 mb-4">
@@ -280,7 +240,6 @@
                     ? 'cursor-pointer hover:bg-emerald-50'
                     : ''
                 "
-                :aria-label="getUncompletedPlans(dayPlans).length > 0 ? `查看${index+1}号的${getUncompletedPlans(dayPlans).length}个未完成计划` : `${index+1}号无学习计划`"
                 @click="
                   getUncompletedPlans(dayPlans).length > 0 && gotoTimeTable()
                 "
@@ -300,19 +259,16 @@
                     :key="plan.id"
                     class="text-xs p-1 rounded truncate flex items-center"
                     :class="getPlanPriorityClass(plan.priority)"
-                    :aria-label="`${plan.priority === 'high' ? '高优先级' : plan.priority === 'medium' ? '中优先级' : '低优先级'}计划：${plan.title}`"
                   >
                     <div
                       class="w-1.5 h-1.5 rounded-full mr-1 flex-shrink-0"
                       :class="getPlanDotClass(plan.priority)"
-                      aria-hidden="true"
                     />
                     <span class="truncate">{{ plan.title }}</span>
                   </div>
                   <div
                     v-if="getUncompletedPlans(dayPlans).length > 2"
                     class="text-xs text-gray-500 text-center"
-                    aria-label="还有{{ getUncompletedPlans(dayPlans).length - 2 }}个未显示的计划"
                   >
                     +{{ getUncompletedPlans(dayPlans).length - 2 }}
                   </div>
@@ -326,7 +282,6 @@
               icon="fa-plus-circle"
               text="管理学习计划"
               class="mt-4 text-emerald-600 hover:text-emerald-700 text-base flex items-center transition-colors transform hover:-translate-x-0.5"
-              aria-label="进入学习计划管理页面"
               @click="gotoTimeTable"
             />
           </div>
@@ -338,25 +293,20 @@
             <h3
               class="text-xl font-semibold text-gray-800 mb-5 flex items-center"
             >
-              <i
-                class="fas fa-newspaper text-emerald-500 mr-2"
-                aria-hidden="true"
-              /> 推荐学习文章
+              <i class="fas fa-newspaper text-emerald-500 mr-2" /> 推荐学习文章
             </h3>
 
             <div class="space-y-6">
               <!-- 文章1 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
-                role="group"
-                aria-label="推荐文章：如何有效提高英语听力水平"
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
                 >
                   <img
                     src="https://picsum.photos/seed/english1/400/300"
-                    alt="英语听力技巧文章封面"
+                    alt="英语听力技巧"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   >
                 </div>
@@ -373,19 +323,10 @@
                     class="mt-3 text-sm text-gray-500 flex items-center justify-between"
                   >
                     <div>
-                      <span class="mr-4"><i
-                        class="far fa-eye mr-1"
-                        aria-hidden="true"
-                      /> 2.3k 阅读</span>
-                      <span><i
-                        class="far fa-comment mr-1"
-                        aria-hidden="true"
-                      /> 56 评论</span>
+                      <span class="mr-4"><i class="far fa-eye mr-1" /> 2.3k 阅读</span>
+                      <span><i class="far fa-comment mr-1" /> 56 评论</span>
                     </div>
-                    <span class="text-emerald-500"><i
-                      class="far fa-clock mr-1"
-                      aria-hidden="true"
-                    /> 5分钟阅读</span>
+                    <span class="text-emerald-500"><i class="far fa-clock mr-1" /> 5分钟阅读</span>
                   </div>
                 </div>
               </div>
@@ -393,15 +334,13 @@
               <!-- 文章2 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
-                role="group"
-                aria-label="推荐文章：高考英语作文高分技巧"
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
                 >
                   <img
                     src="https://picsum.photos/seed/english2/400/300"
-                    alt="英语作文技巧文章封面"
+                    alt="英语作文技巧"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   >
                 </div>
@@ -418,19 +357,10 @@
                     class="mt-3 text-sm text-gray-500 flex items-center justify-between"
                   >
                     <div>
-                      <span class="mr-4"><i
-                        class="far fa-eye mr-1"
-                        aria-hidden="true"
-                      /> 3.1k 阅读</span>
-                      <span><i
-                        class="far fa-comment mr-1"
-                        aria-hidden="true"
-                      /> 89 评论</span>
+                      <span class="mr-4"><i class="far fa-eye mr-1" /> 3.1k 阅读</span>
+                      <span><i class="far fa-comment mr-1" /> 89 评论</span>
                     </div>
-                    <span class="text-emerald-500"><i
-                      class="far fa-clock mr-1"
-                      aria-hidden="true"
-                    /> 7分钟阅读</span>
+                    <span class="text-emerald-500"><i class="far fa-clock mr-1" /> 7分钟阅读</span>
                   </div>
                 </div>
               </div>
@@ -438,15 +368,13 @@
               <!-- 文章3 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
-                role="group"
-                aria-label="推荐文章：30天掌握英语语法核心知识点"
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
                 >
                   <img
                     src="https://picsum.photos/seed/english3/400/300"
-                    alt="英语语法学习文章封面"
+                    alt="英语语法学习"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   >
                 </div>
@@ -463,19 +391,10 @@
                     class="mt-3 text-sm text-gray-500 flex items-center justify-between"
                   >
                     <div>
-                      <span class="mr-4"><i
-                        class="far fa-eye mr-1"
-                        aria-hidden="true"
-                      /> 1.8k 阅读</span>
-                      <span><i
-                        class="far fa-comment mr-1"
-                        aria-hidden="true"
-                      /> 42 评论</span>
+                      <span class="mr-4"><i class="far fa-eye mr-1" /> 1.8k 阅读</span>
+                      <span><i class="far fa-comment mr-1" /> 42 评论</span>
                     </div>
-                    <span class="text-emerald-500"><i
-                      class="far fa-clock mr-1"
-                      aria-hidden="true"
-                    /> 6分钟阅读</span>
+                    <span class="text-emerald-500"><i class="far fa-clock mr-1" /> 6分钟阅读</span>
                   </div>
                 </div>
               </div>
@@ -484,23 +403,16 @@
         </div>
       </div>
 
-      <!-- 右侧边栏：添加aria-label解决无障碍问题（补充交互元素无障碍） -->
-      <aside
-        class="w-full md:w-72 flex-shrink-0 p-6 hidden lg:block"
-        aria-label="功能侧边栏（包含当前使用词典和AI学习助手）"
-      >
+      <!-- 右侧边栏：保持原样（用户未要求修改） -->
+      <aside class="w-full md:w-72 flex-shrink-0 p-6 hidden lg:block">
         <!-- 当前使用词典 -->
         <div
           class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 transform transition-all duration-300 hover:shadow-md"
-          aria-label="当前使用词典：高考3500词"
         >
           <h3
             class="text-base font-semibold text-gray-800 mb-3 flex items-center"
           >
-            <i
-              class="fas fa-book text-emerald-500 mr-2"
-              aria-hidden="true"
-            /> 当前使用词典
+            <i class="fas fa-book text-emerald-500 mr-2" /> 当前使用词典
           </h3>
 
           <div
@@ -514,14 +426,10 @@
                 <span>已背单词</span>
                 <span class="font-medium text-emerald-600">1,280 个</span>
               </p>
-              <div
-                class="w-full bg-gray-200 rounded-full h-1.5 mt-1"
-                aria-label="已背单词进度：36%"
-              >
+              <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
                 <div
                   class="bg-emerald-500 h-1.5 rounded-full"
                   style="width: 36%"
-                  aria-hidden="true"
                 />
               </div>
               <p class="flex justify-between mt-2">
@@ -533,40 +441,28 @@
 
           <button
             class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 py-2 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-sm hover:shadow text-base"
-            aria-label="更换当前使用的词典"
           >
-            更换词典 <i
-              class="fas fa-exchange-alt ml-1"
-              aria-hidden="true"
-            />
+            更换词典 <i class="fas fa-exchange-alt ml-1" />
           </button>
         </div>
 
         <!-- AI助手：使用CustomButton -->
         <div
           class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transform transition-all duration-300 hover:shadow-md"
-          aria-label="AI学习助手（可咨询语法或作文问题）"
         >
           <div
             class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-3 border-b border-gray-200"
           >
             <h3 class="text-base font-semibold text-white flex items-center">
-              <i
-                class="fas fa-robot mr-2"
-                aria-hidden="true"
-              /> AI学习助手
+              <i class="fas fa-robot mr-2" /> AI学习助手
             </h3>
           </div>
 
           <div class="p-4 flex flex-col items-center">
             <div
               class="w-20 h-20 bg-gradient-to-r from-emerald-100 to-emerald-200 rounded-full flex items-center justify-center mb-3 shadow-sm"
-              aria-hidden="true"
             >
-              <i
-                class="fas fa-robot text-emerald-600 text-3xl"
-                aria-hidden="true"
-              />
+              <i class="fas fa-robot text-emerald-600 text-3xl" />
             </div>
 
             <p class="text-base text-gray-600 text-center mb-4 px-2">
@@ -578,7 +474,6 @@
               icon="fa-comments"
               text="开始对话"
               class="w-full py-2.5 rounded-lg transition-all shadow hover:shadow-md transform hover:-translate-y-0.5 text-base"
-              aria-label="进入AI学习助手对话页面"
               @click="gotoAiChat"
             />
           </div>
@@ -706,10 +601,6 @@ function gotoAiChat() {
 function gotoTimeTable() {
   router.push({ name: "TimeTable" }).catch(() => {});
 }
- 
-function gotoCourse() {
-  router.push({ name: "Course"}).catch(() => {});
-}
 
 function handleAddFriend() {
   // 添加好友功能（待实现）
@@ -736,7 +627,7 @@ function startWordCheckIn() {
 
 const navItems = [
   { label: "首页", onClick: gotoHome, isActive: true },
-  { label: "课程", onClick: gotoCourse },
+  { label: "课程", path: "#" },
   { label: "题库", path: "#" },
   { label: "时间表", onClick: gotoTimeTable },
   { label: "单词打卡", onClick: startWordCheckIn },
@@ -745,8 +636,10 @@ const navItems = [
 </script>
 
 <style>
-/* 1. 移除组件内的@tailwind指令（解决问题3/4/5）- 移至全局样式文件 */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* 自定义滚动条样式（保持原样） */
 ::-webkit-scrollbar {
