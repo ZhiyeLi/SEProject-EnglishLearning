@@ -12,14 +12,14 @@
         class="flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
         @click="gotoHome"
       >
-        <i class="fas fa-arrow-left"></i>
+        <i class="fas fa-arrow-left" />
         <span>返回首页</span>
       </button>
     </div>
     
     <!-- 个人主页头部横幅（待修改） -->
     <!-- <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-48 md:h-64 relative"> -->
-      <!-- 背景装饰 -->
+    <!-- 背景装饰 -->
     <!-- </div> -->
     
     <!-- 个人信息区域 -->
@@ -40,20 +40,26 @@
         <div class="flex-grow">
           <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div>
-              <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ userStore.userInfo.name }}</h1>
-              <p class="text-gray-600 mt-1">{{ userStore.userInfo.signature }}</p>
-              <div>email:
+              <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+                {{ userStore.userInfo.name }}
+              </h1>
+              <p class="text-gray-600 mt-1">
+                {{ userStore.userInfo.signature }}
+              </p>
+              <div>
+                email:
                 <span class="text-gray-600 mt-1">{{ userStore.userInfo.email }}</span>
               </div>
-              <div>phone:
+              <div>
+                phone:
                 <span class="text-gray-600 mt-1">{{ userStore.userInfo.phone }}</span>
               </div>
               <div class="flex items-center mt-3 text-sm text-gray-500">
                 <span class="flex items-center mr-4">
-                  <i class="fas fa-calendar-alt mr-1"></i> 加入于 {{ userStore.userInfo.joinTime }}
+                  <i class="fas fa-calendar-alt mr-1" /> 加入于 {{ userStore.userInfo.joinTime }}
                 </span>
                 <span class="flex items-center">
-                  <i class="fas fa-map-marker-alt mr-1"></i> {{ userStore.userInfo.location }}
+                  <i class="fas fa-map-marker-alt mr-1" /> {{ userStore.userInfo.location }}
                 </span>
               </div>
             </div>
@@ -74,7 +80,9 @@
         <div class="lg:col-span-1 space-y-6">
           <!-- 学习统计卡片 -->
           <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">学习统计</h2>
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">
+              学习统计
+            </h2>
             <ul class="space-y-3">
               <li class="flex justify-between items-center">
                 <span class="text-gray-600">连续打卡</span>
@@ -97,7 +105,9 @@
           
           <!-- 技能标签 -->
           <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">擅长领域</h2>
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">
+              擅长领域
+            </h2>
             <div class="flex flex-wrap gap-2">
               <span class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm">英语阅读</span>
               <span class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm">词汇记忆</span>
@@ -112,7 +122,9 @@
           <!-- 学习进度 -->
           <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-center mb-6">
-              <h2 class="text-lg font-semibold text-gray-800">学习进度</h2>
+              <h2 class="text-lg font-semibold text-gray-800">
+                学习进度
+              </h2>
               <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
                 查看全部
               </button>
@@ -126,7 +138,10 @@
                   <span class="text-sm font-medium text-emerald-600">68%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div class="bg-emerald-500 h-2.5 rounded-full" style="width: 68%"></div>
+                  <div
+                    class="bg-emerald-500 h-2.5 rounded-full"
+                    style="width: 68%"
+                  />
                 </div>
               </div>
               
@@ -136,7 +151,10 @@
                   <span class="text-sm font-medium text-emerald-600">42%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div class="bg-emerald-500 h-2.5 rounded-full" style="width: 42%"></div>
+                  <div
+                    class="bg-emerald-500 h-2.5 rounded-full"
+                    style="width: 42%"
+                  />
                 </div>
               </div>
               
@@ -146,7 +164,10 @@
                   <span class="text-sm font-medium text-emerald-600">75%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div class="bg-emerald-500 h-2.5 rounded-full" style="width: 75%"></div>
+                  <div
+                    class="bg-emerald-500 h-2.5 rounded-full"
+                    style="width: 75%"
+                  />
                 </div>
               </div>
             </div>
@@ -155,7 +176,9 @@
           <!-- 最近活动 -->
           <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-center mb-6">
-              <h2 class="text-lg font-semibold text-gray-800">最近活动</h2>
+              <h2 class="text-lg font-semibold text-gray-800">
+                最近活动
+              </h2>
               <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
                 更多
               </button>
@@ -164,31 +187,43 @@
             <div class="space-y-4">
               <div class="flex gap-3 pb-4 border-b border-gray-100">
                 <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-1">
-                  <i class="fas fa-check text-emerald-600"></i>
+                  <i class="fas fa-check text-emerald-600" />
                 </div>
                 <div>
-                  <p class="text-gray-800">完成了 <span class="font-medium">英语四级单词</span> 学习任务</p>
-                  <p class="text-sm text-gray-500 mt-1">今天 09:45</p>
+                  <p class="text-gray-800">
+                    完成了 <span class="font-medium">英语四级单词</span> 学习任务
+                  </p>
+                  <p class="text-sm text-gray-500 mt-1">
+                    今天 09:45
+                  </p>
                 </div>
               </div>
               
               <div class="flex gap-3 pb-4 border-b border-gray-100">
                 <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-1">
-                  <i class="fas fa-comment text-blue-600"></i>
+                  <i class="fas fa-comment text-blue-600" />
                 </div>
                 <div>
-                  <p class="text-gray-800">向 <span class="font-medium">AI 学习助手</span> 咨询了语法问题</p>
-                  <p class="text-sm text-gray-500 mt-1">昨天 16:20</p>
+                  <p class="text-gray-800">
+                    向 <span class="font-medium">AI 学习助手</span> 咨询了语法问题
+                  </p>
+                  <p class="text-sm text-gray-500 mt-1">
+                    昨天 16:20
+                  </p>
                 </div>
               </div>
               
               <div class="flex gap-3">
                 <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-1">
-                  <i class="fas fa-trophy text-purple-600"></i>
+                  <i class="fas fa-trophy text-purple-600" />
                 </div>
                 <div>
-                  <p class="text-gray-800">在 <span class="font-medium">周排行榜</span> 中获得第三名</p>
-                  <p class="text-sm text-gray-500 mt-1">3天前</p>
+                  <p class="text-gray-800">
+                    在 <span class="font-medium">周排行榜</span> 中获得第三名
+                  </p>
+                  <p class="text-sm text-gray-500 mt-1">
+                    3天前
+                  </p>
                 </div>
               </div>
             </div>
