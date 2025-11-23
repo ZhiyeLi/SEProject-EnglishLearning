@@ -1,14 +1,24 @@
 <template>
   <div class="auth-form-panel">
-    <h2 class="auth-title">登录账号</h2>
-    <p class="auth-desc">欢迎回来，继续探索英语学习之旅～</p>
+    <h2 class="auth-title">
+      登录账号
+    </h2>
+    <p class="auth-desc">
+      欢迎回来，继续探索英语学习之旅～
+    </p>
 
     <!-- 登录表单 -->
-    <form class="auth-form" @submit.prevent="handleLogin">
+    <form
+      class="auth-form"
+      @submit.prevent="handleLogin"
+    >
       <!-- 用户名输入框 -->
       <div class="form-group">
         <div class="neu-input-wrapper">
-          <font-awesome-icon icon="user" class="input-icon" />
+          <font-awesome-icon
+            icon="user"
+            class="input-icon"
+          />
           <input
             v-model="form.username"
             type="text"
@@ -18,13 +28,21 @@
             :disabled="isLoading"
           >
         </div>
-        <p class="error-tip" v-if="errors.username">{{ errors.username }}</p>
+        <p
+          v-if="errors.username"
+          class="error-tip"
+        >
+          {{ errors.username }}
+        </p>
       </div>
 
       <!-- 密码输入框（带显示/隐藏） -->
       <div class="form-group">
         <div class="neu-input-wrapper">
-          <font-awesome-icon icon="lock" class="input-icon" />
+          <font-awesome-icon
+            icon="lock"
+            class="input-icon"
+          />
           <input
             v-model="form.password"
             :type="pwdVisible ? 'text' : 'password'"
@@ -39,12 +57,20 @@
             @click="togglePwdVisible"
           />
         </div>
-        <p class="error-tip" v-if="errors.password">{{ errors.password }}</p>
+        <p
+          v-if="errors.password"
+          class="error-tip"
+        >
+          {{ errors.password }}
+        </p>
       </div>
 
       <!-- 忘记密码链接 -->
       <div class="forgot-password">
-        <a href="javascript:;" @click="openForgotPwdModal">忘记密码？</a>
+        <a
+          href="javascript:;"
+          @click="openForgotPwdModal"
+        >忘记密码？</a>
       </div>
 
       <!-- 登录按钮（带loading状态） -->
@@ -60,20 +86,28 @@
       <!-- 切换到注册 -->
       <div class="switch-mode">
         还没有账号？
-        <span class="switch-link" @click="$emit('switch-to-register')">立即注册</span>
+        <span
+          class="switch-link"
+          @click="$emit('switch-to-register')"
+        >立即注册</span>
       </div>
     </form>
 
     <!-- 忘记密码弹窗 -->
-    <div class="modal-mask" v-if="isForgotPwdModalOpen">
+    <div
+      v-if="isForgotPwdModalOpen"
+      class="modal-mask"
+    >
       <div class="modal-container">
         <div class="modal-header">
-          <h3 class="modal-title">重置密码</h3>
+          <h3 class="modal-title">
+            重置密码
+          </h3>
           <!-- 右上角返回按钮（文本为「返回」，统一关闭入口） -->
           <button
             class="modal-back-btn"
-            @click="closeForgotPwdModal"
             :disabled="isForgotLoading"
+            @click="closeForgotPwdModal"
           >
             返回
           </button>
@@ -95,16 +129,24 @@
                   class="neu-input"
                   :disabled="isForgotLoading"
                 >
-                <span class="switch-account-type" @click="toggleAccountType">
+                <span
+                  class="switch-account-type"
+                  @click="toggleAccountType"
+                >
                   {{ isPhone ? '切换邮箱' : '切换手机号' }}
                 </span>
               </div>
-              <p class="error-tip" v-if="forgotErrors.account">{{ forgotErrors.account }}</p>
+              <p
+                v-if="forgotErrors.account"
+                class="error-tip"
+              >
+                {{ forgotErrors.account }}
+              </p>
             </div>
             <button
               class="neu-btn auth-btn"
-              @click="sendVerifyCode"
               :disabled="isForgotLoading || !forgotForm.account"
+              @click="sendVerifyCode"
             >
               <span v-if="!isForgotLoading && !countdown">发送验证码</span>
               <span v-if="isForgotLoading">发送中...</span>
@@ -117,7 +159,10 @@
             <!-- 验证码输入 -->
             <div class="form-group">
               <div class="neu-input-wrapper">
-                <font-awesome-icon icon="code" class="input-icon" />
+                <font-awesome-icon
+                  icon="code"
+                  class="input-icon"
+                />
                 <input
                   v-model="forgotForm.verifyCode"
                   type="text"
@@ -127,13 +172,21 @@
                   :disabled="isForgotLoading"
                 >
               </div>
-              <p class="error-tip" v-if="forgotErrors.verifyCode">{{ forgotErrors.verifyCode }}</p>
+              <p
+                v-if="forgotErrors.verifyCode"
+                class="error-tip"
+              >
+                {{ forgotErrors.verifyCode }}
+              </p>
             </div>
 
             <!-- 新密码 -->
             <div class="form-group">
               <div class="neu-input-wrapper">
-                <font-awesome-icon icon="lock" class="input-icon" />
+                <font-awesome-icon
+                  icon="lock"
+                  class="input-icon"
+                />
                 <input
                   v-model="forgotForm.newPassword"
                   :type="newPwdVisible ? 'text' : 'password'"
@@ -148,13 +201,21 @@
                   @click="toggleNewPwdVisible"
                 />
               </div>
-              <p class="error-tip" v-if="forgotErrors.newPassword">{{ forgotErrors.newPassword }}</p>
+              <p
+                v-if="forgotErrors.newPassword"
+                class="error-tip"
+              >
+                {{ forgotErrors.newPassword }}
+              </p>
             </div>
 
             <!-- 确认新密码 -->
             <div class="form-group">
               <div class="neu-input-wrapper">
-                <font-awesome-icon icon="lock" class="input-icon" />
+                <font-awesome-icon
+                  icon="lock"
+                  class="input-icon"
+                />
                 <input
                   v-model="forgotForm.confirmPassword"
                   :type="newPwdVisible ? 'text' : 'password'"
@@ -164,7 +225,10 @@
                   :disabled="isForgotLoading"
                 >
               </div>
-              <p class="error-tip" v-if="forgotErrors.confirmPassword">
+              <p
+                v-if="forgotErrors.confirmPassword"
+                class="error-tip"
+              >
                 {{ forgotErrors.confirmPassword || (forgotForm.newPassword && forgotForm.confirmPassword && forgotForm.newPassword !== forgotForm.confirmPassword ? '两次密码输入不一致' : '') }}
               </p>
             </div>
@@ -172,15 +236,15 @@
             <div class="btn-group">
               <button
                 class="neu-btn cancel-btn"
-                @click="forgotStep = 1"
                 :disabled="isForgotLoading"
+                @click="forgotStep = 1"
               >
                 上一步
               </button>
               <button
                 class="neu-btn auth-btn"
-                @click="resetPassword"
                 :disabled="isForgotLoading || !forgotForm.verifyCode || !forgotForm.newPassword || !forgotForm.confirmPassword"
+                @click="resetPassword"
               >
                 <span v-if="!isForgotLoading">确认重置</span>
                 <span v-if="isForgotLoading">重置中...</span>

@@ -27,7 +27,12 @@
             :disabled="isLoading"
           >
         </div>
-        <p class="error-tip" v-if="errors.username">{{ errors.username }}</p>
+        <p
+          v-if="errors.username"
+          class="error-tip"
+        >
+          {{ errors.username }}
+        </p>
       </div>
 
       <!-- 注册密码 -->
@@ -51,7 +56,12 @@
             @click="togglePwdVisible"
           />
         </div>
-        <p class="error-tip" v-if="errors.password">{{ errors.password }}</p>
+        <p
+          v-if="errors.password"
+          class="error-tip"
+        >
+          {{ errors.password }}
+        </p>
       </div>
 
       <!-- 确认密码 -->
@@ -77,7 +87,12 @@
         >
           两次密码输入不一致
         </p>
-        <p class="error-tip" v-if="errors.confirmPwd">{{ errors.confirmPwd }}</p>
+        <p
+          v-if="errors.confirmPwd"
+          class="error-tip"
+        >
+          {{ errors.confirmPwd }}
+        </p>
       </div>
 
       <!-- 注册按钮（禁用条件：加载中/表单未通过前端校验） -->
@@ -95,8 +110,8 @@
         已有账号？
         <span
           class="switch-link"
-          @click="$emit('switch-to-login')"
           :disabled="isLoading"
+          @click="$emit('switch-to-login')"
         >去登录</span>
       </div>
     </form>

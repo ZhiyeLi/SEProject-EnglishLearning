@@ -1,18 +1,39 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col" v-cloak>
+  <div
+    v-cloak
+    class="min-h-screen bg-gray-50 flex flex-col"
+  >
     <!-- 导航栏 - 复用现有NavBar组件 -->
     <NavBar :nav-items="navItems">
       <template #actions>
-        <button class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group" aria-label="学习建议">
-          <i class="fas fa-lightbulb text-lg" aria-hidden="true" />
+        <button
+          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
+          aria-label="学习建议"
+        >
+          <i
+            class="fas fa-lightbulb text-lg"
+            aria-hidden="true"
+          />
           <span class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">学习建议</span>
         </button>
-        <button class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group" aria-label="设置">
-          <i class="fas fa-cog text-lg" aria-hidden="true" />
+        <button
+          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
+          aria-label="设置"
+        >
+          <i
+            class="fas fa-cog text-lg"
+            aria-hidden="true"
+          />
           <span class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">设置</span>
         </button>
-        <button class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors" aria-label="查看通知（3条未读）">
-          <i class="fas fa-bell text-lg" aria-hidden="true" />
+        <button
+          class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors"
+          aria-label="查看通知（3条未读）"
+        >
+          <i
+            class="fas fa-bell text-lg"
+            aria-hidden="true"
+          />
           <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse">3</span>
         </button>
       </template>
@@ -24,15 +45,20 @@
         <!-- 返回按钮 -->
         <button
           class="text-emerald-600 hover:text-emerald-700 flex items-center transition-colors mb-6"
-          @click="gotoHome"
           aria-label="返回首页"
+          @click="gotoHome"
         >
-          <i class="fas fa-arrow-left mr-2" aria-hidden="true" />
+          <i
+            class="fas fa-arrow-left mr-2"
+            aria-hidden="true"
+          />
           <span>返回首页</span>
         </button>
 
         <!-- 页面标题 -->
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">英语课程</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">
+          英语课程
+        </h1>
 
         <!-- 搜索和筛选区域 - 优化搜索框样式和提示 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
@@ -40,23 +66,29 @@
             <!-- 搜索框 - 优化交互体验 -->
             <div class="relative flex-grow">
               <input 
-                type="text" 
-                v-model="searchQuery"
+                v-model="searchQuery" 
+                type="text"
                 placeholder="Enter to search" 
                 class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base placeholder-gray-400"
                 @input="debouncedFilterCourses"
                 @focus="showSearchTips = true"
                 @blur="handleSearchBlur"  
               >
-              <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" aria-hidden="true" />
+              <i
+                class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"
+                aria-hidden="true"
+              />
               <!-- 清空搜索按钮 -->
               <button 
                 v-if="searchQuery"
                 class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                @click="clearSearch"
                 aria-label="清空搜索"
+                @click="clearSearch"
               >
-                <i class="fas fa-times" aria-hidden="true" />
+                <i
+                  class="fas fa-times"
+                  aria-hidden="true"
+                />
               </button>
             </div>
 
@@ -71,8 +103,8 @@
                     ? 'bg-emerald-500 text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 ]"
-                @click="handleTagClick(tag.value)"
                 :aria-label="`筛选${tag.label}课程`"
+                @click="handleTagClick(tag.value)"
               >
                 {{ tag.label }}
               </button>
@@ -83,8 +115,8 @@
                     ? 'bg-emerald-500 text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 ]"
-                @click="handleTagClick('all')"
                 aria-label="查看全部课程"
+                @click="handleTagClick('all')"
               >
                 全部
               </button>
@@ -92,7 +124,10 @@
           </div>
 
           <!-- 搜索结果统计 -->
-          <div v-if="searchQuery || activeTag !== 'all'" class="mt-3 text-sm text-gray-500">
+          <div
+            v-if="searchQuery || activeTag !== 'all'"
+            class="mt-3 text-sm text-gray-500"
+          >
             找到 {{ filteredCourses.length }} 个相关课程
             <button 
               v-if="searchQuery"
@@ -138,11 +173,11 @@
                 
                 <!-- 标题（高亮关键词） -->
                 <h3 class="text-xl font-semibold text-gray-800 mb-2 line-clamp-1">
-                  <span v-html="highlightKeyword(course.title)"></span>
+                  <span v-html="highlightKeyword(course.title)" />
                 </h3>
                 <!-- 简介（高亮关键词） -->
                 <p class="text-gray-600 text-base mb-4 flex-grow">
-                  <span v-html="highlightKeyword(course.description)"></span>
+                  <span v-html="highlightKeyword(course.description)" />
                 </p>
                 
                 <!-- 视频链接 -->
@@ -153,7 +188,10 @@
                   :aria-label="`观看${course.title}视频`"
                 >
                   <span>观看视频</span>
-                  <i class="fas fa-external-link-alt ml-2 text-sm" aria-hidden="true" />
+                  <i
+                    class="fas fa-external-link-alt ml-2 text-sm"
+                    aria-hidden="true"
+                  />
                 </a>
               </div>
             </div>
@@ -165,7 +203,10 @@
           v-if="filteredCourses.length === 0"
           class="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200"
         >
-          <i class="fas fa-video text-gray-300 text-6xl mb-4" aria-hidden="true" />
+          <i
+            class="fas fa-video text-gray-300 text-6xl mb-4"
+            aria-hidden="true"
+          />
           <p class="text-gray-500 text-lg">
             没有找到包含「{{ searchQuery }}」的课程，请尝试其他关键词
           </p>
@@ -173,7 +214,10 @@
             class="mt-4 text-emerald-600 hover:text-emerald-700 flex items-center mx-auto"
             @click="clearSearch"
           >
-            <i class="fas fa-times mr-1" aria-hidden="true" /> 清除搜索条件
+            <i
+              class="fas fa-times mr-1"
+              aria-hidden="true"
+            /> 清除搜索条件
           </button>
         </div>
       </div>
