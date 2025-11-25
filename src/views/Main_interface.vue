@@ -4,6 +4,7 @@
     <NavBar :nav-items="navItems">
       <template #actions>
         <button
+          @click="showSuggestionsModal = true"
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
         >
           <i class="fas fa-lightbulb text-lg" />
@@ -12,6 +13,7 @@
           >学习建议</span>
         </button>
         <button
+          @click="gotoSettings"
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
         >
           <i class="fas fa-cog text-lg" />
@@ -690,6 +692,87 @@
         </div>
       </div>
     </teleport>
+
+    <!-- 学习建议弹窗 -->
+    <teleport to="body">
+      <div
+        v-if="showSuggestionsModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
+        @click="handleSuggestionsBackdropClick"
+      >
+        <div 
+          class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[70vh] overflow-hidden transform transition-all"
+          @click.stop
+        >
+          <!-- 弹窗头部 -->
+          <div class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-blue-50">
+            <div class="flex justify-between items-center">
+              <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>
+                学习建议
+              </h2>
+              <button 
+                @click="showSuggestionsModal = false"
+                class="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <i class="fas fa-times text-2xl"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- 弹窗内容 -->
+          <div class="px-8 py-6 overflow-y-auto" style="max-height: calc(70vh - 140px)">
+            <div class="space-y-4">
+              <!-- 建议内容 -->
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                  <span class="text-emerald-600">{{ suggestionsData[currentSuggestionIndex].title }}</span>
+                </h3>
+                <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {{ suggestionsData[currentSuggestionIndex].content }}
+                </p>
+              </div>
+
+              <!-- 建议标签 -->
+              <div class="flex flex-wrap gap-2 pt-4">
+                <span v-for="tag in suggestionsData[currentSuggestionIndex].tags" :key="tag" class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm">
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 弹窗底部 - 翻页控制 -->
+          <div class="px-8 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
+            <button 
+              @click="previousSuggestion"
+              :disabled="currentSuggestionIndex === 0"
+              class="px-6 py-2 rounded-lg font-medium transition-all"
+              :class="currentSuggestionIndex === 0 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+            >
+              <i class="fas fa-chevron-left mr-2"></i>上一条
+            </button>
+
+            <div class="text-gray-600 font-medium">
+              {{ currentSuggestionIndex + 1 }} / {{ suggestionsData.length }}
+            </div>
+
+            <button 
+              @click="nextSuggestion"
+              :disabled="currentSuggestionIndex === suggestionsData.length - 1"
+              class="px-6 py-2 rounded-lg font-medium transition-all"
+              :class="currentSuggestionIndex === suggestionsData.length - 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+            >
+              下一条<i class="fas fa-chevron-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -814,6 +897,10 @@ function gotoHome() {
 
 function gotoAiChat() {
   router.push({ name: "AiChat" }).catch(() => {});
+}
+
+function gotoSettings() {
+  router.push({ name: "Settings" }).catch(() => {});
 }
 
 function gotoTimeTable() {
@@ -942,6 +1029,57 @@ const rejectFriendRequest = (index) => {
   // 从请求列表中移除
   friendRequests.value.splice(index, 1);
   // 可在这里调用真实API：拒绝好友请求
+};
+
+// 学习建议弹窗部分
+const showSuggestionsModal = ref(false);
+const currentSuggestionIndex = ref(0);
+const suggestionsData = ref([
+  {
+    title: '坚持打卡是关键',
+    content: '根据你最近的学习数据，我发现你有几天没有坚持打卡。研究表明，每日坚持背单词比一次性背很多个词更能提高长期记忆效果。\n\n建议：\n• 每天固定时间打卡，形成习惯\n• 选择在精力最充沛的时候\n• 即使只有10分钟，也要坚持打卡\n\n相信你能做到！',
+    tags: ['打卡习惯', '坚持', '记忆法']
+  },
+  {
+    title: '利用零碎时间高效学习',
+    content: '你可以充分利用上下班、等车、休息间隙等零碎时间来复习单词。这些时间虽然不长，但积累起来效果显著。\n\n建议：\n• 使用移动设备随时复习\n• 利用碎片化时间做单词练习\n• 在高峰期巩固之前学过的词汇\n\n每天15-20分钟的有效学习胜过一次性的1小时被动学习。',
+    tags: ['时间管理', '碎片化学习', '效率']
+  },
+  {
+    title: '制定合理的每日目标',
+    content: '根据你的学习进度，建议适当调整每日学习单词数量。过多会导致疲劳，过少则影响进度。\n\n建议：\n• 四级备考阶段：每天50-100个单词\n• 六级备考阶段：每天80-120个单词\n• 根据个人吸收情况灵活调整\n\n记住：质量永远比数量重要！',
+    tags: ['目标设置', '学习计划', '进度管理']
+  },
+  {
+    title: '重视拼写和发音',
+    content: '单纯记忆单词的中文意思容易遗忘。建议同时关注单词的拼写、发音和用法。\n\n建议：\n• 大声朗读单词，加强发音记忆\n• 多做拼写练习，特别是容易混淆的词\n• 学习单词的衍生词和同义词\n\n这样学习的单词记忆时间会延长3倍以上。',
+    tags: ['拼写', '发音', '词汇拓展']
+  },
+  {
+    title: '利用艾宾浩斯遗忘曲线',
+    content: '我们的应用已经内置了艾宾浩斯遗忘曲线复习算法。系统会在最佳时间提醒你复习之前学过的单词。\n\n黄金复习时间点：\n• 第1次：学习后的1天\n• 第2次：学习后的3天\n• 第3次：学习后的7天\n• 第4次：学习后的15天\n• 第5次：学习后的30天\n\n按照系统提示复习，学习效果可提升5倍！',
+    tags: ['遗忘曲线', '复习计划', '科学学习']
+  }
+]);
+
+// 下一条建议
+const nextSuggestion = () => {
+  if (currentSuggestionIndex.value < suggestionsData.value.length - 1) {
+    currentSuggestionIndex.value++;
+  }
+};
+
+// 上一条建议
+const previousSuggestion = () => {
+  if (currentSuggestionIndex.value > 0) {
+    currentSuggestionIndex.value--;
+  }
+};
+
+// 处理背景点击关闭弹窗
+const handleSuggestionsBackdropClick = () => {
+  showSuggestionsModal.value = false;
+  currentSuggestionIndex.value = 0;
 };
 
 </script>
