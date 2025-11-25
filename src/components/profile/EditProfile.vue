@@ -1,14 +1,14 @@
 <template>
   <el-dialog 
-    v-model="isOpen" 
     title="编辑个人资料" 
+    v-model="isOpen" 
     width="500px"
     :close-on-click-modal="false"
   >
     <el-form 
-      ref="formRef" 
       :model="form" 
-      :rules="rules"
+      :rules="rules" 
+      ref="formRef"
       label-width="80px"
       class="mt-4"
     >
@@ -16,15 +16,8 @@
       <el-form-item label="头像">
         <div class="flex items-center gap-4">
           <!-- 预览头像 -->
-          <el-avatar
-            :size="80"
-            class="border-2 border-gray-200"
-          >
-            <img
-              :src="form.avatar"
-              alt="预览头像"
-              class="w-full h-full object-cover"
-            >
+          <el-avatar :size="80" class="border-2 border-gray-200">
+            <img :src="form.avatar" alt="预览头像" class="w-full h-full object-cover">
           </el-avatar>
           <!-- 上传按钮 -->
           <el-upload
@@ -35,68 +28,46 @@
             :before-upload="beforeAvatarUpload"
             accept="image/*"
             :auto-upload="true"
-          >
-            <!-- 替换为你的真实上传接口 -->
-            <el-button
-              type="primary"
-              size="small"
-            >
-              更换头像
-            </el-button>
+          ><!-- 替换为你的真实上传接口 -->
+            <el-button type="primary" size="small">更换头像</el-button>
           </el-upload>
         </div>
       </el-form-item>
 
       <!-- 昵称 -->
-      <el-form-item
-        label="昵称"
-        prop="name"
-      >
+      <el-form-item label="昵称" prop="name">
         <el-input 
           v-model="form.name" 
           placeholder="请输入昵称"
-          max-length="16"
-        />
+          maxLength="16"
+        ></el-input>
       </el-form-item>
 
       <!-- 个性签名 -->
-      <el-form-item
-        label="个性签名"
-        prop="signature"
-      >
+      <el-form-item label="个性签名" prop="signature">
         <el-input 
           v-model="form.signature" 
           placeholder="请输入个性签名"
           type="textarea"
           :rows="3"
-          max-length="50"
-        />
+          maxLength="50"
+        ></el-input>
       </el-form-item>
 
       <!-- 地区（可选） -->
-      <el-form-item
-        label="地区"
-        prop="location"
-      >
+      <el-form-item label="地区" prop="location">
         <el-input 
           v-model="form.location" 
           placeholder="请输入地区"
-          max-length="20"
-        />
+          maxLength="20"
+        ></el-input>
       </el-form-item>
     </el-form>
 
     <!-- 对话框底部按钮 -->
     <template #footer>
-      <el-button @click="isOpen = false">
-        取消
-      </el-button>
-      <el-button
-        type="primary"
-        @click="submitForm"
-      >
-        保存修改
-      </el-button>
+      <el-button @click="isOpen = false">取消</el-button>
+      <el-button type="primary" @click="submitForm">保存修改</el-button>
     </template>
   </el-dialog>
 </template>

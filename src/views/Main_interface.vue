@@ -4,8 +4,8 @@
     <NavBar :nav-items="navItems">
       <template #actions>
         <button
+          @click="showSuggestionsModal = true"
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-          aria-label="查看学习建议"
         >
           <i class="fas fa-lightbulb text-lg" />
           <span
@@ -13,8 +13,8 @@
           >学习建议</span>
         </button>
         <button
+          @click="gotoSettings"
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-          aria-label="打开设置"
         >
           <i class="fas fa-cog text-lg" />
           <span
@@ -23,7 +23,6 @@
         </button>
         <button
           class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors"
-          aria-label="查看通知（3条未读）"
         >
           <i class="fas fa-bell text-lg" />
           <span
@@ -35,23 +34,20 @@
 
     <!-- 主内容区 -->
     <main class="flex-grow flex flex-col md:flex-row">
-      <!-- 左侧好友列表：添加aria-label解决无障碍问题（问题1） -->
+      <!-- 左侧好友列表：使用FriendItem组件 -->
       <aside
         class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20"
-        aria-label="好友列表侧边栏（包含搜索好友和好友列表）"
       >
         <div class="p-5 h-full flex flex-col">
-          <!-- 搜索框：添加aria-label解决交互元素无障碍问题（问题2） -->
+          <!-- 搜索框：保留 -->
           <div class="relative mb-6">
             <input
               type="text"
               placeholder="搜索好友..."
               class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
-              aria-label="搜索好友"
             >
             <i
               class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"
-              aria-hidden="true"
             />
           </div>
 
@@ -73,32 +69,44 @@
                 <template #actions>
                   <button
                     class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
-                    aria-label="与示例好友聊天"
                   >
-                    <i
-                      class="fas fa-comment"
-                      aria-hidden="true"
-                    />
+                    <i class="fas fa-comment" />
                   </button>
                 </template>
               </FriendItem>
               <li>
                 <button
                   class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group"
-                  aria-label="添加更多好友"
-                  @click="handleAddFriend"
+                  @click="showAddFriendModal = true"
                 >
                   <i
                     class="fas fa-plus-circle mr-2 group-hover:scale-110 transition-transform"
-                    aria-hidden="true"
                   />
-                  可添加更多好友
+                  点击添加更多好友
+                </button>
+              </li>
+
+              <!-- 好友请求按钮（放在添加好友按钮下方） -->
+              <li>
+                <button 
+                  class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group relative"
+                  @click="showFriendRequestModal = true"
+                >
+                  <i class="fas fa-user-plus mr-2 group-hover:scale-110 transition-transform" />
+                  查看好友请求
+                  <!-- 未处理请求数小红点 -->
+                  <span
+                    v-if="friendRequests.length > 0"
+                    class="absolute top-1 right-6 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
+                  >
+                    {{ friendRequests.length }}
+                  </span>
                 </button>
               </li>
             </ul>
           </div>
 
-          <!-- 底部功能選項 -->
+          <!-- 底部功能選項：好友 在左、聊天 在中間（預設選中好友） -->
           <div class="border-t border-gray-100 mt-4 pt-3 flex justify-around">
             <button
               :class="[
@@ -107,13 +115,9 @@
                   ? 'text-emerald-600 hover:text-emerald-700'
                   : 'text-gray-600 hover:text-emerald-600',
               ]"
-              aria-label="切换到好友页面"
               @click="gotoHome"
             >
-              <i
-                class="fas fa-users text-xl mb-1"
-                aria-hidden="true"
-              />
+              <i class="fas fa-users text-xl mb-1" />
               <span class="text-sm">好友</span>
             </button>
 
@@ -124,13 +128,9 @@
                   ? 'text-emerald-600 hover:text-emerald-700'
                   : 'text-gray-600 hover:text-emerald-600',
               ]"
-              aria-label="切换到聊天页面"
               @click="gotoChat"
             >
-              <i
-                class="fas fa-comment text-xl mb-1"
-                aria-hidden="true"
-              />
+              <i class="fas fa-comment text-xl mb-1" />
               <span class="text-sm">聊天</span>
             </button>
 
@@ -141,13 +141,9 @@
                   ? 'text-emerald-600 hover:text-emerald-700'
                   : 'text-gray-600 hover:text-emerald-600',
               ]"
-              aria-label="切换到排行榜页面"
               @click="activeTab = 'rank'"
             >
-              <i
-                class="fas fa-trophy text-xl mb-1"
-                aria-hidden="true"
-              />
+              <i class="fas fa-trophy text-xl mb-1" />
               <span class="text-sm">排行榜</span>
             </button>
           </div>
@@ -173,29 +169,21 @@
                   class="text-2xl font-bold text-emerald-600 mb-3 flex items-center"
                 >
                   已连续打卡 -- 天！！！
-                  <span class="ml-2 text-yellow-500 animate-pulse"><i
-                    class="fas fa-fire"
-                    aria-hidden="true"
-                  /></span>
+                  <span class="ml-2 text-yellow-500 animate-pulse"><i class="fas fa-fire" /></span>
                 </h2>
                 <ul class="space-y-2 text-gray-700 text-base">
                   <li class="flex items-center">
                     <i
                       class="fas fa-plus-circle text-emerald-500 mr-2"
-                      aria-hidden="true"
                     />今日新学 <span class="font-semibold">-- 个单词</span>
                   </li>
                   <li class="flex items-center">
-                    <i
-                      class="fas fa-sync text-yellow-500 mr-2"
-                      aria-hidden="true"
-                    />今日复习
+                    <i class="fas fa-sync text-yellow-500 mr-2" />今日复习
                     <span class="font-semibold">-- 个单词</span>
                   </li>
                   <li class="flex items-center">
                     <i
                       class="fas fa-calendar-alt text-emerald-500 mr-2"
-                      aria-hidden="true"
                     />明日需复习 <span class="font-semibold">-- 个单词</span>
                   </li>
                 </ul>
@@ -206,10 +194,7 @@
                   <div
                     class="w-28 h-28 bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-300 rounded-full flex items-center justify-center shadow-md"
                   >
-                    <i
-                      class="fas fa-paw text-4xl text-white"
-                      aria-hidden="true"
-                    />
+                    <i class="fas fa-paw text-4xl text-white" />
                   </div>
                   <div
                     class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 rounded-full shadow-sm"
@@ -218,13 +203,9 @@
 
                 <button
                   class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base"
-                  aria-label="开始背单词"
                   @click="startWordCheckIn"
                 >
-                  开始背单词 <i
-                    class="fas fa-arrow-right ml-1"
-                    aria-hidden="true"
-                  />
+                  开始背单词 <i class="fas fa-arrow-right ml-1" />
                 </button>
               </div>
             </div>
@@ -239,7 +220,6 @@
             >
               <i
                 class="fas fa-calendar-check text-emerald-500 mr-2"
-                aria-hidden="true"
               />计划时间表
             </h3>
             <p class="text-lg font-bold text-sky-500 mb-4">
@@ -280,7 +260,6 @@
                     ? 'cursor-pointer hover:bg-emerald-50'
                     : ''
                 "
-                :aria-label="getUncompletedPlans(dayPlans).length > 0 ? `查看${index+1}号的${getUncompletedPlans(dayPlans).length}个未完成计划` : `${index+1}号无学习计划`"
                 @click="
                   getUncompletedPlans(dayPlans).length > 0 && gotoTimeTable()
                 "
@@ -300,19 +279,16 @@
                     :key="plan.id"
                     class="text-xs p-1 rounded truncate flex items-center"
                     :class="getPlanPriorityClass(plan.priority)"
-                    :aria-label="`${plan.priority === 'high' ? '高优先级' : plan.priority === 'medium' ? '中优先级' : '低优先级'}计划：${plan.title}`"
                   >
                     <div
                       class="w-1.5 h-1.5 rounded-full mr-1 flex-shrink-0"
                       :class="getPlanDotClass(plan.priority)"
-                      aria-hidden="true"
                     />
                     <span class="truncate">{{ plan.title }}</span>
                   </div>
                   <div
                     v-if="getUncompletedPlans(dayPlans).length > 2"
                     class="text-xs text-gray-500 text-center"
-                    aria-label="还有{{ getUncompletedPlans(dayPlans).length - 2 }}个未显示的计划"
                   >
                     +{{ getUncompletedPlans(dayPlans).length - 2 }}
                   </div>
@@ -326,7 +302,6 @@
               icon="fa-plus-circle"
               text="管理学习计划"
               class="mt-4 text-emerald-600 hover:text-emerald-700 text-base flex items-center transition-colors transform hover:-translate-x-0.5"
-              aria-label="进入学习计划管理页面"
               @click="gotoTimeTable"
             />
           </div>
@@ -338,25 +313,20 @@
             <h3
               class="text-xl font-semibold text-gray-800 mb-5 flex items-center"
             >
-              <i
-                class="fas fa-newspaper text-emerald-500 mr-2"
-                aria-hidden="true"
-              /> 推荐学习文章
+              <i class="fas fa-newspaper text-emerald-500 mr-2" /> 推荐学习文章
             </h3>
 
             <div class="space-y-6">
               <!-- 文章1 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
-                role="group"
-                aria-label="推荐文章：如何有效提高英语听力水平"
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
                 >
                   <img
                     src="https://picsum.photos/seed/english1/400/300"
-                    alt="英语听力技巧文章封面"
+                    alt="英语听力技巧"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   >
                 </div>
@@ -373,19 +343,10 @@
                     class="mt-3 text-sm text-gray-500 flex items-center justify-between"
                   >
                     <div>
-                      <span class="mr-4"><i
-                        class="far fa-eye mr-1"
-                        aria-hidden="true"
-                      /> 2.3k 阅读</span>
-                      <span><i
-                        class="far fa-comment mr-1"
-                        aria-hidden="true"
-                      /> 56 评论</span>
+                      <span class="mr-4"><i class="far fa-eye mr-1" /> 2.3k 阅读</span>
+                      <span><i class="far fa-comment mr-1" /> 56 评论</span>
                     </div>
-                    <span class="text-emerald-500"><i
-                      class="far fa-clock mr-1"
-                      aria-hidden="true"
-                    /> 5分钟阅读</span>
+                    <span class="text-emerald-500"><i class="far fa-clock mr-1" /> 5分钟阅读</span>
                   </div>
                 </div>
               </div>
@@ -393,15 +354,13 @@
               <!-- 文章2 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
-                role="group"
-                aria-label="推荐文章：高考英语作文高分技巧"
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
                 >
                   <img
                     src="https://picsum.photos/seed/english2/400/300"
-                    alt="英语作文技巧文章封面"
+                    alt="英语作文技巧"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   >
                 </div>
@@ -418,19 +377,10 @@
                     class="mt-3 text-sm text-gray-500 flex items-center justify-between"
                   >
                     <div>
-                      <span class="mr-4"><i
-                        class="far fa-eye mr-1"
-                        aria-hidden="true"
-                      /> 3.1k 阅读</span>
-                      <span><i
-                        class="far fa-comment mr-1"
-                        aria-hidden="true"
-                      /> 89 评论</span>
+                      <span class="mr-4"><i class="far fa-eye mr-1" /> 3.1k 阅读</span>
+                      <span><i class="far fa-comment mr-1" /> 89 评论</span>
                     </div>
-                    <span class="text-emerald-500"><i
-                      class="far fa-clock mr-1"
-                      aria-hidden="true"
-                    /> 7分钟阅读</span>
+                    <span class="text-emerald-500"><i class="far fa-clock mr-1" /> 7分钟阅读</span>
                   </div>
                 </div>
               </div>
@@ -438,15 +388,13 @@
               <!-- 文章3 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
-                role="group"
-                aria-label="推荐文章：30天掌握英语语法核心知识点"
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
                 >
                   <img
                     src="https://picsum.photos/seed/english3/400/300"
-                    alt="英语语法学习文章封面"
+                    alt="英语语法学习"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   >
                 </div>
@@ -463,19 +411,10 @@
                     class="mt-3 text-sm text-gray-500 flex items-center justify-between"
                   >
                     <div>
-                      <span class="mr-4"><i
-                        class="far fa-eye mr-1"
-                        aria-hidden="true"
-                      /> 1.8k 阅读</span>
-                      <span><i
-                        class="far fa-comment mr-1"
-                        aria-hidden="true"
-                      /> 42 评论</span>
+                      <span class="mr-4"><i class="far fa-eye mr-1" /> 1.8k 阅读</span>
+                      <span><i class="far fa-comment mr-1" /> 42 评论</span>
                     </div>
-                    <span class="text-emerald-500"><i
-                      class="far fa-clock mr-1"
-                      aria-hidden="true"
-                    /> 6分钟阅读</span>
+                    <span class="text-emerald-500"><i class="far fa-clock mr-1" /> 6分钟阅读</span>
                   </div>
                 </div>
               </div>
@@ -484,23 +423,16 @@
         </div>
       </div>
 
-      <!-- 右侧边栏：添加aria-label解决无障碍问题（补充交互元素无障碍） -->
-      <aside
-        class="w-full md:w-72 flex-shrink-0 p-6 hidden lg:block"
-        aria-label="功能侧边栏（包含当前使用词典和AI学习助手）"
-      >
+      <!-- 右侧边栏：保持原样（用户未要求修改） -->
+      <aside class="w-full md:w-72 flex-shrink-0 p-6 hidden lg:block">
         <!-- 当前使用词典 -->
         <div
           class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 transform transition-all duration-300 hover:shadow-md"
-          aria-label="当前使用词典：高考3500词"
         >
           <h3
             class="text-base font-semibold text-gray-800 mb-3 flex items-center"
           >
-            <i
-              class="fas fa-book text-emerald-500 mr-2"
-              aria-hidden="true"
-            /> 当前使用词典
+            <i class="fas fa-book text-emerald-500 mr-2" /> 当前使用词典
           </h3>
 
           <div
@@ -514,14 +446,10 @@
                 <span>已背单词</span>
                 <span class="font-medium text-emerald-600">1,280 个</span>
               </p>
-              <div
-                class="w-full bg-gray-200 rounded-full h-1.5 mt-1"
-                aria-label="已背单词进度：36%"
-              >
+              <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
                 <div
                   class="bg-emerald-500 h-1.5 rounded-full"
                   style="width: 36%"
-                  aria-hidden="true"
                 />
               </div>
               <p class="flex justify-between mt-2">
@@ -533,40 +461,28 @@
 
           <button
             class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 py-2 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-sm hover:shadow text-base"
-            aria-label="更换当前使用的词典"
           >
-            更换词典 <i
-              class="fas fa-exchange-alt ml-1"
-              aria-hidden="true"
-            />
+            更换词典 <i class="fas fa-exchange-alt ml-1" />
           </button>
         </div>
 
         <!-- AI助手：使用CustomButton -->
         <div
           class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transform transition-all duration-300 hover:shadow-md"
-          aria-label="AI学习助手（可咨询语法或作文问题）"
         >
           <div
             class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-3 border-b border-gray-200"
           >
             <h3 class="text-base font-semibold text-white flex items-center">
-              <i
-                class="fas fa-robot mr-2"
-                aria-hidden="true"
-              /> AI学习助手
+              <i class="fas fa-robot mr-2" /> AI学习助手
             </h3>
           </div>
 
           <div class="p-4 flex flex-col items-center">
             <div
               class="w-20 h-20 bg-gradient-to-r from-emerald-100 to-emerald-200 rounded-full flex items-center justify-center mb-3 shadow-sm"
-              aria-hidden="true"
             >
-              <i
-                class="fas fa-robot text-emerald-600 text-3xl"
-                aria-hidden="true"
-              />
+              <i class="fas fa-robot text-emerald-600 text-3xl" />
             </div>
 
             <p class="text-base text-gray-600 text-center mb-4 px-2">
@@ -578,7 +494,6 @@
               icon="fa-comments"
               text="开始对话"
               class="w-full py-2.5 rounded-lg transition-all shadow hover:shadow-md transform hover:-translate-y-0.5 text-base"
-              aria-label="进入AI学习助手对话页面"
               @click="gotoAiChat"
             />
           </div>
@@ -588,11 +503,281 @@
 
     <!-- 引入EndBar组件 -->
     <EndBar />
+
+    <!-- 添加好友弹窗 -->
+    <teleport to="body">
+      <div
+        v-if="showAddFriendModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
+      >
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100">
+          <!-- 弹窗头部 -->
+          <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-800">
+              添加好友
+            </h3>
+            <button 
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showAddFriendModal = false"
+            >
+              <i class="fas fa-times text-lg" />
+            </button>
+          </div>
+          
+          <!-- 弹窗内容 -->
+          <div class="px-6 py-4">
+            <div class="space-y-4">
+              <!-- 搜索好友输入框 -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">搜索好友（用户名/ID）</label>
+                <div class="relative">
+                  <input 
+                    v-model="searchFriendValue"
+                    type="text" 
+                    placeholder="请输入好友信息..." 
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
+                  >
+                  <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+              </div>
+              
+              <!-- 搜索结果 -->
+              <div
+                v-if="searchFriendValue"
+                class="max-h-40 overflow-y-auto border rounded-lg"
+              >
+                <div
+                  v-if="searchResults.length === 0"
+                  class="p-4 text-center text-gray-500"
+                >
+                  未找到相关好友
+                </div>
+                <div
+                  v-else
+                  class="divide-y"
+                >
+                  <div 
+                    v-for="(friend, index) in searchResults" 
+                    :key="index"
+                    class="flex items-center p-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <img 
+                      :src="friend.avatar" 
+                      alt="好友头像" 
+                      class="w-10 h-10 rounded-full object-cover mr-3"
+                    >
+                    <div class="flex-grow">
+                      <p class="font-medium text-gray-800">
+                        {{ friend.name }}
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        ID: {{ friend.id }}
+                      </p>
+                    </div>
+                    <button 
+                      class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                      @click="addFriend(friend)"
+                    >
+                      添加
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 弹窗底部 -->
+          <div class="px-6 py-3 border-t border-gray-200 flex justify-end space-x-2">
+            <button 
+              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              @click="showAddFriendModal = false"
+            >
+              取消
+            </button>
+            <button 
+              class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+              :disabled="!friendId && !searchFriendValue"
+              @click="confirmAddFriend"
+            >
+              确认添加
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+    
+    <!-- 好友请求确认弹窗 -->
+    <teleport to="body">
+      <div
+        v-if="showFriendRequestModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
+      >
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100">
+          <!-- 弹窗头部 -->
+          <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-800">
+              好友请求
+            </h3>
+            <button 
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showFriendRequestModal = false"
+            >
+              <i class="fas fa-times text-lg" />
+            </button>
+          </div>
+      
+          <!-- 弹窗内容 -->
+          <div class="px-6 py-4 max-h-80 overflow-y-auto">
+            <div
+              v-if="friendRequests.length === 0"
+              class="p-8 text-center text-gray-500"
+            >
+              <i class="fas fa-inbox text-4xl mb-2 text-gray-300" />
+              <p>暂无未处理的好友请求</p>
+            </div>
+            <div
+              v-else
+              class="space-y-3 divide-y"
+            >
+              <div 
+                v-for="(request, index) in friendRequests" 
+                :key="index"
+                class="py-3 flex items-center justify-between"
+              >
+                <div class="flex items-center">
+                  <img 
+                    :src="request.avatar" 
+                    alt="请求者头像" 
+                    class="w-12 h-12 rounded-full object-cover mr-3"
+                  >
+                  <div>
+                    <p class="font-medium text-gray-800">
+                      {{ request.name }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      ID: {{ request.id }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">
+                      {{ request.time }}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex space-x-2">
+                  <button 
+                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    @click="acceptFriendRequest(index)"
+                  >
+                    <i class="fas fa-check mr-1" /> 接受
+                  </button>
+                  <button 
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    @click="rejectFriendRequest(index)"
+                  >
+                    <i class="fas fa-times mr-1" /> 拒绝
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+      
+          <!-- 弹窗底部 -->
+          <div class="px-6 py-3 border-t border-gray-200 flex justify-end">
+            <button 
+              class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+              @click="showFriendRequestModal = false"
+            >
+              关闭
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- 学习建议弹窗 -->
+    <teleport to="body">
+      <div
+        v-if="showSuggestionsModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
+        @click="handleSuggestionsBackdropClick"
+      >
+        <div 
+          class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[70vh] overflow-hidden transform transition-all"
+          @click.stop
+        >
+          <!-- 弹窗头部 -->
+          <div class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-blue-50">
+            <div class="flex justify-between items-center">
+              <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>
+                学习建议
+              </h2>
+              <button 
+                @click="showSuggestionsModal = false"
+                class="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <i class="fas fa-times text-2xl"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- 弹窗内容 -->
+          <div class="px-8 py-6 overflow-y-auto" style="max-height: calc(70vh - 140px)">
+            <div class="space-y-4">
+              <!-- 建议内容 -->
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                  <span class="text-emerald-600">{{ suggestionsData[currentSuggestionIndex].title }}</span>
+                </h3>
+                <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {{ suggestionsData[currentSuggestionIndex].content }}
+                </p>
+              </div>
+
+              <!-- 建议标签 -->
+              <div class="flex flex-wrap gap-2 pt-4">
+                <span v-for="tag in suggestionsData[currentSuggestionIndex].tags" :key="tag" class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm">
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 弹窗底部 - 翻页控制 -->
+          <div class="px-8 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
+            <button 
+              @click="previousSuggestion"
+              :disabled="currentSuggestionIndex === 0"
+              class="px-6 py-2 rounded-lg font-medium transition-all"
+              :class="currentSuggestionIndex === 0 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+            >
+              <i class="fas fa-chevron-left mr-2"></i>上一条
+            </button>
+
+            <div class="text-gray-600 font-medium">
+              {{ currentSuggestionIndex + 1 }} / {{ suggestionsData.length }}
+            </div>
+
+            <button 
+              @click="nextSuggestion"
+              :disabled="currentSuggestionIndex === suggestionsData.length - 1"
+              class="px-6 py-2 rounded-lg font-medium transition-all"
+              :class="currentSuggestionIndex === suggestionsData.length - 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+            >
+              下一条<i class="fas fa-chevron-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { wordProgressManager } from "@/utils/wordData.js";
 import { planManager } from "@/utils/planData.js";
@@ -600,6 +785,15 @@ import NavBar from "@/components/common/NavBar.vue";
 import FriendItem from "@/components/business/FriendItem.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import CustomButton from "@/components/common/CustomButton.vue";
+
+// 添加好友弹窗相关响应式变量
+const showAddFriendModal = ref(false);
+const searchFriendValue = ref('');
+const friendId = ref('');
+const searchResults = ref([]);
+
+// 好友请求弹窗相关响应式变量
+const showFriendRequestModal = ref(false);
 
 onMounted(async () => {
   // 初始化单词打卡数据
@@ -627,6 +821,8 @@ const currentDateStr = computed(() => {
   const month = now.getMonth() + 1;
   const day = now.getDate();
   return `${year}年${month}月${day}日`;
+
+  
 });
 
 // 本周计划数据
@@ -703,17 +899,12 @@ function gotoAiChat() {
   router.push({ name: "AiChat" }).catch(() => {});
 }
 
-function gotoTimeTable() {
-  router.push({ name: "TimeTable" }).catch(() => {});
-}
- 
-function gotoCourse() {
-  router.push({ name: "Course"}).catch(() => {});
+function gotoSettings() {
+  router.push({ name: "Settings" }).catch(() => {});
 }
 
-function handleAddFriend() {
-  // 添加好友功能（待实现）
-  console.log("Add friend clicked");
+function gotoTimeTable() {
+  router.push({ name: "TimeTable" }).catch(() => {});
 }
 
 function startWordCheckIn() {
@@ -736,17 +927,168 @@ function startWordCheckIn() {
 
 const navItems = [
   { label: "首页", onClick: gotoHome, isActive: true },
-  { label: "课程", onClick: gotoCourse },
+  { label: "课程", path: "#" },
   { label: "题库", path: "#" },
   { label: "时间表", onClick: gotoTimeTable },
   { label: "单词打卡", onClick: startWordCheckIn },
   { label: "AI伴学", onClick: gotoAiChat },
 ];
+
+//添加好友弹窗部分
+
+// 模拟好友数据,后期改为数据库调用
+const mockFriends = [
+  { id: '1001', name: '模拟用户1', avatar: 'https://picsum.photos/seed/friend1001/100/100'},
+  { id: '1002', name: '模拟用户2', avatar: 'https://picsum.photos/seed/friend1002/100/100'},
+  { id: '1003', name: '模拟用户3', avatar: 'https://picsum.photos/seed/friend1003/100/100'},
+  { id: '1004', name: '模拟用户4', avatar: 'https://picsum.photos/seed/friend1004/100/100'},
+  { id: '1005', name: '模拟用户5', avatar: 'https://picsum.photos/seed/friend1005/100/100'},
+];
+
+
+watch(searchFriendValue, (val) => {
+  if (val) {
+    // 模拟搜索延迟
+    setTimeout(() => {
+      const results = mockFriends.filter(friend => 
+        friend.name.includes(val) || friend.id.includes(val)
+      );
+      searchResults.value = results;
+    }, 300);
+  } else {
+    searchResults.value = [];
+  }
+});
+
+// 新增添加好友相关方法
+const searchFriendById = () => {
+  if (friendId.value) {
+    const friend = mockFriends.find(f => f.id === friendId.value);
+    if (friend) {
+      searchResults.value = [friend];
+      searchFriendValue.value = friend.name;
+    } else {
+      searchResults.value = [];
+      // 提示未找到
+      alert('未找到该ID的好友');
+    }
+  }
+};
+
+const addFriend = (friend) => {
+  // 模拟添加好友逻辑，后期替换为真实API调用
+  console.log('添加好友:', friend);
+  alert(`已发送好友请求给 ${friend.name}`);
+  // 关闭弹窗并重置表单
+  showAddFriendModal.value = false;
+  searchFriendValue.value = '';
+  friendId.value = '';
+  searchResults.value = [];
+};
+
+const confirmAddFriend = () => {
+  if (searchResults.value.length > 0) {
+    addFriend(searchResults.value[0]);
+  } else if (friendId.value) {
+    searchFriendById();
+  }
+};
+
+// 好友请求弹窗部分
+// 模拟未处理的好友请求数据
+const friendRequests = ref([
+  { 
+    id: '2001', 
+    name: '模拟请求1', 
+    avatar: 'https://picsum.photos/seed/friend2001/100/100', 
+  },
+  { 
+    id: '2002', 
+    name: '模拟请求2', 
+    avatar: 'https://picsum.photos/seed/friend2002/100/100', 
+  }
+]);
+
+// 接受好友请求
+const acceptFriendRequest = (index) => {
+  const request = friendRequests.value[index];
+  console.log('接受好友请求:', request);
+  // 模拟添加到好友列表逻辑
+  alert(`已接受 ${request.name} 的好友请求，对方已添加到你的好友列表`);
+  // 从请求列表中移除
+  friendRequests.value.splice(index, 1);
+  // 可在这里调用真实API：接受好友请求
+};
+
+// 拒绝好友请求
+const rejectFriendRequest = (index) => {
+  const request = friendRequests.value[index];
+  console.log('拒绝好友请求:', request);
+  // 模拟拒绝逻辑
+  alert(`已拒绝 ${request.name} 的好友请求`);
+  // 从请求列表中移除
+  friendRequests.value.splice(index, 1);
+  // 可在这里调用真实API：拒绝好友请求
+};
+
+// 学习建议弹窗部分
+const showSuggestionsModal = ref(false);
+const currentSuggestionIndex = ref(0);
+const suggestionsData = ref([
+  {
+    title: '坚持打卡是关键',
+    content: '根据你最近的学习数据，我发现你有几天没有坚持打卡。研究表明，每日坚持背单词比一次性背很多个词更能提高长期记忆效果。\n\n建议：\n• 每天固定时间打卡，形成习惯\n• 选择在精力最充沛的时候\n• 即使只有10分钟，也要坚持打卡\n\n相信你能做到！',
+    tags: ['打卡习惯', '坚持', '记忆法']
+  },
+  {
+    title: '利用零碎时间高效学习',
+    content: '你可以充分利用上下班、等车、休息间隙等零碎时间来复习单词。这些时间虽然不长，但积累起来效果显著。\n\n建议：\n• 使用移动设备随时复习\n• 利用碎片化时间做单词练习\n• 在高峰期巩固之前学过的词汇\n\n每天15-20分钟的有效学习胜过一次性的1小时被动学习。',
+    tags: ['时间管理', '碎片化学习', '效率']
+  },
+  {
+    title: '制定合理的每日目标',
+    content: '根据你的学习进度，建议适当调整每日学习单词数量。过多会导致疲劳，过少则影响进度。\n\n建议：\n• 四级备考阶段：每天50-100个单词\n• 六级备考阶段：每天80-120个单词\n• 根据个人吸收情况灵活调整\n\n记住：质量永远比数量重要！',
+    tags: ['目标设置', '学习计划', '进度管理']
+  },
+  {
+    title: '重视拼写和发音',
+    content: '单纯记忆单词的中文意思容易遗忘。建议同时关注单词的拼写、发音和用法。\n\n建议：\n• 大声朗读单词，加强发音记忆\n• 多做拼写练习，特别是容易混淆的词\n• 学习单词的衍生词和同义词\n\n这样学习的单词记忆时间会延长3倍以上。',
+    tags: ['拼写', '发音', '词汇拓展']
+  },
+  {
+    title: '利用艾宾浩斯遗忘曲线',
+    content: '我们的应用已经内置了艾宾浩斯遗忘曲线复习算法。系统会在最佳时间提醒你复习之前学过的单词。\n\n黄金复习时间点：\n• 第1次：学习后的1天\n• 第2次：学习后的3天\n• 第3次：学习后的7天\n• 第4次：学习后的15天\n• 第5次：学习后的30天\n\n按照系统提示复习，学习效果可提升5倍！',
+    tags: ['遗忘曲线', '复习计划', '科学学习']
+  }
+]);
+
+// 下一条建议
+const nextSuggestion = () => {
+  if (currentSuggestionIndex.value < suggestionsData.value.length - 1) {
+    currentSuggestionIndex.value++;
+  }
+};
+
+// 上一条建议
+const previousSuggestion = () => {
+  if (currentSuggestionIndex.value > 0) {
+    currentSuggestionIndex.value--;
+  }
+};
+
+// 处理背景点击关闭弹窗
+const handleSuggestionsBackdropClick = () => {
+  showSuggestionsModal.value = false;
+  currentSuggestionIndex.value = 0;
+};
+
 </script>
 
 <style>
-/* 1. 移除组件内的@tailwind指令（解决问题3/4/5）- 移至全局样式文件 */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* 自定义滚动条样式（保持原样） */
 ::-webkit-scrollbar {

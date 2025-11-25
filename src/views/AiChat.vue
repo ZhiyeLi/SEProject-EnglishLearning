@@ -4,6 +4,7 @@
     <NavBar :nav-items="navItems">
       <template #actions>
         <button
+          @click="openSuggestions"
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
         >
           <i class="fas fa-lightbulb text-lg" />
@@ -12,6 +13,7 @@
           >学习建议</span>
         </button>
         <button
+          @click="gotoSettings"
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
         >
           <i class="fas fa-cog text-lg" />
@@ -27,122 +29,27 @@
             class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
           >3</span>
         </button>
+        <button
+          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors ml-2"
+          title="返回首页"
+          @click="router.push({ name: 'Home' })"
+        >
+          <i class="fas fa-home text-lg" />
+        </button>
       </template>
     </NavBar>
 
     <!-- 主内容区 -->
     <main class="flex-grow flex flex-col md:flex-row">
-      <!-- 左侧好友列表 -->
-      <aside
-        class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20"
-      >
-        <div class="p-5 h-full flex flex-col">
-          <!-- 搜索框 -->
-          <div class="relative mb-6">
-            <input
-              type="text"
-              placeholder="搜索好友..."
-              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
-            >
-            <i
-              class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"
-            />
-          </div>
+      <!-- 左侧好友列表已移除：AI 伴学页面现在为纯 AI 聊天界面 -->
 
-          <!-- 好友列表区域 -->
-          <div class="flex-grow overflow-y-auto -mx-2 px-2">
-            <h3
-              class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 mt-2"
-            >
-              好友列表
-            </h3>
-
-            <ul class="space-y-2">
-              <FriendItem
-                name="示例好友"
-                avatar="https://picsum.photos/seed/friend1/100/100"
-                status="online"
-                extra-info="正在输入..."
-                class="bg-emerald-50 border-l-4 border-emerald-500"
-              >
-                <template #actions>
-                  <button
-                    class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
-                  >
-                    <i class="fas fa-comment" />
-                  </button>
-                </template>
-              </FriendItem>
-              <li>
-                <button
-                  class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group"
-                  @click="handleAddFriend"
-                >
-                  <i
-                    class="fas fa-plus-circle mr-2 group-hover:scale-110 transition-transform"
-                  />
-                  可添加更多好友
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          <!-- 底部功能选项 -->
-          <div class="border-t border-gray-100 mt-4 pt-3 flex justify-around">
-            <button
-              :class="[
-                'flex flex-col items-center py-1 transition-colors',
-                activeTab === 'friends'
-                  ? 'text-emerald-600 hover:text-emerald-700'
-                  : 'text-gray-600 hover:text-emerald-600',
-              ]"
-              @click="gotoHome"
-            >
-              <i class="fas fa-users text-xl mb-1" />
-              <span class="text-sm">好友</span>
-            </button>
-
-            <button
-              :class="[
-                'flex flex-col items-center py-1 transition-colors',
-                activeTab === 'chat'
-                  ? 'text-emerald-600 hover:text-emerald-700'
-                  : 'text-gray-600 hover:text-emerald-600',
-              ]"
-              @click="gotoChat"
-            >
-              <i class="fas fa-comment text-xl mb-1" />
-              <span class="text-sm">聊天</span>
-            </button>
-
-            <button
-              :class="[
-                'flex flex-col items-center py-1 transition-colors',
-                activeTab === 'rank'
-                  ? 'text-emerald-600 hover:text-emerald-700'
-                  : 'text-gray-600 hover:text-emerald-600',
-              ]"
-              @click="activeTab = 'rank'"
-            >
-              <i class="fas fa-trophy text-xl mb-1" />
-              <span class="text-sm">排行榜</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      <!-- 中间内容区：AI聊天 -->
-      <div class="flex-grow flex flex-col bg-white overflow-hidden">
+      <!-- 中间内容区：AI聊天（居中矩形容器） -->
+      <div class="flex-grow flex justify-center items-start bg-transparent p-6">
+        <div class="w-full max-w-5xl h-[600px] bg-white shadow-sm rounded-lg overflow-hidden flex flex-col">
         <!-- 聊天头部 -->
         <div
           class="bg-gradient-to-r from-emerald-500 to-emerald-600 border-b border-gray-200 p-4 flex items-center shadow-sm"
         >
-          <button
-            class="text-white hover:text-emerald-100 p-2 rounded-full hover:bg-emerald-400 transition-colors mr-3"
-            @click="gotoWordCheckIn"
-          >
-            <i class="fas fa-arrow-left text-lg" />
-          </button>
           <div class="flex-grow">
             <h3 class="font-semibold text-white text-lg flex items-center">
               <i class="fas fa-robot mr-2" /> AI 学习助手
@@ -241,27 +148,6 @@
 
         <!-- 消息输入区域 -->
         <div class="border-t border-gray-200 bg-white p-4">
-          <!-- 设置行 -->
-          <div class="mb-4 flex gap-2">
-            <input
-              v-model="apiKeyLocal"
-              type="password"
-              placeholder="API Key（将保存在本地）"
-              class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-            <input
-              v-model="baseUrlLocal"
-              placeholder="Base URL（例如 https://api.openai.com）"
-              class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-            <button
-              class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors text-sm"
-              @click="saveSettings"
-            >
-              保存
-            </button>
-          </div>
-
           <!-- 输入行 -->
           <div class="flex gap-2">
             <input
@@ -279,8 +165,90 @@
             </button>
           </div>
         </div>
+        </div>
       </div>
     </main>
+
+    <!-- 学习建议弹窗 -->
+    <teleport to="body">
+      <div
+        v-if="showSuggestionsModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
+        @click="handleSuggestionsBackdropClick"
+      >
+        <div 
+          class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[70vh] overflow-hidden transform transition-all"
+          @click.stop
+        >
+          <!-- 弹窗头部 -->
+          <div class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-blue-50">
+            <div class="flex justify-between items-center">
+              <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>
+                学习建议
+              </h2>
+              <button 
+                @click="showSuggestionsModal = false"
+                class="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <i class="fas fa-times text-2xl"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- 弹窗内容 -->
+          <div class="px-8 py-6 overflow-y-auto" style="max-height: calc(70vh - 140px)">
+            <div class="space-y-4">
+              <!-- 建议内容 -->
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                  <span class="text-emerald-600">{{ suggestionsData[currentSuggestionIndex].title }}</span>
+                </h3>
+                <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {{ suggestionsData[currentSuggestionIndex].content }}
+                </p>
+              </div>
+
+              <!-- 建议标签 -->
+              <div class="flex flex-wrap gap-2 pt-4">
+                <span v-for="tag in suggestionsData[currentSuggestionIndex].tags" :key="tag" class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm">
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 弹窗底部 - 翻页控制 -->
+          <div class="px-8 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
+            <button 
+              @click="previousSuggestion"
+              :disabled="currentSuggestionIndex === 0"
+              class="px-6 py-2 rounded-lg font-medium transition-all"
+              :class="currentSuggestionIndex === 0 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+            >
+              <i class="fas fa-chevron-left mr-2"></i>上一条
+            </button>
+
+            <div class="text-gray-600 font-medium">
+              {{ currentSuggestionIndex + 1 }} / {{ suggestionsData.length }}
+            </div>
+
+            <button 
+              @click="nextSuggestion"
+              :disabled="currentSuggestionIndex === suggestionsData.length - 1"
+              class="px-6 py-2 rounded-lg font-medium transition-all"
+              :class="currentSuggestionIndex === suggestionsData.length - 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+            >
+              下一条<i class="fas fa-chevron-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
 
     <!-- 引入EndBar组件 -->
     <EndBar />
@@ -291,7 +259,7 @@
 import { ref, onMounted, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "@/components/common/NavBar.vue";
-import FriendItem from "@/components/business/FriendItem.vue";
+// Friend list removed for AI 学习助手页面；组件在其他页面仍可用
 import EndBar from "@/components/common/EndBar.vue";
 
 const router = useRouter();
@@ -316,21 +284,17 @@ const messages = ref([
 ]);
 const assistantTyping = ref(false);
 
-// 本地保存的 API 设置
-const apiKeyLocal = ref(localStorage.getItem("ai_api_key") || "");
-const baseUrlLocal = ref(localStorage.getItem("ai_base_url") || "");
+// ===== 在此处手动输入你的 API Key 和 Base URL =====
+const API_KEY = "sk-RhMyaUYgYl3SfJ5VBThIHPinG5uNd4HIfUR4PP5DS47SJjR0"; // 例如: "sk-xxxxxxxxxxxxx"
+const BASE_URL = "https://api.deepbricks.ai"; // 例如: "https://api.openai.com"
+// ====================================================
 
 const canSend = computed(
   () =>
     userInput.value.trim().length > 0 &&
-    (apiKeyLocal.value || baseUrlLocal.value)
+    API_KEY &&
+    BASE_URL
 );
-
-const saveSettings = () => {
-  localStorage.setItem("ai_api_key", apiKeyLocal.value);
-  localStorage.setItem("ai_base_url", baseUrlLocal.value);
-  alert("已保存到本地存储（仅本机）。");
-};
 
 const formatMessage = (text) => {
   // 简单换行支持
@@ -414,11 +378,11 @@ function sanitizeChunk(chunk, existingText) {
 
 // 发送到用户提供的 base URL
 async function callApiStream(userText, onChunk) {
-  const apiKey = apiKeyLocal.value;
-  const baseUrl = baseUrlLocal.value.replace(/\/$/, "");
-  if (!baseUrl) throw new Error("请先设置 Base URL");
+  if (!API_KEY || !BASE_URL) {
+    throw new Error("请在代码中设置 API_KEY 和 BASE_URL");
+  }
 
-  const url = baseUrl + "/v1/chat/completions";
+  const url = BASE_URL.replace(/\/$/, "") + "/v1/chat/completions";
   const payload = {
     model: "gpt-3.5-turbo",
     messages: [
@@ -432,7 +396,7 @@ async function callApiStream(userText, onChunk) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+      Authorization: `Bearer ${API_KEY}`,
     },
     body: JSON.stringify(payload),
   });
@@ -492,7 +456,6 @@ async function callApiStream(userText, onChunk) {
 }
 
 // 路由跳转
-const activeTab = ref("ai-chat");
 
 const gotoHome = () => {
   router.push({ name: "Home" }).catch(() => {});
@@ -502,10 +465,7 @@ const gotoWordCheckIn = () => {
   router.push({ name: "WordCheckIn" }).catch(() => {});
 };
 
-const gotoChat = () => {
-  activeTab.value = "chat";
-  router.push({ name: "Chat" }).catch(() => {});
-};
+// gotoChat 已移除：AI 伴学页面不再包含好友聊天或切换到聊天页
 
 const gotoAiChat = () => {
   router.push({ name: "AiChat" }).catch(() => {});
@@ -514,21 +474,73 @@ const gotoAiChat = () => {
 const gotoTimeTable = () => {
   router.push({ name: "TimeTable" }).catch(() => {});
 };
-const gotoCourse = () =>{
-  router.push({ name: "Course"}).catch(() => {});
-}
+
+const gotoSettings = () => {
+  router.push({ name: "Settings" }).catch(() => {});
+};
+
+// 学习建议弹窗相关
+const showSuggestionsModal = ref(false);
+const currentSuggestionIndex = ref(0);
+const suggestionsData = ref([
+  {
+    title: '坚持打卡是关键',
+    content: '根据你最近的学习数据，我发现你有几天没有坚持打卡。研究表明，每日坚持背单词比一次性背很多个词更能提高长期记忆效果。\n\n建议：\n• 每天固定时间打卡，形成习惯\n• 选择在精力最充沛的时候\n• 即使只有10分钟，也要坚持打卡\n\n相信你能做到！',
+    tags: ['打卡习惯', '坚持', '记忆法']
+  },
+  {
+    title: '利用零碎时间高效学习',
+    content: '你可以充分利用上下班、等车、休息间隙等零碎时间来复习单词。这些时间虽然不长，但积累起来效果显著。\n\n建议：\n• 使用移动设备随时复习\n• 利用碎片化时间做单词练习\n• 在高峰期巩固之前学过的词汇\n\n每天15-20分钟的有效学习胜过一次性的1小时被动学习。',
+    tags: ['时间管理', '碎片化学习', '效率']
+  },
+  {
+    title: '制定合理的每日目标',
+    content: '根据你的学习进度，建议适当调整每日学习单词数量。过多会导致疲劳，过少则影响进度。\n\n建议：\n• 四级备考阶段：每天50-100个单词\n• 六级备考阶段：每天80-120个单词\n• 根据个人吸收情况灵活调整\n\n记住：质量永远比数量重要！',
+    tags: ['目标设置', '学习计划', '进度管理']
+  },
+  {
+    title: '重视拼写和发音',
+    content: '单纯记忆单词的中文意思容易遗忘。建议同时关注单词的拼写、发音和用法。\n\n建议：\n• 大声朗读单词，加强发音记忆\n• 多做拼写练习，特别是容易混淆的词\n• 学习单词的衍生词和同义词\n\n这样学习的单词记忆时间会延长3倍以上。',
+    tags: ['拼写', '发音', '词汇拓展']
+  },
+  {
+    title: '利用艾宾浩斯遗忘曲线',
+    content: '我们的应用已经内置了艾宾浩斯遗忘曲线复习算法。系统会在最佳时间提醒你复习之前学过的单词。\n\n黄金复习时间点：\n• 第1次：学习后的1天\n• 第2次：学习后的3天\n• 第3次：学习后的7天\n• 第4次：学习后的15天\n• 第5次：学习后的30天\n\n按照系统提示复习，学习效果可提升5倍！',
+    tags: ['遗忘曲线', '复习计划', '科学学习']
+  }
+]);
+
+const nextSuggestion = () => {
+  if (currentSuggestionIndex.value < suggestionsData.value.length - 1) {
+    currentSuggestionIndex.value++;
+  }
+};
+
+const previousSuggestion = () => {
+  if (currentSuggestionIndex.value > 0) {
+    currentSuggestionIndex.value--;
+  }
+};
+
+const handleSuggestionsBackdropClick = () => {
+  showSuggestionsModal.value = false;
+  currentSuggestionIndex.value = 0;
+};
+
+const openSuggestions = () => {
+  showSuggestionsModal.value = true;
+};
+
 const navItems = [
   { label: "首页", onClick: gotoHome, isActive: false },
-  { label: "课程", onClick: gotoCourse, isActive: false},
+  { label: "课程", path: "#" },
   { label: "题库", path: "#" },
   { label: "时间表", onClick: gotoTimeTable },
   { label: "单词打卡", onClick: gotoWordCheckIn, isActive: false },
   { label: "AI伴学", onClick: gotoAiChat, isActive: true },
 ];
 
-const handleAddFriend = () => {
-  console.log("添加好友");
-};
+// 好友操作已从 AI 页面移除
 </script>
 
 <style scoped>

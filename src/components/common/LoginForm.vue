@@ -7,7 +7,6 @@
       欢迎回来，继续探索英语学习之旅～
     </p>
 
-    <!-- 登录表单 -->
     <form
       class="auth-form"
       @submit.prevent="handleLogin"
@@ -20,20 +19,13 @@
             class="input-icon"
           />
           <input
-            v-model="form.username"
+            v-model="username"
             type="text"
             required
             placeholder="请输入用户名"
             class="neu-input"
-            :disabled="isLoading"
           >
         </div>
-        <p
-          v-if="errors.username"
-          class="error-tip"
-        >
-          {{ errors.username }}
-        </p>
       </div>
 
       <!-- 密码输入框（带显示/隐藏） -->
@@ -44,12 +36,11 @@
             class="input-icon"
           />
           <input
-            v-model="form.password"
+            v-model="password"
             :type="pwdVisible ? 'text' : 'password'"
             required
             placeholder="请输入密码"
             class="neu-input"
-            :disabled="isLoading"
           >
           <font-awesome-icon
             :icon="pwdVisible ? 'eye-slash' : 'eye'"
@@ -57,33 +48,22 @@
             @click="togglePwdVisible"
           />
         </div>
-        <p
-          v-if="errors.password"
-          class="error-tip"
-        >
-          {{ errors.password }}
-        </p>
       </div>
 
       <!-- 忘记密码链接 -->
       <div class="forgot-password">
-        <a
-          href="javascript:;"
-          @click="openForgotPwdModal"
-        >忘记密码？</a>
+        <a href="javascript:;">忘记密码？</a>
       </div>
 
-      <!-- 登录按钮（带loading状态） -->
+      <!-- 登录按钮 -->
       <button
         type="submit"
         class="neu-btn auth-btn login-btn"
-        :disabled="isLoading"
       >
-        <span v-if="!isLoading">登录</span>
-        <span v-if="isLoading">登录中...</span>
+        登录
       </button>
 
-      <!-- 切换到注册 -->
+      <!-- 切换到注册（调用父组件传递的方法） -->
       <div class="switch-mode">
         还没有账号？
         <span
@@ -92,388 +72,59 @@
         >立即注册</span>
       </div>
     </form>
-
-    <!-- 忘记密码弹窗 -->
-    <div
-      v-if="isForgotPwdModalOpen"
-      class="modal-mask"
-    >
-      <div class="modal-container">
-        <div class="modal-header">
-          <h3 class="modal-title">
-            重置密码
-          </h3>
-          <!-- 右上角返回按钮（文本为「返回」，统一关闭入口） -->
-          <button
-            class="modal-back-btn"
-            :disabled="isForgotLoading"
-            @click="closeForgotPwdModal"
-          >
-            返回
-          </button>
-        </div>
-        <div class="modal-content">
-          <!-- 步骤1：输入绑定的手机号/邮箱 -->
-          <div v-if="forgotStep === 1">
-            <div class="form-group">
-              <div class="neu-input-wrapper">
-                <font-awesome-icon
-                  :icon="isPhone ? 'phone' : 'envelope'"
-                  class="input-icon"
-                />
-                <input
-                  v-model="forgotForm.account"
-                  :type="isPhone ? 'tel' : 'email'"
-                  required
-                  :placeholder="isPhone ? '请输入绑定的手机号' : '请输入绑定的邮箱'"
-                  class="neu-input"
-                  :disabled="isForgotLoading"
-                >
-                <span
-                  class="switch-account-type"
-                  @click="toggleAccountType"
-                >
-                  {{ isPhone ? '切换邮箱' : '切换手机号' }}
-                </span>
-              </div>
-              <p
-                v-if="forgotErrors.account"
-                class="error-tip"
-              >
-                {{ forgotErrors.account }}
-              </p>
-            </div>
-            <button
-              class="neu-btn auth-btn"
-              :disabled="isForgotLoading || !forgotForm.account"
-              @click="sendVerifyCode"
-            >
-              <span v-if="!isForgotLoading && !countdown">发送验证码</span>
-              <span v-if="isForgotLoading">发送中...</span>
-              <span v-if="countdown > 0">{{ countdown }}s后重发</span>
-            </button>
-          </div>
-
-          <!-- 步骤2：输入验证码+重置密码 -->
-          <div v-if="forgotStep === 2">
-            <!-- 验证码输入 -->
-            <div class="form-group">
-              <div class="neu-input-wrapper">
-                <font-awesome-icon
-                  icon="code"
-                  class="input-icon"
-                />
-                <input
-                  v-model="forgotForm.verifyCode"
-                  type="text"
-                  required
-                  placeholder="请输入收到的验证码"
-                  class="neu-input"
-                  :disabled="isForgotLoading"
-                >
-              </div>
-              <p
-                v-if="forgotErrors.verifyCode"
-                class="error-tip"
-              >
-                {{ forgotErrors.verifyCode }}
-              </p>
-            </div>
-
-            <!-- 新密码 -->
-            <div class="form-group">
-              <div class="neu-input-wrapper">
-                <font-awesome-icon
-                  icon="lock"
-                  class="input-icon"
-                />
-                <input
-                  v-model="forgotForm.newPassword"
-                  :type="newPwdVisible ? 'text' : 'password'"
-                  required
-                  placeholder="请设置新密码"
-                  class="neu-input"
-                  :disabled="isForgotLoading"
-                >
-                <font-awesome-icon
-                  :icon="newPwdVisible ? 'eye-slash' : 'eye'"
-                  class="pwd-toggle-icon"
-                  @click="toggleNewPwdVisible"
-                />
-              </div>
-              <p
-                v-if="forgotErrors.newPassword"
-                class="error-tip"
-              >
-                {{ forgotErrors.newPassword }}
-              </p>
-            </div>
-
-            <!-- 确认新密码 -->
-            <div class="form-group">
-              <div class="neu-input-wrapper">
-                <font-awesome-icon
-                  icon="lock"
-                  class="input-icon"
-                />
-                <input
-                  v-model="forgotForm.confirmPassword"
-                  :type="newPwdVisible ? 'text' : 'password'"
-                  required
-                  placeholder="请确认新密码"
-                  class="neu-input"
-                  :disabled="isForgotLoading"
-                >
-              </div>
-              <p
-                v-if="forgotErrors.confirmPassword"
-                class="error-tip"
-              >
-                {{ forgotErrors.confirmPassword || (forgotForm.newPassword && forgotForm.confirmPassword && forgotForm.newPassword !== forgotForm.confirmPassword ? '两次密码输入不一致' : '') }}
-              </p>
-            </div>
-
-            <div class="btn-group">
-              <button
-                class="neu-btn cancel-btn"
-                :disabled="isForgotLoading"
-                @click="forgotStep = 1"
-              >
-                上一步
-              </button>
-              <button
-                class="neu-btn auth-btn"
-                :disabled="isForgotLoading || !forgotForm.verifyCode || !forgotForm.newPassword || !forgotForm.confirmPassword"
-                @click="resetPassword"
-              >
-                <span v-if="!isForgotLoading">确认重置</span>
-                <span v-if="isForgotLoading">重置中...</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import axios from 'axios';
+import { ref } from 'vue';
 
-// 父组件传递的props
+// 接收父组件传递的 props
 const props = defineProps({
+  // 密码显示状态（由父组件统一管理，可选，也可子组件独立管理）
   pwdVisible: {
     type: Boolean,
     default: false
+  },
+  // 切换到注册模式的方法（父组件传递）
+  onSwitchToRegister: {
+    type: Function,
+    required: true
   }
 });
 
-// 暴露给父组件的事件
-const emit = defineEmits(['loginSuccess', 'togglePwdVisible', 'switch-to-register']);
+// 🔥 核心修复：显式声明组件所有要触发的事件（包括之前缺失的2个）
+const emit = defineEmits([
+  'loginSuccess', // 原有事件
+  'switch-to-register', // 模板中 $emit 触发的事件
+  'togglePwdVisible' // 方法中 emit 触发的事件
+]);
 
-// 登录表单数据
-const form = reactive({
-  username: '',
-  password: ''
-});
+// 表单数据
+const username = ref('');
+const password = ref('');
 
-// 登录错误提示
-const errors = reactive({
-  username: '',
-  password: ''
-});
-
-// 加载状态
-const isLoading = ref(false);
-
-// 切换密码显示/隐藏
+// 切换密码显示/隐藏（子组件内部逻辑）
 const togglePwdVisible = () => {
-  emit('togglePwdVisible');
+  emit('togglePwdVisible'); // 通知父组件切换状态（逻辑不变）
 };
 
-// 登录核心逻辑（对接后端接口）
-const handleLogin = async () => {
-  // 表单验证
-  errors.username = '';
-  errors.password = '';
-  if (!form.username) {
-    errors.username = '请输入用户名';
-    return;
-  }
-  if (!form.password) {
-    errors.password = '请输入密码';
-    return;
-  }
-
-  try {
-    isLoading.value = true;
-    // 调用后端登录接口
-    const response = await axios.post('/api/auth/login', {
-      username: form.username,
-      password: form.password
-    });
-
-    if (response.data.code === 200) {
-      localStorage.setItem('token', response.data.data.token);
-      localStorage.setItem('userInfo', JSON.stringify(response.data.data.userInfo));
-      emit('loginSuccess');
-    } else {
-      if (response.data.message.includes('用户名')) {
-        errors.username = response.data.message;
-      } else {
-        errors.password = response.data.message;
-      }
-    }
-  } catch (error) {
-    errors.password = '登录失败，请稍后重试';
-    console.error('登录接口异常：', error);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-// ---------------------- 忘记密码功能 ----------------------
-const isForgotPwdModalOpen = ref(false);
-const forgotStep = ref(1);
-const forgotForm = reactive({
-  account: '',
-  verifyCode: '',
-  newPassword: '',
-  confirmPassword: ''
-});
-const forgotErrors = reactive({
-  account: '',
-  verifyCode: '',
-  newPassword: '',
-  confirmPassword: ''
-});
-const isForgotLoading = ref(false);
-const countdown = ref(0);
-const isPhone = ref(true);
-const newPwdVisible = ref(false);
-
-// 打开忘记密码弹窗
-const openForgotPwdModal = () => {
-  isForgotPwdModalOpen.value = true;
-  forgotForm.account = '';
-  forgotForm.verifyCode = '';
-  forgotForm.newPassword = '';
-  forgotForm.confirmPassword = '';
-  forgotErrors.account = '';
-  forgotErrors.verifyCode = '';
-  forgotErrors.newPassword = '';
-  forgotErrors.confirmPassword = '';
-  forgotStep.value = 1;
-  countdown.value = 0;
-};
-
-// 关闭忘记密码弹窗（返回登录界面）
-const closeForgotPwdModal = () => {
-  isForgotPwdModalOpen.value = false;
-};
-
-// 切换账号类型（手机号/邮箱）
-const toggleAccountType = () => {
-  isPhone.value = !isPhone.value;
-  forgotErrors.account = '';
-};
-
-// 切换新密码显示/隐藏
-const toggleNewPwdVisible = () => {
-  newPwdVisible.value = !newPwdVisible.value;
-};
-
-// 发送验证码（对接后端接口）
-const sendVerifyCode = async () => {
-  forgotErrors.account = '';
-  const reg = isPhone.value 
-    ? /^1[3-9]\d{9}$/ 
-    : /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$/;
-
-  if (!forgotForm.account) {
-    forgotErrors.account = isPhone.value ? '请输入手机号' : '请输入邮箱';
-    return;
-  }
-  if (!reg.test(forgotForm.account)) {
-    forgotErrors.account = isPhone.value ? '请输入正确的手机号' : '请输入正确的邮箱';
-    return;
-  }
-
-  try {
-    isForgotLoading.value = true;
-    const response = await axios.post('/api/auth/send-verify-code', {
-      account: forgotForm.account,
-      type: isPhone.value ? 'phone' : 'email'
-    });
-
-    if (response.data.code === 200) {
-      countdown.value = 60;
-      const timer = setInterval(() => {
-        countdown.value--;
-        if (countdown.value <= 0) {
-          clearInterval(timer);
-        }
-      }, 1000);
-    } else {
-      forgotErrors.account = response.data.message;
-    }
-  } catch (error) {
-    forgotErrors.account = '验证码发送失败，请稍后重试';
-    console.error('发送验证码接口异常：', error);
-  } finally {
-    isForgotLoading.value = false;
-  }
-};
-
-// 重置密码（对接后端接口）
-const resetPassword = async () => {
-  forgotErrors.verifyCode = '';
-  forgotErrors.newPassword = '';
-  forgotErrors.confirmPassword = '';
-
-  if (!forgotForm.verifyCode) {
-    forgotErrors.verifyCode = '请输入验证码';
-    return;
-  }
-  if (!forgotForm.newPassword) {
-    forgotErrors.newPassword = '请设置新密码';
-    return;
-  }
-  if (forgotForm.newPassword.length < 6) {
-    forgotErrors.newPassword = '密码长度不能少于6位';
-    return;
-  }
-  if (forgotForm.newPassword !== forgotForm.confirmPassword) {
-    forgotErrors.confirmPassword = '两次密码输入不一致';
-    return;
-  }
-
-  try {
-    isForgotLoading.value = true;
-    const response = await axios.post('/api/auth/reset-password', {
-      account: forgotForm.account,
-      type: isPhone.value ? 'phone' : 'email',
-      verifyCode: forgotForm.verifyCode,
-      newPassword: forgotForm.newPassword
-    });
-
-    if (response.data.code === 200) {
-      alert('密码重置成功，请使用新密码登录');
-      closeForgotPwdModal();
-    } else {
-      forgotErrors.verifyCode = response.data.message;
-    }
-  } catch (error) {
-    forgotErrors.confirmPassword = '密码重置失败，请稍后重试';
-    console.error('重置密码接口异常：', error);
-  } finally {
-    isForgotLoading.value = false;
+// 登录核心逻辑
+const handleLogin = () => {
+  if (username.value && password.value) {
+    // 存储登录状态（也可后续移到父组件，子组件仅传递数据）
+    localStorage.setItem('userInfo', JSON.stringify({
+      username: username.value,
+      isLogin: true
+    }));
+    emit('loginSuccess'); // 通知父组件登录成功，触发跳转（逻辑不变）
+  } else {
+    alert('请输入完整的用户名和密码');
   }
 };
 </script>
 
 <style scoped>
+/* 登录表单样式（仅表单内部样式，布局样式在父组件） */
 .auth-form-panel {
   width: 100%;
   height: 100%;
@@ -525,11 +176,6 @@ const resetPassword = async () => {
   padding-left: 40px;
 }
 
-.neu-input:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
 .neu-input:focus + .input-icon {
   color: #10b981;
 }
@@ -565,14 +211,6 @@ const resetPassword = async () => {
   color: #10b981;
 }
 
-.error-tip {
-  font-size: 12px;
-  color: #ef4444;
-  margin-top: 8px;
-  margin-left: 12px;
-  height: 16px;
-}
-
 .forgot-password {
   text-align: right;
   margin-bottom: 32px;
@@ -583,7 +221,6 @@ const resetPassword = async () => {
   color: #10b981;
   text-decoration: none;
   transition: all 0.3s ease;
-  cursor: pointer;
 }
 
 .forgot-password a:hover {
@@ -602,14 +239,6 @@ const resetPassword = async () => {
   box-shadow: 
     6px 6px 12px rgba(16, 185, 129, 0.15),
     -6px -6px 12px rgba(255, 255, 255, 0.8);
-}
-
-.neu-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  box-shadow: 
-    4px 4px 8px rgba(16, 185, 129, 0.1),
-    -4px -4px 8px rgba(255, 255, 255, 0.7);
 }
 
 .neu-btn:active {
@@ -644,109 +273,6 @@ const resetPassword = async () => {
   color: #059669;
 }
 
-/* 忘记密码弹窗样式 */
-.modal-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.modal-container {
-  width: 100%;
-  max-width: 380px;
-  background-color: #f0faf4;
-  border-radius: 24px;
-  box-shadow: 
-    12px 12px 24px rgba(16, 185, 129, 0.2),
-    -12px -12px 24px rgba(255, 255, 255, 0.9);
-  padding: 30px;
-  box-sizing: border-box;
-  position: relative;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.modal-title {
-  font-size: 22px;
-  color: #0f766e;
-  margin: 0;
-  font-weight: 600;
-}
-
-/* 右上角返回按钮样式（新拟态风格，与界面统一） */
-.modal-back-btn {
-  background-color: #f0faf4;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  color: #6b7280;
-  cursor: pointer;
-  padding: 6px 12px;
-  box-shadow: 
-    3px 3px 6px rgba(16, 185, 129, 0.1),
-    -3px -3px 6px rgba(255, 255, 255, 0.7);
-  transition: all 0.3s ease;
-}
-
-.modal-back-btn:hover {
-  color: #10b981;
-  box-shadow: 
-    4px 4px 8px rgba(16, 185, 129, 0.15),
-    -4px -4px 8px rgba(255, 255, 255, 0.8);
-}
-
-.modal-back-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.modal-content {
-  width: 100%;
-}
-
-.switch-account-type {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #10b981;
-  font-size: 14px;
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.switch-account-type:hover {
-  color: #059669;
-}
-
-.btn-group {
-  display: flex;
-  gap: 16px;
-  margin-top: 8px;
-}
-
-.cancel-btn {
-  flex: 1;
-  height: 56px;
-  background-color: #f0faf4;
-  color: #374151;
-}
-
 /* 响应式适配 */
 @media (max-width: 480px) {
   .auth-title {
@@ -757,22 +283,12 @@ const resetPassword = async () => {
     line-height: 52px;
     font-size: 15px;
   }
-  .auth-btn, .cancel-btn {
+  .auth-btn {
     height: 52px;
     font-size: 15px;
   }
   .form-group {
     margin-bottom: 24px;
-  }
-  .modal-container {
-    padding: 24px 20px;
-  }
-  .modal-title {
-    font-size: 20px;
-  }
-  .modal-back-btn {
-    padding: 5px 10px;
-    font-size: 15px;
   }
 }
 </style>

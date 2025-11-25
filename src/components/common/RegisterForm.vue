@@ -19,20 +19,13 @@
             class="input-icon"
           />
           <input
-            v-model="form.username"
+            v-model="username"
             type="text"
             required
-            placeholder="请设置用户名（4-20位）"
+            placeholder="请设置用户名"
             class="neu-input"
-            :disabled="isLoading"
           >
         </div>
-        <p
-          v-if="errors.username"
-          class="error-tip"
-        >
-          {{ errors.username }}
-        </p>
       </div>
 
       <!-- 注册密码 -->
@@ -43,12 +36,11 @@
             class="input-icon"
           />
           <input
-            v-model="form.password"
+            v-model="password"
             :type="pwdVisible ? 'text' : 'password'"
             required
-            placeholder="请设置密码（6-20位）"
+            placeholder="请设置密码"
             class="neu-input"
-            :disabled="isLoading"
           >
           <font-awesome-icon
             :icon="pwdVisible ? 'eye-slash' : 'eye'"
@@ -56,12 +48,6 @@
             @click="togglePwdVisible"
           />
         </div>
-        <p
-          v-if="errors.password"
-          class="error-tip"
-        >
-          {{ errors.password }}
-        </p>
       </div>
 
       <!-- 确认密码 -->
@@ -72,37 +58,29 @@
             class="input-icon"
           />
           <input
-            v-model="form.confirmPwd"
+            v-model="confirmPwd"
             :type="pwdVisible ? 'text' : 'password'"
             required
             placeholder="请确认密码"
             class="neu-input"
-            :disabled="isLoading"
           >
         </div>
-        <!-- 密码不一致提示（前端即时校验） -->
+        <!-- 密码不一致提示 -->
         <p
-          v-if="form.password && form.confirmPwd && form.password !== form.confirmPwd && !errors.confirmPwd"
+          v-if="password && confirmPwd && password !== confirmPwd"
           class="error-tip"
         >
           两次密码输入不一致
         </p>
-        <p
-          v-if="errors.confirmPwd"
-          class="error-tip"
-        >
-          {{ errors.confirmPwd }}
-        </p>
       </div>
 
-      <!-- 注册按钮（禁用条件：加载中/表单未通过前端校验） -->
+      <!-- 注册按钮（禁用条件：密码不一致） -->
       <button
         type="submit"
         class="neu-btn auth-btn register-btn"
-        :disabled="isLoading || !form.username || !form.password || !form.confirmPwd || form.password !== form.confirmPwd"
+        :disabled="password !== confirmPwd"
       >
-        <span v-if="!isLoading">注册</span>
-        <span v-if="isLoading">注册中...</span>
+        注册
       </button>
 
       <!-- 切换到登录模式的按钮 -->
@@ -110,7 +88,6 @@
         已有账号？
         <span
           class="switch-link"
-          :disabled="isLoading"
           @click="$emit('switch-to-login')"
         >去登录</span>
       </div>
@@ -119,103 +96,46 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import axios from 'axios';
+import { ref } from 'vue';
 
 // 接收父组件传递的 props
 const props = defineProps({
   pwdVisible: {
     type: Boolean,
     default: false
+  },
+  onSwitchToLogin: {
+    type: Function,
+    required: true
   }
 });
 
-// 暴露给父组件的事件
+// 🔥 核心修复：补充缺失的 'switch-to-login' 事件声明
 const emit = defineEmits([
   'registerSuccess', 
   'togglePwdVisible',
-  'switch-to-login'
+  'switch-to-login' // 对应模板中 $emit('switch-to-login')
 ]);
 
-// 🔥 核心修改：标准化表单数据与状态管理（适配后端接口）
-// 注册表单数据（与后端请求体字段一致）
-const form = reactive({
-  username: '', // 用户名
-  password: '', // 密码（前端仅收集，后端加密存储）
-  confirmPwd: '' // 确认密码（仅前端校验，不传给后端）
-});
-
-// 错误提示（区分字段，对应后端返回的错误类型）
-const errors = reactive({
-  username: '',
-  password: '',
-  confirmPwd: ''
-});
-
-// 加载状态（防止重复提交）
-const isLoading = ref(false);
+// 表单数据
+const username = ref('');
+const password = ref('');
+const confirmPwd = ref('');
 
 // 切换密码显示/隐藏
 const togglePwdVisible = () => {
   emit('togglePwdVisible');
 };
 
-// 注册核心逻辑（标准化接口交互，方便后端对接）
-const handleRegister = async () => {
-  // 1. 前端预校验（减少无效接口请求）
-  errors.username = '';
-  errors.password = '';
-  errors.confirmPwd = '';
-
-  // 用户名校验（4-20位，支持字母、数字、下划线）
-  const usernameReg = /^[a-zA-Z0-9_]{4,20}$/;
-  if (!usernameReg.test(form.username)) {
-    errors.username = '用户名需为4-20位字母、数字或下划线';
-    return;
-  }
-
-  // 密码校验（6-20位，不限制字符类型）
-  if (form.password.length < 6 || form.password.length > 20) {
-    errors.password = '密码长度需在6-20位之间';
-    return;
-  }
-
-  // 两次密码一致性校验
-  if (form.password !== form.confirmPwd) {
-    errors.confirmPwd = '两次密码输入不一致';
-    return;
-  }
-
-  try {
-    isLoading.value = true;
-    // 2. 调用后端注册接口（标准化请求格式）
-    const response = await axios.post('/api/auth/register', {
-      username: form.username, // 用户名（唯一）
-      password: form.password  // 原始密码（后端需加密存储）
-    });
-
-    // 3. 标准化响应处理（前后端约定code+message格式）
-    if (response.data.code === 200) {
-      // 注册成功：通知父组件跳转（如登录页/首页）
-      emit('registerSuccess', response.data.data);
-      alert('注册成功！请前往登录');
-    } else {
-      // 后端返回具体错误（如用户名已存在），按字段显示
-      if (response.data.message.includes('用户名')) {
-        errors.username = response.data.message;
-      } else if (response.data.message.includes('密码')) {
-        errors.password = response.data.message;
-      } else {
-        // 全局错误提示
-        alert(response.data.message);
-      }
-    }
-  } catch (error) {
-    // 网络错误或后端异常处理
-    errors.username = '注册失败，请稍后重试';
-    console.error('注册接口异常：', error);
-  } finally {
-    isLoading.value = false;
+// 注册核心逻辑
+const handleRegister = () => {
+  if (username.value && password.value) {
+    // 存储注册用户信息
+    localStorage.setItem('registeredUser', JSON.stringify({ username: username.value, password: password.value }));
+    // 存储登录状态
+    localStorage.setItem('userInfo', JSON.stringify({ username: username.value, isLogin: true }));
+    emit('registerSuccess'); // 通知父组件注册成功，触发跳转
+    alert('注册成功！已自动为你登录～');
   }
 };
 </script>
@@ -271,11 +191,6 @@ const handleRegister = async () => {
   font-size: 16px;
   color: #374151;
   padding-left: 40px;
-}
-
-.neu-input:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
 }
 
 .neu-input:focus + .input-icon {
@@ -334,14 +249,6 @@ const handleRegister = async () => {
     -6px -6px 12px rgba(255, 255, 255, 0.8);
 }
 
-.neu-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  box-shadow: 
-    4px 4px 8px rgba(16, 185, 129, 0.1),
-    -4px -4px 8px rgba(255, 255, 255, 0.7);
-}
-
 .neu-btn:active {
   box-shadow: 
     inset 4px 4px 8px rgba(16, 185, 129, 0.2),
@@ -353,6 +260,14 @@ const handleRegister = async () => {
   width: 100%;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #fff;
+}
+
+.register-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: 
+    4px 4px 8px rgba(16, 185, 129, 0.1),
+    -4px -4px 8px rgba(255, 255, 255, 0.7);
 }
 
 .switch-mode {
