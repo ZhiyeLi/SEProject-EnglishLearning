@@ -54,17 +54,31 @@ const router = createRouter({
   routes,
 });
 
-// 路由守卫：未登录时，除了登录/注册页，其他页面跳登录
-router.beforeEach((to, from, next) => {
-  const userInfo = localStorage.getItem("userInfo");
-  const isLogin = userInfo ? JSON.parse(userInfo).isLogin : false;
-  
-  // 允许访问的页面：登录页、注册页、已登录的所有页面
-  if (to.name === "Login" || to.name === "Register" || isLogin) {
-    next();
-  } else {
-    next("/login");
+router.beforeEach((to) => {
+  let isLogin = false;
+  try {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      const parsedUser = JSON.parse(userInfo);
+      isLogin = Boolean(parsedUser.isLogin);
+    }
+  } catch (error) {
+    console.error("localStorage userInfo 格式错误：", error);
+    isLogin = false;
   }
-});
 
+  const whiteList = ["Login", "NotFound"];
+  if (!isLogin && !whiteList.includes(to.name)) {
+    // 跳转登录页：返回路由对象
+    return { name: "Login" };
+  }
+
+  if (isLogin && to.name === "Login") {
+    // 已登录访问登录页：返回首页的路由对象
+    return { name: "Home" };
+  }
+
+  // 其他情况：返回 undefined（放行导航，类型与路由对象一致）
+  return undefined;
+});
 export default router;
