@@ -13,6 +13,11 @@ const routes = [
     component: () => import("@/views/Login.vue"),
   },
   {
+    path: "/course",
+    name: "Course",
+    component: () => import("@/views/Course.vue"),
+  },
+  {
     path: "/chat",
     name: "Chat",
     component: () => import("@/views/Chat.vue"),
@@ -54,31 +59,5 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to) => {
-  let isLogin = false;
-  try {
-    const userInfo = localStorage.getItem("userInfo");
-    if (userInfo) {
-      const parsedUser = JSON.parse(userInfo);
-      isLogin = Boolean(parsedUser.isLogin);
-    }
-  } catch (error) {
-    console.error("localStorage userInfo 格式错误：", error);
-    isLogin = false;
-  }
 
-  const whiteList = ["Login", "NotFound"];
-  if (!isLogin && !whiteList.includes(to.name)) {
-    // 跳转登录页：返回路由对象
-    return { name: "Login" };
-  }
-
-  if (isLogin && to.name === "Login") {
-    // 已登录访问登录页：返回首页的路由对象
-    return { name: "Home" };
-  }
-
-  // 其他情况：返回 undefined（放行导航，类型与路由对象一致）
-  return undefined;
-});
 export default router;

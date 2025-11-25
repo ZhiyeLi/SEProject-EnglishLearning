@@ -906,7 +906,9 @@ function gotoSettings() {
 function gotoTimeTable() {
   router.push({ name: "TimeTable" }).catch(() => {});
 }
-
+function gotoCourse (){
+  router.push({ name: "Course"}).catch(() => {});
+}
 function startWordCheckIn() {
   // 检查用户是否已选择过词汇类型
   const selectedType = wordProgressManager.getSelectedType();
@@ -927,7 +929,7 @@ function startWordCheckIn() {
 
 const navItems = [
   { label: "首页", onClick: gotoHome, isActive: true },
-  { label: "课程", path: "#" },
+  { label: "课程", onClick: gotoCourse  },
   { label: "题库", path: "#" },
   { label: "时间表", onClick: gotoTimeTable },
   { label: "单词打卡", onClick: startWordCheckIn },

@@ -437,7 +437,7 @@ const isPaused = ref(false);
 // 导航项
 const navItems = ref([
   { label: "首页", onClick: () => goHome(), isActive: false },
-  { label: "课程", path: "#" },
+  { label: "课程", onClick: () => gotoCourse() },
   { label: "题库", path: "#" },
   {
     label: "时间表",
@@ -567,6 +567,9 @@ function gotoAiChat() {
   router.push({ name: "AiChat" }).catch(() => {});
 }
 
+function gotoCourse() {
+  router.push({ name: "Course"}).catch(() => {});
+}
 /**
  * 根据单词ID获取单词信息
  */
