@@ -284,8 +284,8 @@ const router = useRouter();
 // 导航项
 const navItems = [
   { label: "首页", onClick: () => gotoHome() },
-  { label: "课程", path: "#" },
-  { label: "题库", path: "#" },
+  { label: "课程", onClick: () => gotoCourse() },
+  { label: "题库", onClick: () => gotoQuestionBank() },
   { label: "时间表", path: "#", isActive: true },
   { label: "单词打卡", onClick: () => startWordCheckIn() },
   { label: "AI伴学", onClick: () => gotoAiChat() },
@@ -546,11 +546,20 @@ function gotoAiChat() {
   router.push({ name: "AiChat" }).catch(() => {});
 }
 
+// 跳转到题库
+function gotoQuestionBank() {
+  router.push({ name: "QuestionBank" }).catch(() => {});
+}
+
 // 跳转到单词打卡
 function startWordCheckIn() {
   router.push({ name: "WordCheckIn" }).catch(() => {});
 }
 
+//跳转课程
+function gotoCourse() {
+  router.push({ name: "Course" }).catch(() => {});
+}
 // 加载计划数据
 function loadPlans() {
   // 使用扩展运算符创建新数组，确保Vue能检测到变化
