@@ -8,7 +8,7 @@ const routes = [
     component: () => import("@/views/Main_interface.vue"),
   },
   {
-    path:"/login",
+    path: "/login",
     name: "Login",
     component: () => import("@/views/Login.vue"),
   },
@@ -43,21 +43,25 @@ const routes = [
     component: () => import("@/views/TimeTable.vue"),
   },
   {
-    path: '/profile',
-    name: 'Profile',
+    path: "/profile",
+    name: "Profile",
     component: () => import("@/views/Profile.vue"),
   },
   {
-    path: '/settings',
-    name: 'Settings',
+    path: "/settings",
+    name: "Settings",
     component: () => import("@/views/Settings.vue"),
-  }
+  },
+  {
+    path: "/question-bank",
+    name: "QuestionBank",
+    component: () => import("@/views/QuestionBank.vue"),
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
 });
-
 
 export default router;

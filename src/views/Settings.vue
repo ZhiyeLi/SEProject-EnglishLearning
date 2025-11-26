@@ -34,18 +34,20 @@
         <!-- 页面标题 -->
         <div class="mb-8">
           <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-            <i class="fas fa-cog text-emerald-600 mr-3"></i>
+            <i class="fas fa-cog text-emerald-600 mr-3" />
             设置
           </h1>
-          <p class="text-gray-800 font-medium mt-2"><span class="text-red-600">自</span><span class="text-orange-600">定</span><span class="text-amber-600">义</span><span class="text-yellow-600">你</span><span class="text-lime-600">的</span><span class="text-emerald-600">学</span><span class="text-teal-600">习</span><span class="text-cyan-600">体</span><span class="text-blue-600">验</span></p>
+          <p class="text-gray-800 font-medium mt-2">
+            <span class="text-red-600">自</span><span class="text-orange-600">定</span><span class="text-amber-600">义</span><span class="text-yellow-600">你</span><span class="text-lime-600">的</span><span class="text-emerald-600">学</span><span class="text-teal-600">习</span><span class="text-cyan-600">体</span><span class="text-blue-600">验</span>
+          </p>
         </div>
 
         <!-- 返回按钮 -->
         <button
-          @click="goHome"
           class="mb-6 flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+          @click="goHome"
         >
-          <i class="fas fa-arrow-left"></i>
+          <i class="fas fa-arrow-left" />
           <span>返回首页</span>
         </button>
 
@@ -54,14 +56,18 @@
           <!-- 1. 账户与隐私设置 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 transform transition-all duration-300 hover:shadow-md">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <i class="fas fa-user-circle text-emerald-500 mr-3"></i>
+              <i class="fas fa-user-circle text-emerald-500 mr-3" />
               账户与隐私
             </h2>
             <div class="space-y-4">
               <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">修改密码</p>
-                  <p class="text-sm text-gray-600">定期修改密码以保护账户安全</p>
+                  <p class="text-gray-800 font-medium">
+                    修改密码
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    定期修改密码以保护账户安全
+                  </p>
                 </div>
                 <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4">
                   修改
@@ -69,8 +75,12 @@
               </div>
               <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">绑定邮箱</p>
-                  <p class="text-sm text-gray-600">{{ userStore.userInfo.email || '未绑定' }}</p>
+                  <p class="text-gray-800 font-medium">
+                    绑定邮箱
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    {{ userStore.userInfo.email || '未绑定' }}
+                  </p>
                 </div>
                 <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4">
                   {{ userStore.userInfo.email ? '修改' : '绑定' }}
@@ -78,8 +88,12 @@
               </div>
               <div class="flex items-center justify-between py-3">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">账户注销</p>
-                  <p class="text-sm text-gray-600">永久删除你的账户和所有数据</p>
+                  <p class="text-gray-800 font-medium">
+                    账户注销
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    永久删除你的账户和所有数据
+                  </p>
                 </div>
                 <button class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors flex-shrink-0 ml-4">
                   注销
@@ -91,14 +105,18 @@
           <!-- 2. 学习偏好设置 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 transform transition-all duration-300 hover:shadow-md">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <i class="fas fa-book text-emerald-500 mr-3"></i>
+              <i class="fas fa-book text-emerald-500 mr-3" />
               学习偏好
             </h2>
             <div class="space-y-4">
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">词汇难度</p>
-                  <p class="text-sm text-gray-600">选择适合你的学习难度</p>
+                  <p class="text-gray-800 font-medium">
+                    词汇难度
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    选择适合你的学习难度
+                  </p>
                 </div>
                 <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
                   <option>四级词汇</option>
@@ -109,18 +127,32 @@
               </div>
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">每日目标单词数</p>
-                  <p class="text-sm text-gray-600">设置每天要背的单词数量</p>
+                  <p class="text-gray-800 font-medium">
+                    每日目标单词数
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    设置每天要背的单词数量
+                  </p>
                 </div>
                 <div class="flex items-center gap-3 flex-shrink-0 ml-4">
-                  <input type="number" v-model="dailyGoal" min="10" max="500" class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                  <input
+                    v-model="dailyGoal"
+                    type="number"
+                    min="10"
+                    max="500"
+                    class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  >
                   <span class="text-gray-600">个</span>
                 </div>
               </div>
               <div class="flex items-center justify-between py-3">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">复习策略</p>
-                  <p class="text-sm text-gray-600">选择艾宾浩斯遗忘曲线周期</p>
+                  <p class="text-gray-800 font-medium">
+                    复习策略
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    选择艾宾浩斯遗忘曲线周期
+                  </p>
                 </div>
                 <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
                   <option>标准模式（1,3,7,15,30天）</option>
@@ -134,45 +166,83 @@
           <!-- 3. 通知提醒设置 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 transform transition-all duration-300 hover:shadow-md">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <i class="fas fa-bell text-emerald-500 mr-3"></i>
+              <i class="fas fa-bell text-emerald-500 mr-3" />
               通知提醒
             </h2>
             <div class="space-y-4">
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">打卡提醒</p>
-                  <p class="text-sm text-gray-600">每天提醒你去完成单词打卡</p>
+                  <p class="text-gray-800 font-medium">
+                    打卡提醒
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    每天提醒你去完成单词打卡
+                  </p>
                 </div>
                 <div class="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-4">
-                  <input id="checkInReminder" type="checkbox" v-model="settings.checkInReminder" class="sr-only peer">
-                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                  <input
+                    id="checkInReminder"
+                    v-model="settings.checkInReminder"
+                    type="checkbox"
+                    class="sr-only peer"
+                  >
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
                 </div>
               </div>
-              <div v-if="settings.checkInReminder" class="flex items-center justify-between py-3 border-b border-gray-100">
+              <div
+                v-if="settings.checkInReminder"
+                class="flex items-center justify-between py-3 border-b border-gray-100"
+              >
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">提醒时间</p>
-                  <p class="text-sm text-gray-600">每天的提醒时间</p>
+                  <p class="text-gray-800 font-medium">
+                    提醒时间
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    每天的提醒时间
+                  </p>
                 </div>
-                <input type="time" v-model="remindTime" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
+                <input
+                  v-model="remindTime"
+                  type="time"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4"
+                >
               </div>
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">学习建议通知</p>
-                  <p class="text-sm text-gray-600">接收AI学习建议和推荐</p>
+                  <p class="text-gray-800 font-medium">
+                    学习建议通知
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    接收AI学习建议和推荐
+                  </p>
                 </div>
                 <div class="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-4">
-                  <input id="suggestionsReminder" type="checkbox" v-model="settings.suggestionsReminder" class="sr-only peer">
-                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                  <input
+                    id="suggestionsReminder"
+                    v-model="settings.suggestionsReminder"
+                    type="checkbox"
+                    class="sr-only peer"
+                  >
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
                 </div>
               </div>
               <div class="flex items-center justify-between py-3">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">消息提醒</p>
-                  <p class="text-sm text-gray-600">接收好友请求和聊天消息通知</p>
+                  <p class="text-gray-800 font-medium">
+                    消息提醒
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    接收好友请求和聊天消息通知
+                  </p>
                 </div>
                 <div class="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-4">
-                  <input id="messageReminder" type="checkbox" v-model="settings.messageReminder" class="sr-only peer">
-                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                  <input
+                    id="messageReminder"
+                    v-model="settings.messageReminder"
+                    type="checkbox"
+                    class="sr-only peer"
+                  >
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
                 </div>
               </div>
             </div>
@@ -181,35 +251,61 @@
           <!-- 4. 显示与界面设置 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 transform transition-all duration-300 hover:shadow-md">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <i class="fas fa-palette text-emerald-500 mr-3"></i>
+              <i class="fas fa-palette text-emerald-500 mr-3" />
               显示与界面
             </h2>
             <div class="space-y-4">
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">深色模式</p>
-                  <p class="text-sm text-gray-600">更护眼的深色界面</p>
+                  <p class="text-gray-800 font-medium">
+                    深色模式
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    更护眼的深色界面
+                  </p>
                 </div>
                 <div class="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-4">
-                  <input id="darkMode" type="checkbox" v-model="settings.darkMode" class="sr-only peer">
-                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                  <input
+                    id="darkMode"
+                    v-model="settings.darkMode"
+                    type="checkbox"
+                    class="sr-only peer"
+                  >
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
                 </div>
               </div>
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">字体大小</p>
-                  <p class="text-sm text-gray-600">调整整个应用的字体大小</p>
+                  <p class="text-gray-800 font-medium">
+                    字体大小
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    调整整个应用的字体大小
+                  </p>
                 </div>
-                <select v-model="settings.fontSize" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
-                  <option value="small">小</option>
-                  <option value="normal">标准</option>
-                  <option value="large">大</option>
+                <select
+                  v-model="settings.fontSize"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4"
+                >
+                  <option value="small">
+                    小
+                  </option>
+                  <option value="normal">
+                    标准
+                  </option>
+                  <option value="large">
+                    大
+                  </option>
                 </select>
               </div>
               <div class="flex items-center justify-between py-3">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">界面语言</p>
-                  <p class="text-sm text-gray-600">选择应用语言</p>
+                  <p class="text-gray-800 font-medium">
+                    界面语言
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    选择应用语言
+                  </p>
                 </div>
                 <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
                   <option>中文简体</option>
@@ -223,14 +319,18 @@
           <!-- 5. 数据管理 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 transform transition-all duration-300 hover:shadow-md">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <i class="fas fa-database text-emerald-500 mr-3"></i>
+              <i class="fas fa-database text-emerald-500 mr-3" />
               数据管理
             </h2>
             <div class="space-y-4">
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">导出学习数据</p>
-                  <p class="text-sm text-gray-600">将学习记录导出为 CSV 或 JSON 格式</p>
+                  <p class="text-gray-800 font-medium">
+                    导出学习数据
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    将学习记录导出为 CSV 或 JSON 格式
+                  </p>
                 </div>
                 <div class="flex gap-2 flex-shrink-0 ml-4">
                   <button class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors text-sm">
@@ -243,8 +343,12 @@
               </div>
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">清空本地缓存</p>
-                  <p class="text-sm text-gray-600">清除本地存储数据但保留账户信息</p>
+                  <p class="text-gray-800 font-medium">
+                    清空本地缓存
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    清除本地存储数据但保留账户信息
+                  </p>
                 </div>
                 <button class="px-4 py-2 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 rounded-lg transition-colors flex-shrink-0 ml-4">
                   清空
@@ -252,8 +356,12 @@
               </div>
               <div class="flex items-center justify-between py-3">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">重置所有数据</p>
-                  <p class="text-sm text-gray-600">彻底重置应用（需要确认）</p>
+                  <p class="text-gray-800 font-medium">
+                    重置所有数据
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    彻底重置应用（需要确认）
+                  </p>
                 </div>
                 <button class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors flex-shrink-0 ml-4">
                   重置
@@ -265,14 +373,18 @@
           <!-- 6. 隐私与安全 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 transform transition-all duration-300 hover:shadow-md">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <i class="fas fa-lock text-emerald-500 mr-3"></i>
+              <i class="fas fa-lock text-emerald-500 mr-3" />
               隐私与安全
             </h2>
             <div class="space-y-4">
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">个人资料可见范围</p>
-                  <p class="text-sm text-gray-600">设置谁可以看到你的学习信息</p>
+                  <p class="text-gray-800 font-medium">
+                    个人资料可见范围
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    设置谁可以看到你的学习信息
+                  </p>
                 </div>
                 <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
                   <option>公开</option>
@@ -282,18 +394,31 @@
               </div>
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">学习成绩分享</p>
-                  <p class="text-sm text-gray-600">是否在排行榜中显示你的成绩</p>
+                  <p class="text-gray-800 font-medium">
+                    学习成绩分享
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    是否在排行榜中显示你的成绩
+                  </p>
                 </div>
                 <div class="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-4">
-                  <input id="shareScore" type="checkbox" v-model="settings.shareScore" class="sr-only peer">
-                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                  <input
+                    id="shareScore"
+                    v-model="settings.shareScore"
+                    type="checkbox"
+                    class="sr-only peer"
+                  >
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
                 </div>
               </div>
               <div class="flex items-center justify-between py-3">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">好友请求管理</p>
-                  <p class="text-sm text-gray-600">控制谁可以添加你为好友</p>
+                  <p class="text-gray-800 font-medium">
+                    好友请求管理
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    控制谁可以添加你为好友
+                  </p>
                 </div>
                 <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
                   <option>所有人</option>
@@ -307,21 +432,29 @@
           <!-- 7. 关于与反馈 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 transform transition-all duration-300 hover:shadow-md">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <i class="fas fa-info-circle text-emerald-500 mr-3"></i>
+              <i class="fas fa-info-circle text-emerald-500 mr-3" />
               关于与反馈
             </h2>
             <div class="space-y-4">
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">应用版本</p>
-                  <p class="text-sm text-gray-600">SEProject-EnglishLearning</p>
+                  <p class="text-gray-800 font-medium">
+                    应用版本
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    SEProject-EnglishLearning
+                  </p>
                 </div>
                 <span class="text-gray-700 font-semibold flex-shrink-0 ml-4">v1.0.0</span>
               </div>
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">检查更新</p>
-                  <p class="text-sm text-gray-600">查看是否有新版本可用</p>
+                  <p class="text-gray-800 font-medium">
+                    检查更新
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    查看是否有新版本可用
+                  </p>
                 </div>
                 <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4">
                   检查
@@ -329,8 +462,12 @@
               </div>
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">意见反馈</p>
-                  <p class="text-sm text-gray-600">告诉我们如何改进应用</p>
+                  <p class="text-gray-800 font-medium">
+                    意见反馈
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    告诉我们如何改进应用
+                  </p>
                 </div>
                 <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4">
                   反馈
@@ -338,8 +475,12 @@
               </div>
               <div class="flex items-center justify-between py-3">
                 <div class="text-left">
-                  <p class="text-gray-800 font-medium">用户协议与隐私政策</p>
-                  <p class="text-sm text-gray-600">阅读我们的服务条款</p>
+                  <p class="text-gray-800 font-medium">
+                    用户协议与隐私政策
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    阅读我们的服务条款
+                  </p>
                 </div>
                 <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4">
                   查看
@@ -351,17 +492,17 @@
           <!-- 保存按钮 -->
           <div class="flex gap-4 pt-6">
             <button
-              @click="saveSettings"
               class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              @click="saveSettings"
             >
-              <i class="fas fa-save mr-2"></i>
+              <i class="fas fa-save mr-2" />
               保存设置
             </button>
             <button
-              @click="resetSettings"
               class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold transition-all"
+              @click="resetSettings"
             >
-              <i class="fas fa-undo mr-2"></i>
+              <i class="fas fa-undo mr-2" />
               重置
             </button>
           </div>
