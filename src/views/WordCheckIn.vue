@@ -438,7 +438,10 @@ const isPaused = ref(false);
 const navItems = ref([
   { label: "首页", onClick: () => goHome(), isActive: false },
   { label: "课程", onClick: () => gotoCourse() },
-  { label: "题库", path: "#" },
+  {
+    label: "题库",
+    onClick: () => router.push({ name: "QuestionBank" }).catch(() => {}),
+  },
   {
     label: "时间表",
     onClick: () => router.push({ name: "TimeTable" }).catch(() => {}),
@@ -568,7 +571,7 @@ function gotoAiChat() {
 }
 
 function gotoCourse() {
-  router.push({ name: "Course"}).catch(() => {});
+  router.push({ name: "Course" }).catch(() => {});
 }
 /**
  * 根据单词ID获取单词信息

@@ -4,8 +4,8 @@
     <NavBar :nav-items="navItems">
       <template #actions>
         <button
-          @click="showSuggestionsModal = true"
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
+          @click="showSuggestionsModal = true"
         >
           <i class="fas fa-lightbulb text-lg" />
           <span
@@ -13,8 +13,8 @@
           >学习建议</span>
         </button>
         <button
-          @click="gotoSettings"
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
+          @click="gotoSettings"
         >
           <i class="fas fa-cog text-lg" />
           <span
@@ -88,11 +88,13 @@
 
               <!-- 好友请求按钮（放在添加好友按钮下方） -->
               <li>
-                <button 
+                <button
                   class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group relative"
                   @click="showFriendRequestModal = true"
                 >
-                  <i class="fas fa-user-plus mr-2 group-hover:scale-110 transition-transform" />
+                  <i
+                    class="fas fa-user-plus mr-2 group-hover:scale-110 transition-transform"
+                  />
                   查看好友请求
                   <!-- 未处理请求数小红点 -->
                   <span
@@ -510,20 +512,24 @@
         v-if="showAddFriendModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
       >
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100">
+        <div
+          class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100"
+        >
           <!-- 弹窗头部 -->
-          <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div
+            class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
+          >
             <h3 class="text-lg font-semibold text-gray-800">
               添加好友
             </h3>
-            <button 
+            <button
               class="text-gray-400 hover:text-gray-600 transition-colors"
               @click="showAddFriendModal = false"
             >
               <i class="fas fa-times text-lg" />
             </button>
           </div>
-          
+
           <!-- 弹窗内容 -->
           <div class="px-6 py-4">
             <div class="space-y-4">
@@ -531,16 +537,18 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">搜索好友（用户名/ID）</label>
                 <div class="relative">
-                  <input 
+                  <input
                     v-model="searchFriendValue"
-                    type="text" 
-                    placeholder="请输入好友信息..." 
+                    type="text"
+                    placeholder="请输入好友信息..."
                     class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
                   >
-                  <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <i
+                    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  />
                 </div>
               </div>
-              
+
               <!-- 搜索结果 -->
               <div
                 v-if="searchFriendValue"
@@ -556,14 +564,14 @@
                   v-else
                   class="divide-y"
                 >
-                  <div 
-                    v-for="(friend, index) in searchResults" 
+                  <div
+                    v-for="(friend, index) in searchResults"
                     :key="index"
                     class="flex items-center p-3 hover:bg-gray-50 transition-colors"
                   >
-                    <img 
-                      :src="friend.avatar" 
-                      alt="好友头像" 
+                    <img
+                      :src="friend.avatar"
+                      alt="好友头像"
                       class="w-10 h-10 rounded-full object-cover mr-3"
                     >
                     <div class="flex-grow">
@@ -574,7 +582,7 @@
                         ID: {{ friend.id }}
                       </p>
                     </div>
-                    <button 
+                    <button
                       class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
                       @click="addFriend(friend)"
                     >
@@ -585,16 +593,18 @@
               </div>
             </div>
           </div>
-          
+
           <!-- 弹窗底部 -->
-          <div class="px-6 py-3 border-t border-gray-200 flex justify-end space-x-2">
-            <button 
+          <div
+            class="px-6 py-3 border-t border-gray-200 flex justify-end space-x-2"
+          >
+            <button
               class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               @click="showAddFriendModal = false"
             >
               取消
             </button>
-            <button 
+            <button
               class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
               :disabled="!friendId && !searchFriendValue"
               @click="confirmAddFriend"
@@ -605,27 +615,31 @@
         </div>
       </div>
     </teleport>
-    
+
     <!-- 好友请求确认弹窗 -->
     <teleport to="body">
       <div
         v-if="showFriendRequestModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
       >
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100">
+        <div
+          class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100"
+        >
           <!-- 弹窗头部 -->
-          <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div
+            class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
+          >
             <h3 class="text-lg font-semibold text-gray-800">
               好友请求
             </h3>
-            <button 
+            <button
               class="text-gray-400 hover:text-gray-600 transition-colors"
               @click="showFriendRequestModal = false"
             >
               <i class="fas fa-times text-lg" />
             </button>
           </div>
-      
+
           <!-- 弹窗内容 -->
           <div class="px-6 py-4 max-h-80 overflow-y-auto">
             <div
@@ -639,15 +653,15 @@
               v-else
               class="space-y-3 divide-y"
             >
-              <div 
-                v-for="(request, index) in friendRequests" 
+              <div
+                v-for="(request, index) in friendRequests"
                 :key="index"
                 class="py-3 flex items-center justify-between"
               >
                 <div class="flex items-center">
-                  <img 
-                    :src="request.avatar" 
-                    alt="请求者头像" 
+                  <img
+                    :src="request.avatar"
+                    alt="请求者头像"
                     class="w-12 h-12 rounded-full object-cover mr-3"
                   >
                   <div>
@@ -663,13 +677,13 @@
                   </div>
                 </div>
                 <div class="flex space-x-2">
-                  <button 
+                  <button
                     class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
                     @click="acceptFriendRequest(index)"
                   >
                     <i class="fas fa-check mr-1" /> 接受
                   </button>
-                  <button 
+                  <button
                     class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
                     @click="rejectFriendRequest(index)"
                   >
@@ -679,10 +693,10 @@
               </div>
             </div>
           </div>
-      
+
           <!-- 弹窗底部 -->
           <div class="px-6 py-3 border-t border-gray-200 flex justify-end">
-            <button 
+            <button
               class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
               @click="showFriendRequestModal = false"
             >
@@ -700,33 +714,40 @@
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
         @click="handleSuggestionsBackdropClick"
       >
-        <div 
+        <div
           class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[70vh] overflow-hidden transform transition-all"
           @click.stop
         >
           <!-- 弹窗头部 -->
-          <div class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-blue-50">
+          <div
+            class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-blue-50"
+          >
             <div class="flex justify-between items-center">
               <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>
+                <i class="fas fa-lightbulb text-yellow-500 mr-3" />
                 学习建议
               </h2>
-              <button 
-                @click="showSuggestionsModal = false"
+              <button
                 class="text-gray-400 hover:text-gray-600 transition-colors"
+                @click="showSuggestionsModal = false"
               >
-                <i class="fas fa-times text-2xl"></i>
+                <i class="fas fa-times text-2xl" />
               </button>
             </div>
           </div>
 
           <!-- 弹窗内容 -->
-          <div class="px-8 py-6 overflow-y-auto" style="max-height: calc(70vh - 140px)">
+          <div
+            class="px-8 py-6 overflow-y-auto"
+            style="max-height: calc(70vh - 140px)"
+          >
             <div class="space-y-4">
               <!-- 建议内容 -->
               <div>
                 <h3 class="text-lg font-semibold text-gray-800 mb-3">
-                  <span class="text-emerald-600">{{ suggestionsData[currentSuggestionIndex].title }}</span>
+                  <span class="text-emerald-600">{{
+                    suggestionsData[currentSuggestionIndex].title
+                  }}</span>
                 </h3>
                 <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {{ suggestionsData[currentSuggestionIndex].content }}
@@ -735,7 +756,11 @@
 
               <!-- 建议标签 -->
               <div class="flex flex-wrap gap-2 pt-4">
-                <span v-for="tag in suggestionsData[currentSuggestionIndex].tags" :key="tag" class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm">
+                <span
+                  v-for="tag in suggestionsData[currentSuggestionIndex].tags"
+                  :key="tag"
+                  class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm"
+                >
                   {{ tag }}
                 </span>
               </div>
@@ -743,31 +768,37 @@
           </div>
 
           <!-- 弹窗底部 - 翻页控制 -->
-          <div class="px-8 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
-            <button 
-              @click="previousSuggestion"
+          <div
+            class="px-8 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center"
+          >
+            <button
               :disabled="currentSuggestionIndex === 0"
               class="px-6 py-2 rounded-lg font-medium transition-all"
-              :class="currentSuggestionIndex === 0 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+              :class="
+                currentSuggestionIndex === 0
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              "
+              @click="previousSuggestion"
             >
-              <i class="fas fa-chevron-left mr-2"></i>上一条
+              <i class="fas fa-chevron-left mr-2" />上一条
             </button>
 
             <div class="text-gray-600 font-medium">
               {{ currentSuggestionIndex + 1 }} / {{ suggestionsData.length }}
             </div>
 
-            <button 
-              @click="nextSuggestion"
+            <button
               :disabled="currentSuggestionIndex === suggestionsData.length - 1"
               class="px-6 py-2 rounded-lg font-medium transition-all"
-              :class="currentSuggestionIndex === suggestionsData.length - 1
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+              :class="
+                currentSuggestionIndex === suggestionsData.length - 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              "
+              @click="nextSuggestion"
             >
-              下一条<i class="fas fa-chevron-right ml-2"></i>
+              下一条<i class="fas fa-chevron-right ml-2" />
             </button>
           </div>
         </div>
@@ -788,8 +819,8 @@ import CustomButton from "@/components/common/CustomButton.vue";
 
 // 添加好友弹窗相关响应式变量
 const showAddFriendModal = ref(false);
-const searchFriendValue = ref('');
-const friendId = ref('');
+const searchFriendValue = ref("");
+const friendId = ref("");
 const searchResults = ref([]);
 
 // 好友请求弹窗相关响应式变量
@@ -821,8 +852,6 @@ const currentDateStr = computed(() => {
   const month = now.getMonth() + 1;
   const day = now.getDate();
   return `${year}年${month}月${day}日`;
-
-  
 });
 
 // 本周计划数据
@@ -906,8 +935,8 @@ function gotoSettings() {
 function gotoTimeTable() {
   router.push({ name: "TimeTable" }).catch(() => {});
 }
-function gotoCourse (){
-  router.push({ name: "Course"}).catch(() => {});
+function gotoCourse() {
+  router.push({ name: "Course" }).catch(() => {});
 }
 function startWordCheckIn() {
   // 检查用户是否已选择过词汇类型
@@ -929,8 +958,11 @@ function startWordCheckIn() {
 
 const navItems = [
   { label: "首页", onClick: gotoHome, isActive: true },
-  { label: "课程", onClick: gotoCourse  },
-  { label: "题库", path: "#" },
+  { label: "课程", onClick: gotoCourse },
+  {
+    label: "题库",
+    onClick: () => router.push({ name: "QuestionBank" }).catch(() => {}),
+  },
   { label: "时间表", onClick: gotoTimeTable },
   { label: "单词打卡", onClick: startWordCheckIn },
   { label: "AI伴学", onClick: gotoAiChat },
@@ -940,20 +972,39 @@ const navItems = [
 
 // 模拟好友数据,后期改为数据库调用
 const mockFriends = [
-  { id: '1001', name: '模拟用户1', avatar: 'https://picsum.photos/seed/friend1001/100/100'},
-  { id: '1002', name: '模拟用户2', avatar: 'https://picsum.photos/seed/friend1002/100/100'},
-  { id: '1003', name: '模拟用户3', avatar: 'https://picsum.photos/seed/friend1003/100/100'},
-  { id: '1004', name: '模拟用户4', avatar: 'https://picsum.photos/seed/friend1004/100/100'},
-  { id: '1005', name: '模拟用户5', avatar: 'https://picsum.photos/seed/friend1005/100/100'},
+  {
+    id: "1001",
+    name: "模拟用户1",
+    avatar: "https://picsum.photos/seed/friend1001/100/100",
+  },
+  {
+    id: "1002",
+    name: "模拟用户2",
+    avatar: "https://picsum.photos/seed/friend1002/100/100",
+  },
+  {
+    id: "1003",
+    name: "模拟用户3",
+    avatar: "https://picsum.photos/seed/friend1003/100/100",
+  },
+  {
+    id: "1004",
+    name: "模拟用户4",
+    avatar: "https://picsum.photos/seed/friend1004/100/100",
+  },
+  {
+    id: "1005",
+    name: "模拟用户5",
+    avatar: "https://picsum.photos/seed/friend1005/100/100",
+  },
 ];
-
 
 watch(searchFriendValue, (val) => {
   if (val) {
     // 模拟搜索延迟
     setTimeout(() => {
-      const results = mockFriends.filter(friend => 
-        friend.name.includes(val) || friend.id.includes(val)
+      const results = mockFriends.filter(
+        (friend) => friend.name.includes(val) || friend.id.includes(val)
       );
       searchResults.value = results;
     }, 300);
@@ -965,26 +1016,26 @@ watch(searchFriendValue, (val) => {
 // 新增添加好友相关方法
 const searchFriendById = () => {
   if (friendId.value) {
-    const friend = mockFriends.find(f => f.id === friendId.value);
+    const friend = mockFriends.find((f) => f.id === friendId.value);
     if (friend) {
       searchResults.value = [friend];
       searchFriendValue.value = friend.name;
     } else {
       searchResults.value = [];
       // 提示未找到
-      alert('未找到该ID的好友');
+      alert("未找到该ID的好友");
     }
   }
 };
 
 const addFriend = (friend) => {
   // 模拟添加好友逻辑，后期替换为真实API调用
-  console.log('添加好友:', friend);
+  console.log("添加好友:", friend);
   alert(`已发送好友请求给 ${friend.name}`);
   // 关闭弹窗并重置表单
   showAddFriendModal.value = false;
-  searchFriendValue.value = '';
-  friendId.value = '';
+  searchFriendValue.value = "";
+  friendId.value = "";
   searchResults.value = [];
 };
 
@@ -999,22 +1050,22 @@ const confirmAddFriend = () => {
 // 好友请求弹窗部分
 // 模拟未处理的好友请求数据
 const friendRequests = ref([
-  { 
-    id: '2001', 
-    name: '模拟请求1', 
-    avatar: 'https://picsum.photos/seed/friend2001/100/100', 
+  {
+    id: "2001",
+    name: "模拟请求1",
+    avatar: "https://picsum.photos/seed/friend2001/100/100",
   },
-  { 
-    id: '2002', 
-    name: '模拟请求2', 
-    avatar: 'https://picsum.photos/seed/friend2002/100/100', 
-  }
+  {
+    id: "2002",
+    name: "模拟请求2",
+    avatar: "https://picsum.photos/seed/friend2002/100/100",
+  },
 ]);
 
 // 接受好友请求
 const acceptFriendRequest = (index) => {
   const request = friendRequests.value[index];
-  console.log('接受好友请求:', request);
+  console.log("接受好友请求:", request);
   // 模拟添加到好友列表逻辑
   alert(`已接受 ${request.name} 的好友请求，对方已添加到你的好友列表`);
   // 从请求列表中移除
@@ -1025,7 +1076,7 @@ const acceptFriendRequest = (index) => {
 // 拒绝好友请求
 const rejectFriendRequest = (index) => {
   const request = friendRequests.value[index];
-  console.log('拒绝好友请求:', request);
+  console.log("拒绝好友请求:", request);
   // 模拟拒绝逻辑
   alert(`已拒绝 ${request.name} 的好友请求`);
   // 从请求列表中移除
@@ -1038,30 +1089,35 @@ const showSuggestionsModal = ref(false);
 const currentSuggestionIndex = ref(0);
 const suggestionsData = ref([
   {
-    title: '坚持打卡是关键',
-    content: '根据你最近的学习数据，我发现你有几天没有坚持打卡。研究表明，每日坚持背单词比一次性背很多个词更能提高长期记忆效果。\n\n建议：\n• 每天固定时间打卡，形成习惯\n• 选择在精力最充沛的时候\n• 即使只有10分钟，也要坚持打卡\n\n相信你能做到！',
-    tags: ['打卡习惯', '坚持', '记忆法']
+    title: "坚持打卡是关键",
+    content:
+      "根据你最近的学习数据，我发现你有几天没有坚持打卡。研究表明，每日坚持背单词比一次性背很多个词更能提高长期记忆效果。\n\n建议：\n• 每天固定时间打卡，形成习惯\n• 选择在精力最充沛的时候\n• 即使只有10分钟，也要坚持打卡\n\n相信你能做到！",
+    tags: ["打卡习惯", "坚持", "记忆法"],
   },
   {
-    title: '利用零碎时间高效学习',
-    content: '你可以充分利用上下班、等车、休息间隙等零碎时间来复习单词。这些时间虽然不长，但积累起来效果显著。\n\n建议：\n• 使用移动设备随时复习\n• 利用碎片化时间做单词练习\n• 在高峰期巩固之前学过的词汇\n\n每天15-20分钟的有效学习胜过一次性的1小时被动学习。',
-    tags: ['时间管理', '碎片化学习', '效率']
+    title: "利用零碎时间高效学习",
+    content:
+      "你可以充分利用上下班、等车、休息间隙等零碎时间来复习单词。这些时间虽然不长，但积累起来效果显著。\n\n建议：\n• 使用移动设备随时复习\n• 利用碎片化时间做单词练习\n• 在高峰期巩固之前学过的词汇\n\n每天15-20分钟的有效学习胜过一次性的1小时被动学习。",
+    tags: ["时间管理", "碎片化学习", "效率"],
   },
   {
-    title: '制定合理的每日目标',
-    content: '根据你的学习进度，建议适当调整每日学习单词数量。过多会导致疲劳，过少则影响进度。\n\n建议：\n• 四级备考阶段：每天50-100个单词\n• 六级备考阶段：每天80-120个单词\n• 根据个人吸收情况灵活调整\n\n记住：质量永远比数量重要！',
-    tags: ['目标设置', '学习计划', '进度管理']
+    title: "制定合理的每日目标",
+    content:
+      "根据你的学习进度，建议适当调整每日学习单词数量。过多会导致疲劳，过少则影响进度。\n\n建议：\n• 四级备考阶段：每天50-100个单词\n• 六级备考阶段：每天80-120个单词\n• 根据个人吸收情况灵活调整\n\n记住：质量永远比数量重要！",
+    tags: ["目标设置", "学习计划", "进度管理"],
   },
   {
-    title: '重视拼写和发音',
-    content: '单纯记忆单词的中文意思容易遗忘。建议同时关注单词的拼写、发音和用法。\n\n建议：\n• 大声朗读单词，加强发音记忆\n• 多做拼写练习，特别是容易混淆的词\n• 学习单词的衍生词和同义词\n\n这样学习的单词记忆时间会延长3倍以上。',
-    tags: ['拼写', '发音', '词汇拓展']
+    title: "重视拼写和发音",
+    content:
+      "单纯记忆单词的中文意思容易遗忘。建议同时关注单词的拼写、发音和用法。\n\n建议：\n• 大声朗读单词，加强发音记忆\n• 多做拼写练习，特别是容易混淆的词\n• 学习单词的衍生词和同义词\n\n这样学习的单词记忆时间会延长3倍以上。",
+    tags: ["拼写", "发音", "词汇拓展"],
   },
   {
-    title: '利用艾宾浩斯遗忘曲线',
-    content: '我们的应用已经内置了艾宾浩斯遗忘曲线复习算法。系统会在最佳时间提醒你复习之前学过的单词。\n\n黄金复习时间点：\n• 第1次：学习后的1天\n• 第2次：学习后的3天\n• 第3次：学习后的7天\n• 第4次：学习后的15天\n• 第5次：学习后的30天\n\n按照系统提示复习，学习效果可提升5倍！',
-    tags: ['遗忘曲线', '复习计划', '科学学习']
-  }
+    title: "利用艾宾浩斯遗忘曲线",
+    content:
+      "我们的应用已经内置了艾宾浩斯遗忘曲线复习算法。系统会在最佳时间提醒你复习之前学过的单词。\n\n黄金复习时间点：\n• 第1次：学习后的1天\n• 第2次：学习后的3天\n• 第3次：学习后的7天\n• 第4次：学习后的15天\n• 第5次：学习后的30天\n\n按照系统提示复习，学习效果可提升5倍！",
+    tags: ["遗忘曲线", "复习计划", "科学学习"],
+  },
 ]);
 
 // 下一条建议
@@ -1083,7 +1139,6 @@ const handleSuggestionsBackdropClick = () => {
   showSuggestionsModal.value = false;
   currentSuggestionIndex.value = 0;
 };
-
 </script>
 
 <style>
