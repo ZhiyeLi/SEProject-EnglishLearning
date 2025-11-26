@@ -479,6 +479,10 @@ const gotoSettings = () => {
   router.push({ name: "Settings" }).catch(() => {});
 };
 
+const gotoCourse = () => {
+  router.push({ name: "Course"}).catch(() => {});
+}
+
 // 学习建议弹窗相关
 const showSuggestionsModal = ref(false);
 const currentSuggestionIndex = ref(0);
@@ -533,7 +537,7 @@ const openSuggestions = () => {
 
 const navItems = [
   { label: "首页", onClick: gotoHome, isActive: false },
-  { label: "课程", path: "#" },
+  { label: "课程", onClick: gotoCourse , isActive: false },
   { label: "题库", path: "#" },
   { label: "时间表", onClick: gotoTimeTable },
   { label: "单词打卡", onClick: gotoWordCheckIn, isActive: false },

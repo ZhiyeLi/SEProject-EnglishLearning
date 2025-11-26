@@ -284,7 +284,7 @@ const router = useRouter();
 // 导航项
 const navItems = [
   { label: "首页", onClick: () => gotoHome() },
-  { label: "课程", path: "#" },
+  { label: "课程", onClick: () => gotoCourse() },
   { label: "题库", path: "#" },
   { label: "时间表", path: "#", isActive: true },
   { label: "单词打卡", onClick: () => startWordCheckIn() },
@@ -551,6 +551,10 @@ function startWordCheckIn() {
   router.push({ name: "WordCheckIn" }).catch(() => {});
 }
 
+//跳转课程
+function gotoCourse() {
+  router.push({ name: "Course"}).catch(() => {});
+}
 // 加载计划数据
 function loadPlans() {
   // 使用扩展运算符创建新数组，确保Vue能检测到变化
