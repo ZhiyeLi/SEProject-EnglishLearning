@@ -213,19 +213,20 @@
             </button>
           </div>
           
-          <div class="flex items-end">
+          <div class="flex items-center">
             <textarea 
-              v-model="message"
-              placeholder="输入消息..." 
-              class="flex-grow border border-gray-200 rounded-lg rounded-tr-none p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none max-h-40"
-              @keydown.enter.exact.prevent="sendMessage"
+            v-model="message"
+            placeholder="输入消息..." 
+            class="flex-grow border border-gray-200 rounded-lg rounded-tr-none p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none max-h-40 h-12"
+            @keydown.enter.exact.prevent="sendMessage"
             />
+            
             <button 
-              class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-lg rounded-tl-none font-medium transition-all shadow-sm hover:shadow transform hover:-translate-y-0.5 ml-1"
-              :disabled="!message.trim()"
-              @click="sendMessage"
+            class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-lg rounded-tl-none font-medium transition-all shadow-sm hover:shadow transform hover:-translate-y-0.5 ml-1 h-12 flex items-center justify-center"
+            :disabled="!message.trim()"
+            @click="sendMessage"
             >
-              <i class="fas fa-paper-plane" />
+            <i class="fas fa-paper-plane" />
             </button>
           </div>
         </div>
