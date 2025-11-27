@@ -116,25 +116,30 @@
           <!-- 步骤1：输入绑定的手机号/邮箱 -->
           <div v-if="forgotStep === 1">
             <div class="form-group">
-              <div class="neu-input-wrapper">
-                <font-awesome-icon
-                  :icon="isPhone ? 'phone' : 'envelope'"
-                  class="input-icon"
-                />
-                <input
-                  v-model="forgotForm.account"
-                  :type="isPhone ? 'tel' : 'email'"
-                  required
-                  :placeholder="isPhone ? '请输入绑定的手机号' : '请输入绑定的邮箱'"
-                  class="neu-input"
+              <!-- 外层容器，包含输入框和切换按钮 -->
+              <div class="account-input-group">
+                <div class="neu-input-wrapper">
+                  <font-awesome-icon
+                    :icon="isPhone ? 'phone' : 'envelope'"
+                    class="input-icon"
+                  />
+                  <input
+                    v-model="forgotForm.account"
+                    :type="isPhone ? 'tel' : 'email'"
+                    required
+                    :placeholder="isPhone ? '请输入绑定的手机号' : '请输入绑定的邮箱'"
+                    class="neu-input"
+                    :disabled="isForgotLoading"
+                  >
+                </div>
+                <!-- 切换按钮放在输入框右侧 -->
+                <button
+                  class="switch-account-type-btn"
+                  @click="toggleAccountType"
                   :disabled="isForgotLoading"
                 >
-                <span
-                  class="switch-account-type"
-                  @click="toggleAccountType"
-                >
                   {{ isPhone ? '切换邮箱' : '切换手机号' }}
-                </span>
+                </button>
               </div>
               <p
                 v-if="forgotErrors.account"
@@ -259,7 +264,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
-import axios from 'axios';
+import { useUserStore } from '../../store/modules/user'; // 导入userStore
 
 // 父组件传递的props
 const props = defineProps({
@@ -269,8 +274,12 @@ const props = defineProps({
   }
 });
 
+// 初始化store
+const userStore = useUserStore();
+
 // 暴露给父组件的事件
 const emit = defineEmits(['loginSuccess', 'togglePwdVisible', 'switch-to-register']);
+
 
 // 登录表单数据
 const form = reactive({
@@ -292,7 +301,7 @@ const togglePwdVisible = () => {
   emit('togglePwdVisible');
 };
 
-// 登录核心逻辑（对接后端接口）
+// 登录核心逻辑（对接store）
 const handleLogin = async () => {
   // 表单验证
   errors.username = '';
@@ -308,29 +317,28 @@ const handleLogin = async () => {
 
   try {
     isLoading.value = true;
-    // 调用后端登录接口
-    const response = await axios.post('/api/auth/login', {
+    // 调用store中的登录方法
+    const result = await userStore.login({
       username: form.username,
       password: form.password
     });
 
-    if (response.data.code === 200) {
-      localStorage.setItem('token', response.data.data.token);
-      localStorage.setItem('userInfo', JSON.stringify(response.data.data.userInfo));
+    if (result.success) {
       emit('loginSuccess');
     } else {
-      if (response.data.message.includes('用户名')) {
-        errors.username = response.data.message;
+      if (result.message.includes('用户名')) {
+        errors.username = result.message;
       } else {
-        errors.password = response.data.message;
+        errors.password = result.message;
       }
     }
   } catch (error) {
     errors.password = '登录失败，请稍后重试';
-    console.error('登录接口异常：', error);
+    console.error('登录异常：', error);
   } finally {
     isLoading.value = false;
   }
+  
 };
 
 // ---------------------- 忘记密码功能 ----------------------
@@ -384,7 +392,7 @@ const toggleNewPwdVisible = () => {
   newPwdVisible.value = !newPwdVisible.value;
 };
 
-// 发送验证码（对接后端接口）
+// 发送验证码（对接store）
 const sendVerifyCode = async () => {
   forgotErrors.account = '';
   const reg = isPhone.value 
@@ -402,12 +410,13 @@ const sendVerifyCode = async () => {
 
   try {
     isForgotLoading.value = true;
-    const response = await axios.post('/api/auth/send-verify-code', {
+    // 调用store发送验证码
+    const result = await userStore.sendVerifyCode({
       account: forgotForm.account,
       type: isPhone.value ? 'phone' : 'email'
     });
 
-    if (response.data.code === 200) {
+    if (result.success) {
       countdown.value = 60;
       const timer = setInterval(() => {
         countdown.value--;
@@ -415,18 +424,19 @@ const sendVerifyCode = async () => {
           clearInterval(timer);
         }
       }, 1000);
+      forgotStep.value = 2;
     } else {
-      forgotErrors.account = response.data.message;
+      forgotErrors.account = result.message;
     }
   } catch (error) {
     forgotErrors.account = '验证码发送失败，请稍后重试';
-    console.error('发送验证码接口异常：', error);
+    console.error('发送验证码异常：', error);
   } finally {
     isForgotLoading.value = false;
   }
 };
 
-// 重置密码（对接后端接口）
+// 重置密码（对接store）
 const resetPassword = async () => {
   forgotErrors.verifyCode = '';
   forgotErrors.newPassword = '';
@@ -450,23 +460,24 @@ const resetPassword = async () => {
   }
 
   try {
-    isForgotLoading.value = true;
-    const response = await axios.post('/api/auth/reset-password', {
+     isForgotLoading.value = true;
+    // 调用store重置密码
+    const result = await userStore.resetPassword({
       account: forgotForm.account,
       type: isPhone.value ? 'phone' : 'email',
       verifyCode: forgotForm.verifyCode,
       newPassword: forgotForm.newPassword
     });
 
-    if (response.data.code === 200) {
+    if (result.success) {
       alert('密码重置成功，请使用新密码登录');
       closeForgotPwdModal();
     } else {
-      forgotErrors.verifyCode = response.data.message;
+      forgotErrors.verifyCode = result.message;
     }
   } catch (error) {
     forgotErrors.confirmPassword = '密码重置失败，请稍后重试';
-    console.error('重置密码接口异常：', error);
+    console.error('重置密码异常：', error);
   } finally {
     isForgotLoading.value = false;
   }
@@ -501,6 +512,14 @@ const resetPassword = async () => {
   position: relative;
 }
 
+/* 新增：账号输入框+切换按钮外层容器 */
+.account-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
 .neu-input-wrapper {
   position: relative;
   width: 100%;
@@ -511,6 +530,7 @@ const resetPassword = async () => {
     inset -4px -4px 8px rgba(255, 255, 255, 0.7);
   padding: 0 20px;
   box-sizing: border-box;
+  flex: 1; /* 新增：占满剩余宽度 */
 }
 
 .neu-input {
@@ -523,6 +543,12 @@ const resetPassword = async () => {
   font-size: 16px;
   color: #374151;
   padding-left: 40px;
+  box-sizing: border-box; /* 新增：确保padding不超出宽度 */
+}
+
+/* 账号输入框特殊处理：右侧留空间 */
+.account-input-group .neu-input {
+  padding-right: 20px; /* 避免内容贴边 */
 }
 
 .neu-input:disabled {
@@ -719,19 +745,41 @@ const resetPassword = async () => {
   width: 100%;
 }
 
-.switch-account-type {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+/* 新增：切换账号类型按钮样式（独立按钮） */
+.switch-account-type-btn {
+  white-space: nowrap;
+  padding: 10px 16px;
+  background-color: #f0faf4;
+  border: none;
+  border-radius: 12px;
   color: #10b981;
   font-size: 14px;
   cursor: pointer;
-  transition: color 0.3s ease;
+  box-shadow: 
+    3px 3px 6px rgba(16, 185, 129, 0.1),
+    -3px -3px 6px rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+  height: 56px; /* 与输入框同高 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.switch-account-type:hover {
+.switch-account-type-btn:hover {
   color: #059669;
+  box-shadow: 
+    4px 4px 8px rgba(16, 185, 129, 0.15),
+    -4px -4px 8px rgba(255, 255, 255, 0.8);
+}
+
+.switch-account-type-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 废弃原有绝对定位按钮样式 */
+.switch-account-type {
+  display: none;
 }
 
 .btn-group {
@@ -757,6 +805,11 @@ const resetPassword = async () => {
     line-height: 52px;
     font-size: 15px;
   }
+  .switch-account-type-btn {
+    height: 52px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
   .auth-btn, .cancel-btn {
     height: 52px;
     font-size: 15px;
@@ -773,6 +826,14 @@ const resetPassword = async () => {
   .modal-back-btn {
     padding: 5px 10px;
     font-size: 15px;
+  }
+  /* 移动端弹性布局换行 */
+  .account-input-group {
+    flex-wrap: wrap;
+  }
+  .switch-account-type-btn {
+    width: 100%;
+    margin-top: 10px;
   }
 }
 </style>

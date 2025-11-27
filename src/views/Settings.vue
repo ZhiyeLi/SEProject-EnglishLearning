@@ -69,7 +69,8 @@
                     定期修改密码以保护账户安全
                   </p>
                 </div>
-                <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4">
+                <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4"
+                        @click="isEditpwdOpen = true">
                   修改
                 </button>
               </div>
@@ -82,8 +83,10 @@
                     {{ userStore.userInfo.email || '未绑定' }}
                   </p>
                 </div>
-                <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4">
+                <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4"
+                        @click="isEditemailOpen = true">
                   {{ userStore.userInfo.email ? '修改' : '绑定' }}
+
                 </button>
               </div>
               <div class="flex items-center justify-between py-3">
@@ -512,6 +515,14 @@
 
     <!-- 页脚 -->
     <EndBar />
+    <!-- 编辑资料对话框（引入组件） -->
+    <EditPassword 
+      v-model:open="isEditpwdOpen" 
+    /><!-- 双向绑定对话框显示状态 -->
+    <!-- 编辑资料对话框（引入组件） -->
+    <EditEmail 
+      v-model:open="isEditemailOpen" 
+    /><!-- 双向绑定对话框显示状态 -->
   </div>
 </template>
 
@@ -521,10 +532,13 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user';
 import NavBar from '@/components/common/NavBar.vue';
 import EndBar from '@/components/common/EndBar.vue';
+import EditPassword from '@/components/profile/EditPassword.vue'; // 引入编辑组件
+import EditEmail from '@/components/profile/EditEmail.vue'; // 引入编辑组件
 
 const router = useRouter();
 const userStore = useUserStore();
-
+const isEditpwdOpen = ref(false); // 控制编辑对话框显示/隐藏
+const isEditemailOpen = ref(false); // 控制编辑对话框显示/隐藏
 // 响应式数据
 const dailyGoal = ref(50);
 const remindTime = ref('08:00');
@@ -536,6 +550,7 @@ const settings = ref({
   fontSize: 'normal',
   shareScore: true,
 });
+
 
 // 初始化设置（从 localStorage 加载）
 onMounted(() => {
@@ -599,18 +614,37 @@ const resetSettings = () => {
   }
 };
 
-// 返回首页
-const goHome = () => {
+const gotoHome = () => {
   router.push('/').catch(() => {});
 };
 
+const gotoWordCheckIn = () => {
+  router.push({ name: "WordCheckIn" }).catch(() => {});
+};
+
+const gotoAiChat = () => {
+  router.push({ name: "AiChat" }).catch(() => {});
+};
+
+const gotoTimeTable = () => {
+  router.push({ name: "TimeTable" }).catch(() => {});
+};
+
+const gotoCourse = () => {
+  router.push({ name: "Course" }).catch(() => {});
+};
+
+const gotoQuestionBank = () => {
+  router.push({ name: "QuestionBank" }).catch(() => {});
+};
+
 const navItems = [
-  { label: '首页', onClick: goHome, isActive: false },
-  { label: '课程', path: '#' },
-  { label: '题库', path: '#' },
-  { label: '时间表', onClick: () => router.push({ name: 'TimeTable' }).catch(() => {}) },
-  { label: '单词打卡', onClick: () => router.push({ name: 'WordTypeSelection' }).catch(() => {}) },
-  { label: 'AI伴学', onClick: () => router.push({ name: 'AiChat' }).catch(() => {}) },
+  { label: "首页", onClick: gotoHome, isActive: false },
+  { label: "课程", onClick: gotoCourse,isActive: false },
+  { label: "题库", onClick: gotoQuestionBank,isActive: false },
+  { label: "时间表", onClick: gotoTimeTable },
+  { label: "单词打卡", onClick: gotoWordCheckIn, isActive: false },
+  { label: "AI伴学", onClick: gotoAiChat, isActive: false },
 ];
 </script>
 

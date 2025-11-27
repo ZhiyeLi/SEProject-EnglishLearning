@@ -33,14 +33,14 @@
     <!-- 主内容区 -->
     <main class="flex-grow p-6 overflow-y-auto">
       <div class="max-w-7xl mx-auto space-y-6">
-        <!-- 返回按钮 -->
+        <!-- 返回按钮
         <button
           class="text-emerald-600 hover:text-emerald-700 flex items-center transition-colors mb-4"
           @click="gotoHome"
         >
           <i class="fas fa-arrow-left mr-2" />
           <span>返回首页</span>
-        </button>
+        </button> -->
 
         <!-- 今日计划模块 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
