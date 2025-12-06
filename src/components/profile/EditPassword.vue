@@ -1,6 +1,6 @@
 <template>
   <el-dialog 
-    title="编辑个人资料" 
+    title="修改密码" 
     v-model="isOpen" 
     width="500px"
     :close-on-click-modal="false"
@@ -12,61 +12,9 @@
       label-width="80px"
       class="mt-4"
     >
-      <!-- 头像上传 -->
-      <el-form-item label="头像">
-        <div class="flex items-center gap-4">
-          <!-- 预览头像 -->
-          <el-avatar :size="80" class="border-2 border-gray-200">
-            <img :src="form.avatar" alt="预览头像" class="w-full h-full object-cover">
-          </el-avatar>
-          <!-- 上传按钮 -->
-          <el-upload
-            class="upload-avatar"
-            action="https://jsonplaceholder.typicode.com/posts/"  
-            :file-list="fileList"
-            :on-success="handleAvatarUpload"
-            :before-upload="beforeAvatarUpload"
-            accept="image/*"
-            :auto-upload="true"
-          ><!-- 替换为你的真实上传接口 -->
-            <el-button type="primary" size="small">更换头像</el-button>
-          </el-upload>
-        </div>
-      </el-form-item>
-
-      <!-- 昵称 -->
-      <el-form-item label="昵称" prop="name">
-        <el-input 
-          v-model="form.name" 
-          placeholder="请输入昵称"
-          maxLength="16"
-        ></el-input>
-      </el-form-item>
-
-      <!-- 个性签名 -->
-      <el-form-item label="个性签名" prop="signature">
-        <el-input 
-          v-model="form.signature" 
-          placeholder="请输入个性签名"
-          type="textarea"
-          :rows="3"
-          maxLength="50"
-        ></el-input>
-      </el-form-item>
-
-      <!-- 地区（可选） -->
-      <el-form-item label="地区" prop="location">
-        <el-input 
-          v-model="form.location" 
-          placeholder="请输入地区"
-          maxLength="20"
-        ></el-input>
-      </el-form-item>
-
-
     <!-- 密码修改区域 -->
       <el-divider content-position="left">修改密码</el-divider>
-      
+
       <!-- 验证方式选择 -->
       <el-form-item label="验证方式">
         <el-radio-group v-model="verifyMethod" @change="resetPasswordForm">
@@ -197,7 +145,7 @@ const form = ref({
   confirmPassword: '',
   verifyCode: ''
 }); // 表单数据
-const fileList = ref([]); // 上传文件列表
+
 const isOpen = ref(false); // 对话框显示状态
 
 const verifyMethod = ref('password'); // 验证方式默认值（密码验证）
@@ -207,16 +155,6 @@ let countDownTimer = null; // 倒计时定时器
 
 // 表单校验规则
 const rules = ref({
-  name: [
-    { required: true, message: '请输入昵称', trigger: 'blur' },
-    { min: 2, max: 16, message: '昵称长度在 2-16 个字符之间', trigger: 'blur' }
-  ],
-  signature: [
-    { max: 50, message: '个性签名不能超过 50 个字符', trigger: 'blur' }
-  ],
-  location: [
-    { max: 20, message: '地区不能超过 20 个字符', trigger: 'blur' }
-  ],
   oldPassword: [
     { required: () => verifyMethod.value === 'password', message: '请输入原密码', trigger: 'blur'},
     {
@@ -330,29 +268,6 @@ watch(isOpen, (newVal) => {
   }
 });
 
-// 头像上传前校验（大小、格式）
-const beforeAvatarUpload = (rawFile) => {
-  const isImage = rawFile.type.startsWith('image/');
-  if (!isImage) {
-    ElMessage.error('请上传图片文件！');
-    return false;
-  }
-  const isLt2M = rawFile.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    ElMessage.error('图片大小不能超过 2MB！');
-    return false;
-  }
-  return true;
-};
-
-// 头像上传成功回调（替换为你的真实接口逻辑）
-const handleAvatarUpload = (response, uploadFile) => {
-  // 实际项目中，这里会接收后端返回的图片URL
-  // 这里用临时链接模拟
-  form.value.avatar = uploadFile.url || URL.createObjectURL(uploadFile.raw);
-  ElMessage.success('头像上传成功！');
-};
-
 // 提交表单
 const submitForm = async () => {
   try {
@@ -398,15 +313,6 @@ const submitForm = async () => {
 </script>
 
 <style scoped>
-.upload-avatar {
-  margin-top: 10px;
-}
-.el-avatar {
-  transition: transform 0.2s ease;
-}
-.el-avatar:hover {
-  transform: scale(1.05);
-}
 /* 限制按钮文本容器宽度，防止溢出 */
 .el-col:has(.el-button[type="text"]) {
   white-space: nowrap; /* 禁止换行 */
