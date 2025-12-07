@@ -36,3 +36,7 @@
   --radius-md: 8px;     /* 中圆角（比如卡片） */
   --radius-lg: 16px;    /* 大圆角（比如统计卡片、弹窗） */
 }
+/* 在全局样式文件中 */
+.el-message {
+  z-index: 9999 !important; /* 确保消息提示在最上层 */
+}

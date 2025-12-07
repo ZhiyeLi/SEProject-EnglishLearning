@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/db_for_engnet?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root  # 你的Navicat MySQL用户名
+    password: sysu  # 你的Navicat MySQL密码
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none  # 关键：关闭自动建表/更新表
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        # 适配MySQL字段名（如join_time ↔ joinTime）
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    open-in-view: false  # 关闭懒加载，避免性能问题

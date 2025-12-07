@@ -112,6 +112,7 @@ import { ref, onMounted, onUnmounted, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user'; // 引入Pinia用户状态
 
+
 // 接收父组件传递的导航项
 const props = defineProps({
   navItems: {
@@ -149,8 +150,11 @@ const gotoLogin = () => {
 
 // 跳转到登出
 const gotoLogout = () => {
-  // showDropdown.value = false;
-  // router.push({ name: 'Logout' }).catch(() => {});
+  userStore.logout();
+  // 登出后跳转到登录页
+  router.push({ name: 'Login' }).catch(() => {});
+  // 确保下拉菜单关闭
+  showDropdown.value = false;
 };
 
 // 跳转到设置

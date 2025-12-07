@@ -470,7 +470,7 @@ const resetPassword = async () => {
     });
 
     if (result.success) {
-      alert('密码重置成功，请使用新密码登录');
+      ElMessage.success('密码重置成功，请使用新密码登录');
       closeForgotPwdModal();
     } else {
       forgotErrors.verifyCode = result.message;

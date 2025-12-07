@@ -21,3 +21,64 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# 后端运行时生成文件
+*.log
+*.tmp
+*.bak
+
+# Maven构建输出目录（已存在但可强化）
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDEA特定文件（部分已存在）
+.idea/
+*.iws
+*.iml
+*.ipr
+*.ids
+*.orig
+*.iijump
+*.iws.backup
+
+# 数据库相关
+*.sql
+*.sqlite
+*.db
+!schema.sql  # 如果有版本化的数据库脚本可保留
+
+# 配置文件（敏感信息）
+src/main/resources/application-dev.yml
+src/main/resources/application-prod.yml
+src/main/resources/application-test.yml
+!src/main/resources/application.yml  # 基础配置可提交
+
+# 日志目录
+logs/
+log/
+
+# Java编译文件
+*.class
+*.jar
+*.war
+*.ear
+
+# 系统临时文件
+.DS_Store  # Mac
+Thumbs.db  # Windows
+ehcache.xml
+ehcache-failsafe.xml
+
+# 加密/密钥文件
+*.key
+*.pem
+*.pfx
+*.jks
+
+# 测试报告
+surefire-reports/
+test-output/
+
+# 本地Maven仓库缓存
+.m2/repository/
