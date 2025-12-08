@@ -10,28 +10,81 @@ const getWordTypeList = async (req, res) => {
       "SELECT type_id, name, description, total_words FROM word_types"
     );
 
-    return ResponseUtil.success(res, types);
+    // 转换为前端期望的格式(驼峰命名)
+    const formattedTypes = types.map((type) => ({
+      id: type.name, // 使用name作为id,与前端WORD_TYPES一致
+      typeId: type.type_id, // 数据库的type_id
+      name: formatTypeName(type.name),
+      description: type.description,
+      totalWords: type.total_words,
+    }));
+
+    return ResponseUtil.success(res, formattedTypes);
   } catch (error) {
     console.error("获取词汇类型失败:", error);
     return ResponseUtil.error(res, "获取词汇类型失败", 500);
   }
 };
 
+// 辅助函数:格式化类型名称
+function formatTypeName(name) {
+  const nameMap = {
+    elementary: "初级词汇",
+    cet46: "四六级词汇",
+    postgraduate: "考研词汇",
+    toefl_ielts: "托福雅思词汇",
+    professional: "专业术语词汇",
+  };
+  return nameMap[name] || name;
+}
+
 /**
  * 获取用户在指定词汇类型的进度
+ * 如果不传typeId,返回所有类型的进度
  */
 const getUserWordProgress = async (req, res) => {
   try {
     const userId = req.userId;
     const { typeId } = req.query;
 
+    // 如果没有指定typeId,返回所有类型的进度
     if (!typeId) {
-      return ResponseUtil.error(res, "词汇类型ID不能为空", 400);
+      // 获取所有词汇类型
+      const wordTypes = await dbAll("SELECT type_id, name FROM word_types");
+
+      const progressData = {};
+
+      for (const type of wordTypes) {
+        // 获取用户已打卡的单词
+        const progressRecords = await dbAll(
+          "SELECT word_id, passed_date FROM user_word_progress WHERE user_id = ? AND type_id = ? AND stage >= 1",
+          [userId, type.type_id]
+        );
+
+        const passedWords = progressRecords.map((r) => r.word_id);
+        const passedCount = passedWords.length;
+
+        // 获取最后打卡日期和连续天数
+        const lastRecord = await dbGet(
+          "SELECT study_date, streak FROM daily_study_record WHERE user_id = ? AND type_id = ? ORDER BY study_date DESC LIMIT 1",
+          [userId, type.type_id]
+        );
+
+        progressData[type.name] = {
+          passedCount,
+          passedWords,
+          lastPassedDate: lastRecord?.study_date || null,
+          consecutiveDays: lastRecord?.streak || 0,
+        };
+      }
+
+      return ResponseUtil.success(res, progressData);
     }
 
+    // 如果指定了typeId,返回单个类型的进度
     // 获取该类型的总单词数
     const wordType = await dbGet(
-      "SELECT total_words FROM word_types WHERE type_id = ?",
+      "SELECT type_id, name, total_words FROM word_types WHERE type_id = ?",
       [typeId]
     );
 
@@ -76,7 +129,8 @@ const getWordsByType = async (req, res) => {
     const { typeId, page = 1, pageSize = 20 } = req.query;
 
     if (!typeId) {
-      return ResponseUtil.error(res, "词汇类型ID不能为空", 400);
+      console.warn("getWordsByType: 缺少typeId参数");
+      return ResponseUtil.error(res, "请先选择词汇类型", 400);
     }
 
     const offset = (page - 1) * pageSize;
@@ -400,11 +454,22 @@ const getSelectedWordType = async (req, res) => {
     const userId = req.userId;
 
     const selected = await dbGet(
-      "SELECT type_id, selected_date FROM user_selected_types WHERE user_id = ?",
+      `SELECT ust.type_id, ust.selected_date, wt.name 
+       FROM user_selected_types ust
+       JOIN word_types wt ON ust.type_id = wt.type_id
+       WHERE ust.user_id = ?`,
       [userId]
     );
 
-    return ResponseUtil.success(res, selected || null);
+    if (selected) {
+      // 返回名称作为typeId,保持与前端一致
+      return ResponseUtil.success(res, {
+        typeId: selected.name, // 返回名称(如 'elementary')
+        selectedDate: selected.selected_date,
+      });
+    }
+
+    return ResponseUtil.success(res, null);
   } catch (error) {
     console.error("获取选择的词汇类型失败:", error);
     return ResponseUtil.error(res, "获取选择的词汇类型失败", 500);
@@ -420,13 +485,29 @@ const setSelectedWordType = async (req, res) => {
       return ResponseUtil.error(res, "类型ID不能为空", 400);
     }
 
+    // 如果typeId是字符串名称,需要先查找对应的数据库ID
+    let dbTypeId = typeId;
+    if (isNaN(typeId)) {
+      // typeId是字符串,查找对应的type_id
+      const wordType = await dbGet(
+        "SELECT type_id FROM word_types WHERE name = ?",
+        [typeId]
+      );
+
+      if (!wordType) {
+        return ResponseUtil.error(res, "词汇类型不存在", 404);
+      }
+
+      dbTypeId = wordType.type_id;
+    }
+
     await dbRun(
       `INSERT INTO user_selected_types (user_id, type_id)
        VALUES (?, ?)
        ON CONFLICT(user_id) DO UPDATE SET
          type_id = ?,
          selected_date = CURRENT_TIMESTAMP`,
-      [userId, typeId, typeId]
+      [userId, dbTypeId, dbTypeId]
     );
 
     return ResponseUtil.success(res, {

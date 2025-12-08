@@ -1,7 +1,8 @@
 /**
  * 计划管理工具类
- * 用于管理学习计划的本地数据和API调用
+ * 用于管理学习计划的数据和API调用
  */
+import { planApi } from "@/api";
 
 class PlanManager {
   constructor() {
@@ -10,60 +11,73 @@ class PlanManager {
   }
 
   /**
-   * 初始化计划数据
+   * 初始化计划数据 - 从后端加载
    */
   async initPlans() {
-    if (this.initialized) return;
+    if (this.initialized) return this.plans;
 
-    // 从localStorage加载计划（临时方案，实际应从后端加载）
-    const savedPlans = localStorage.getItem("englishLearningPlans");
-    if (savedPlans) {
-      try {
-        const parsedPlans = JSON.parse(savedPlans);
-        this.plans = parsedPlans.map((plan) => ({
+    try {
+      const response = await planApi.getPlans();
+      if (response.code === 200) {
+        this.plans = response.data.map((plan) => ({
           ...plan,
           date: new Date(plan.date),
         }));
-      } catch (e) {
-        console.error("Failed to parse saved plans:", e);
-        this.plans = [];
+        this.initialized = true;
       }
+    } catch (error) {
+      console.error("加载计划失败:", error);
+      this.plans = [];
     }
 
-    this.initialized = true;
     return this.plans;
-  }
-
-  /**
-   * 保存计划到localStorage（临时方案）
-   */
-  savePlansToStorage() {
-    const plansToSave = this.plans.map((plan) => ({
-      ...plan,
-      date: plan.date.toISOString(),
-    }));
-    localStorage.setItem("englishLearningPlans", JSON.stringify(plansToSave));
   }
 
   /**
    * 获取所有计划
    */
-  getAllPlans() {
+  async getAllPlans() {
+    if (!this.initialized) {
+      await this.initPlans();
+    }
     return this.plans;
   }
 
   /**
    * 获取指定日期的计划
    */
-  getPlansByDate(date) {
-    const targetDate = new Date(date);
-    targetDate.setHours(0, 0, 0, 0);
+  async getPlansByDate(date) {
+    try {
+      const dateStr = new Date(date).toISOString().split("T")[0];
+      const response = await planApi.getPlansByDate(dateStr);
+      if (response.code === 200) {
+        return response.data.map((plan) => ({
+          ...plan,
+          date: new Date(plan.date),
+        }));
+      }
+    } catch (error) {
+      console.error("获取日期计划失败:", error);
+    }
+    return [];
+  }
 
-    return this.plans.filter((plan) => {
-      const planDate = new Date(plan.date);
-      planDate.setHours(0, 0, 0, 0);
-      return planDate.getTime() === targetDate.getTime();
-    });
+  /**
+   * 获取今日计划
+   */
+  async getTodayPlans() {
+    try {
+      const response = await planApi.getTodayPlans();
+      if (response.code === 200) {
+        return response.data.map((plan) => ({
+          ...plan,
+          date: new Date(plan.date),
+        }));
+      }
+    } catch (error) {
+      console.error("获取今日计划失败:", error);
+    }
+    return [];
   }
 
   /**
@@ -84,34 +98,42 @@ class PlanManager {
   /**
    * 添加计划
    */
-  addPlan(plan) {
-    const maxId =
-      this.plans.length > 0 ? Math.max(...this.plans.map((p) => p.id)) : 0;
-    const newPlan = {
-      ...plan,
-      id: maxId + 1,
-      completed: plan.completed || false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+  async addPlan(plan) {
+    try {
+      const response = await planApi.createPlan({
+        ...plan,
+        date: new Date(plan.date).toISOString().split("T")[0],
+      });
 
-    this.plans.push(newPlan);
-    this.savePlansToStorage();
-
-    // 实际应调用: POST /api/plans
-    console.log("Add plan:", newPlan);
-
-    return newPlan;
+      if (response.code === 200) {
+        const newPlan = {
+          ...response.data,
+          date: new Date(response.data.date),
+        };
+        this.plans.push(newPlan);
+        return newPlan;
+      }
+    } catch (error) {
+      console.error("添加计划失败:", error);
+      throw error;
+    }
+    return null;
   }
 
   /**
    * 批量添加计划
    */
-  addPlans(plansArray) {
+  async addPlans(plansArray) {
     const addedPlans = [];
     for (const plan of plansArray) {
-      const addedPlan = this.addPlan(plan);
-      addedPlans.push(addedPlan);
+      try {
+        const addedPlan = await this.addPlan(plan);
+        if (addedPlan) {
+          addedPlans.push(addedPlan);
+        }
+      } catch (error) {
+        console.error("批量添加计划失败:", error);
+      }
     }
     return addedPlans;
   }
@@ -119,89 +141,100 @@ class PlanManager {
   /**
    * 更新计划
    */
-  updatePlan(planId, updates) {
-    const planIndex = this.plans.findIndex((p) => p.id === planId);
-    if (planIndex === -1) return null;
+  async updatePlan(planId, updates) {
+    try {
+      const response = await planApi.updatePlan(planId, updates);
 
-    this.plans[planIndex] = {
-      ...this.plans[planIndex],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-
-    this.savePlansToStorage();
-
-    // 实际应调用: PUT /api/plans/:id
-    console.log("Update plan:", planId, updates);
-
-    return this.plans[planIndex];
+      if (response.code === 200) {
+        const planIndex = this.plans.findIndex((p) => p.id === planId);
+        if (planIndex !== -1) {
+          this.plans[planIndex] = {
+            ...this.plans[planIndex],
+            ...response.data,
+            date: new Date(response.data.date),
+          };
+          return this.plans[planIndex];
+        }
+      }
+    } catch (error) {
+      console.error("更新计划失败:", error);
+      throw error;
+    }
+    return null;
   }
 
   /**
    * 切换计划完成状态
    */
-  togglePlanComplete(planId) {
-    const plan = this.plans.find((p) => p.id === planId);
-    if (!plan) return null;
+  async togglePlanComplete(planId) {
+    try {
+      const response = await planApi.togglePlanComplete(planId);
 
-    plan.completed = !plan.completed;
-    plan.updatedAt = new Date().toISOString();
-
-    this.savePlansToStorage();
-
-    // 实际应调用: PUT /api/plans/:id/complete
-    console.log("Toggle plan completion:", planId, plan.completed);
-
-    return plan;
+      if (response.code === 200) {
+        const plan = this.plans.find((p) => p.id === planId);
+        if (plan) {
+          plan.completed = response.data.completed;
+          plan.updatedAt = response.data.updatedAt;
+          return plan;
+        }
+      }
+    } catch (error) {
+      console.error("切换计划状态失败:", error);
+      throw error;
+    }
+    return null;
   }
 
   /**
    * 删除计划
    */
-  deletePlan(planId) {
-    const planIndex = this.plans.findIndex((p) => p.id === planId);
-    if (planIndex === -1) return false;
+  async deletePlan(planId) {
+    try {
+      const response = await planApi.deletePlan(planId);
 
-    this.plans.splice(planIndex, 1);
-    this.savePlansToStorage();
-
-    // 实际应调用: DELETE /api/plans/:id
-    console.log("Delete plan:", planId);
-
-    return true;
+      if (response.code === 200) {
+        const planIndex = this.plans.findIndex((p) => p.id === planId);
+        if (planIndex !== -1) {
+          this.plans.splice(planIndex, 1);
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error("删除计划失败:", error);
+      throw error;
+    }
+    return false;
   }
 
   /**
    * 删除指定日期的所有计划
    */
-  deletePlansByDate(date) {
-    const targetDate = new Date(date);
-    targetDate.setHours(0, 0, 0, 0);
+  async deletePlansByDate(date) {
+    const plansToDelete = await this.getPlansByDate(date);
+    const ids = plansToDelete.map((p) => p.id);
 
-    const beforeCount = this.plans.length;
-    this.plans = this.plans.filter((plan) => {
-      const planDate = new Date(plan.date);
-      planDate.setHours(0, 0, 0, 0);
-      return planDate.getTime() !== targetDate.getTime();
-    });
+    if (ids.length === 0) return 0;
 
-    const deletedCount = beforeCount - this.plans.length;
-    if (deletedCount > 0) {
-      this.savePlansToStorage();
+    try {
+      const response = await planApi.batchDeletePlans(ids);
 
-      // 实际应调用: DELETE /api/plans/batch
-      console.log("Delete plans by date:", date, deletedCount);
+      if (response.code === 200) {
+        this.plans = this.plans.filter((p) => !ids.includes(p.id));
+        return ids.length;
+      }
+    } catch (error) {
+      console.error("批量删除计划失败:", error);
+      throw error;
     }
-
-    return deletedCount;
+    return 0;
   }
 
   /**
    * 批量保存某日的计划（先删除旧的，再添加新的）
    */
-  saveDayPlans(date, newPlans) {
-    this.deletePlansByDate(date);
-    const addedPlans = this.addPlans(
+  async saveDayPlans(date, newPlans) {
+    await this.deletePlansByDate(date);
+    const addedPlans = await this.addPlans(
       newPlans.map((plan) => ({
         ...plan,
         date: new Date(date),
@@ -214,17 +247,32 @@ class PlanManager {
   /**
    * 获取用户第一次添加计划的日期
    */
-  getFirstPlanDate() {
-    if (this.plans.length === 0) return new Date();
-
-    const dates = this.plans.map((p) => new Date(p.date).getTime());
-    return new Date(Math.min(...dates));
+  async getFirstPlanDate() {
+    try {
+      const response = await planApi.getFirstPlanDate();
+      if (response.code === 200 && response.data.firstDate) {
+        return new Date(response.data.firstDate);
+      }
+    } catch (error) {
+      console.error("获取首次计划日期失败:", error);
+    }
+    return new Date();
   }
 
   /**
    * 获取计划统计信息
    */
-  getStatistics(startDate = null, endDate = null) {
+  async getStatistics(startDate = null, endDate = null) {
+    try {
+      const response = await planApi.getPlanStatistics();
+      if (response.code === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("获取计划统计失败:", error);
+    }
+
+    // 本地计算作为备用方案
     let targetPlans = this.plans;
 
     if (startDate && endDate) {

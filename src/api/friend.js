@@ -1,0 +1,51 @@
+/**
+ * 好友相关 API
+ */
+import request from "@/utils/request";
+
+export const friendApi = {
+  // 搜索好友
+  searchFriend(params) {
+    return request.get("/api/friends/search", { params });
+  },
+
+  // 发送好友请求
+  sendFriendRequest(data) {
+    return request.post("/api/friends/request", data);
+  },
+
+  // 获取好友请求列表
+  getFriendRequests() {
+    return request.get("/api/friends/requests");
+  },
+
+  // 接受好友请求
+  acceptFriendRequest(data) {
+    return request.post("/api/friends/accept", data);
+  },
+
+  // 拒绝好友请求
+  rejectFriendRequest(data) {
+    return request.post("/api/friends/reject", data);
+  },
+
+  // 获取好友列表
+  getFriendList() {
+    return request.get("/api/friends/list");
+  },
+
+  // 发送消息
+  sendMessage(data) {
+    return request.post("/api/friends/message", data);
+  },
+
+  // 获取消息列表
+  getMessageList(params) {
+    return request.get("/api/friends/messages", { params });
+  },
+
+  // 获取未读消息数
+  getUnreadCount() {
+    return request.get("/api/friends/unread-count");
+  },
+};

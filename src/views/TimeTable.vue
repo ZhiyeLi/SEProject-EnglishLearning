@@ -9,7 +9,8 @@
           <i class="fas fa-lightbulb text-lg" />
           <span
             class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >学习建议</span>
+            >学习建议</span
+          >
         </button>
         <button
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
@@ -17,7 +18,8 @@
           <i class="fas fa-cog text-lg" />
           <span
             class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >设置</span>
+            >设置</span
+          >
         </button>
         <button
           class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors"
@@ -25,7 +27,8 @@
           <i class="fas fa-bell text-lg" />
           <span
             class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
-          >3</span>
+            >3</span
+          >
         </button>
       </template>
     </NavBar>
@@ -62,9 +65,7 @@
             v-if="todayPlans.some((p) => !p.completed)"
             class="space-y-3 mb-6"
           >
-            <h3 class="text-lg font-semibold text-gray-700 mb-3">
-              待完成
-            </h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">待完成</h3>
             <div
               v-for="plan in todayPlans.filter((p) => !p.completed)"
               :key="plan.id"
@@ -105,10 +106,7 @@
           </div>
 
           <!-- 已完成的计划 -->
-          <div
-            v-if="todayPlans.some((p) => p.completed)"
-            class="space-y-3"
-          >
+          <div v-if="todayPlans.some((p) => p.completed)" class="space-y-3">
             <h3
               class="text-lg font-semibold text-gray-700 mb-3 flex items-center"
             >
@@ -141,10 +139,7 @@
           </div>
 
           <!-- 空状态 -->
-          <div
-            v-if="todayPlans.length === 0"
-            class="text-center py-12"
-          >
+          <div v-if="todayPlans.length === 0" class="text-center py-12">
             <i class="fas fa-calendar-plus text-gray-300 text-6xl mb-4" />
             <p class="text-gray-500 text-lg">
               今天还没有计划，点击上方按钮添加吧！
@@ -207,10 +202,7 @@
               ]"
               @click="date && openPlanModal(date)"
             >
-              <div
-                v-if="date"
-                class="h-full flex flex-col"
-              >
+              <div v-if="date" class="h-full flex flex-col">
                 <div class="flex items-center justify-between mb-2">
                   <span
                     class="text-sm font-medium"
@@ -309,20 +301,25 @@ const plans = ref([]);
 const showPlanModal = ref(false);
 const selectedDate = ref(new Date());
 
-// 用户首次添加计划的日期
-const firstPlanDate = computed(() => planManager.getFirstPlanDate());
-const lastPlanDatePlusYear = computed(() => {
-  const allPlans = planManager.getAllPlans();
-  if (allPlans.length === 0) {
+// 用户首次添加计划的日期（改为响应式ref）
+const firstPlanDate = ref(new Date());
+const lastPlanDatePlusYear = ref(new Date());
+
+// 计算lastPlanDatePlusYear
+function updateDateRange() {
+  if (plans.value.length === 0) {
     const result = new Date(today.value);
     result.setFullYear(result.getFullYear() + 1);
-    return result;
+    lastPlanDatePlusYear.value = result;
+  } else {
+    const lastDate = new Date(
+      Math.max(...plans.value.map((p) => new Date(p.date)))
+    );
+    const result = new Date(lastDate);
+    result.setFullYear(result.getFullYear() + 1);
+    lastPlanDatePlusYear.value = result;
   }
-  const lastDate = new Date(Math.max(...allPlans.map((p) => new Date(p.date))));
-  const result = new Date(lastDate);
-  result.setFullYear(result.getFullYear() + 1);
-  return result;
-});
+}
 
 // 今日日期字符串
 const todayDateStr = computed(() => {
@@ -478,10 +475,10 @@ function getPriorityDotClass(priority) {
 }
 
 // 切换计划完成状态
-function togglePlanComplete(plan) {
-  planManager.togglePlanComplete(plan.id);
+async function togglePlanComplete(plan) {
+  await planManager.togglePlanComplete(plan.id);
   // 更新本地plans数据
-  loadPlans();
+  await loadPlans();
 }
 
 // 上一个月
@@ -526,12 +523,12 @@ function closePlanModal() {
 }
 
 // 保存计划
-function savePlans(newPlans) {
+async function savePlans(newPlans) {
   // 使用planManager保存计划
-  planManager.saveDayPlans(selectedDate.value, newPlans);
+  await planManager.saveDayPlans(selectedDate.value, newPlans);
 
   // 更新本地plans数据
-  loadPlans();
+  await loadPlans();
 
   closePlanModal();
 }
@@ -561,16 +558,20 @@ function gotoQuestionBank() {
   router.push({ name: "QuestionBank" }).catch(() => {});
 }
 // 加载计划数据
-function loadPlans() {
-  // 使用扩展运算符创建新数组，确保Vue能检测到变化
-  plans.value = [...planManager.getAllPlans()];
+async function loadPlans() {
+  // 使用扩展运算符创建新数组,确保Vue能检测到变化
+  plans.value = [...(await planManager.getAllPlans())];
+
+  // 加载后更新日期范围
+  firstPlanDate.value = await planManager.getFirstPlanDate();
+  updateDateRange();
 }
 
 // 初始化
 onMounted(async () => {
   // 从planManager初始化并加载计划数据
   await planManager.initPlans();
-  loadPlans();
+  await loadPlans();
 });
 </script>
 

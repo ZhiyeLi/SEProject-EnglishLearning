@@ -3,29 +3,46 @@ const ResponseUtil = require("../utils/response");
 
 /**
  * 获取指定时间范围内的计划
+ * 如果不传日期参数,返回所有计划
  */
 const getPlans = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     const userId = req.userId;
 
-    if (!startDate || !endDate) {
-      return ResponseUtil.error(res, "开始日期和结束日期不能为空", 400);
-    }
+    let plans;
 
-    const plans = await dbAll(
-      `SELECT * FROM plans 
-       WHERE user_id = ? AND date BETWEEN ? AND ?
-       ORDER BY 
-         if_completed ASC,
-         CASE priority 
-           WHEN 'high' THEN 1 
-           WHEN 'medium' THEN 2 
-           WHEN 'low' THEN 3 
-         END,
-         start_time ASC`,
-      [userId, startDate, endDate]
-    );
+    if (!startDate || !endDate) {
+      // 如果没有传日期参数,返回所有计划
+      plans = await dbAll(
+        `SELECT * FROM plans 
+         WHERE user_id = ?
+         ORDER BY date DESC, 
+           if_completed ASC,
+           CASE priority 
+             WHEN 'high' THEN 1 
+             WHEN 'medium' THEN 2 
+             WHEN 'low' THEN 3 
+           END,
+           start_time ASC`,
+        [userId]
+      );
+    } else {
+      // 有日期参数,返回指定范围的计划
+      plans = await dbAll(
+        `SELECT * FROM plans 
+         WHERE user_id = ? AND date BETWEEN ? AND ?
+         ORDER BY date DESC,
+           if_completed ASC,
+           CASE priority 
+             WHEN 'high' THEN 1 
+             WHEN 'medium' THEN 2 
+             WHEN 'low' THEN 3 
+           END,
+           start_time ASC`,
+        [userId, startDate, endDate]
+      );
+    }
 
     return ResponseUtil.success(res, plans);
   } catch (error) {

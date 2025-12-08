@@ -1,8 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex flex-col items-center justify-center p-4">
+  <div
+    class="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex flex-col items-center justify-center p-4"
+  >
     <!-- 返回按钮 -->
     <div class="absolute top-6 left-6">
-      <button 
+      <button
         class="flex items-center text-gray-600 hover:text-emerald-600 transition-colors p-2 rounded-lg hover:bg-white/50"
         @click="goBack"
       >
@@ -16,9 +18,7 @@
       <h1 class="text-4xl font-bold text-gray-800 mb-3">
         <i class="fas fa-book-open text-emerald-500 mr-2" />选择词汇类型
       </h1>
-      <p class="text-lg text-gray-600">
-        选择您想要背诵的单词类型
-      </p>
+      <p class="text-lg text-gray-600">选择您想要背诵的单词类型</p>
     </div>
 
     <!-- 词汇类型选择卡片网格 -->
@@ -32,7 +32,11 @@
         <!-- 卡片容器 -->
         <div
           class="relative h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transform transition-all duration-300 hover:-translate-y-2 overflow-hidden border-2 border-transparent"
-          :class="selectedType?.id === type.id ? `border-${type.color}-500` : 'hover:border-' + type.color + '-200'"
+          :class="
+            selectedType?.id === type.id
+              ? `border-${type.color}-500`
+              : 'hover:border-' + type.color + '-200'
+          "
         >
           <!-- 背景装饰 -->
           <div
@@ -89,15 +93,18 @@
                 <div class="flex items-center justify-between mb-2">
                   <span class="text-sm text-gray-600">学习进度</span>
                   <span class="text-sm font-semibold text-gray-700">
-                    {{ getTypeProgress(type.id).passedCount }} / {{ type.totalWords }}
+                    {{ getTypeProgress(type.id).passedCount }} /
+                    {{ type.totalWords }}
                   </span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div
+                  class="w-full bg-gray-200 rounded-full h-2 overflow-hidden"
+                >
                   <div
                     class="h-full rounded-full transition-all duration-500"
                     :class="`bg-${type.color}-500`"
                     :style="{
-                      width: getProgressPercentage(type.id) + '%'
+                      width: getProgressPercentage(type.id) + '%',
                     }"
                   />
                 </div>
@@ -105,7 +112,9 @@
 
               <!-- 进度百分比 -->
               <p class="text-sm text-gray-600">
-                已完成：<span class="font-semibold text-emerald-600">{{ getProgressPercentage(type.id) }}%</span>
+                已完成：<span class="font-semibold text-emerald-600"
+                  >{{ getProgressPercentage(type.id) }}%</span
+                >
               </p>
             </div>
           </div>
@@ -114,7 +123,9 @@
           <div
             class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100"
           >
-            <span class="text-emerald-600 font-bold text-lg bg-white/90 px-4 py-2 rounded-lg">
+            <span
+              class="text-emerald-600 font-bold text-lg bg-white/90 px-4 py-2 rounded-lg"
+            >
               点击选择
             </span>
           </div>
@@ -140,10 +151,7 @@
     </div>
 
     <!-- 提示信息 -->
-    <div
-      v-if="!selectedType"
-      class="mt-8 text-center text-gray-600"
-    >
+    <div v-if="!selectedType" class="mt-8 text-center text-gray-600">
       <p class="text-base">
         <i class="fas fa-info-circle mr-2" />请选择一个词汇类型开始学习
       </p>
@@ -152,67 +160,107 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { WORD_TYPES, wordProgressManager } from '@/utils/wordData.js'
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { WORD_TYPES, wordProgressManager } from "@/utils/wordData.js";
 
-const router = useRouter()
-const selectedType = ref(null)
-const wordTypes = ref({})
+const router = useRouter();
+const selectedType = ref(null);
+const wordTypes = ref({});
+const progressData = ref({});
 
-onMounted(() => {
+onMounted(async () => {
   // 初始化数据
-  wordProgressManager.initProgress()
-  wordTypes.value = WORD_TYPES
-})
+  await wordProgressManager.init();
+  wordTypes.value = WORD_TYPES;
+
+  // 加载所有类型的进度
+  await loadAllProgress();
+});
+
+/**
+ * 加载所有词汇类型的进度
+ */
+async function loadAllProgress() {
+  const allProgress = await wordProgressManager.getProgress();
+  if (allProgress) {
+    progressData.value = allProgress;
+  } else {
+    // 如果没有进度数据,初始化为空对象
+    const emptyProgress = {};
+    Object.keys(WORD_TYPES).forEach((key) => {
+      emptyProgress[WORD_TYPES[key].id] = { passedCount: 0 };
+    });
+    progressData.value = emptyProgress;
+  }
+}
 
 /**
  * 获取指定类型的学习进度
  */
 function getTypeProgress(typeId) {
-  const progress = wordProgressManager.getTypeProgress(typeId)
-  return progress || { passedCount: 0 }
+  return progressData.value[typeId] || { passedCount: 0 };
 }
 
 /**
  * 计算进度百分比
  */
 function getProgressPercentage(typeId) {
-  const progress = getTypeProgress(typeId)
-  const type = WORD_TYPES[Object.keys(WORD_TYPES).find(k => WORD_TYPES[k].id === typeId)]
-  if (!type) return 0
-  const percentage = Math.round((progress.passedCount / type.totalWords) * 100)
-  return Math.min(percentage, 100)
+  const progress = getTypeProgress(typeId);
+  const type =
+    WORD_TYPES[
+      Object.keys(WORD_TYPES).find((k) => WORD_TYPES[k].id === typeId)
+    ];
+  if (!type) return 0;
+  const percentage = Math.round((progress.passedCount / type.totalWords) * 100);
+  return Math.min(percentage, 100);
 }
 
 /**
  * 选择词汇类型
  */
 function selectType(type) {
-  selectedType.value = type
+  selectedType.value = type;
 }
 
 /**
  * 确认选择
  */
-function confirmSelection() {
-  if (!selectedType.value) return
+async function confirmSelection() {
+  if (!selectedType.value) {
+    alert("请先选择一个词汇类型");
+    return;
+  }
 
-  // 保存已选择的类型
-  wordProgressManager.setSelectedType(selectedType.value.id)
+  try {
+    // 保存已选择的类型
+    const result = await wordProgressManager.setSelectedType(
+      selectedType.value.id
+    );
 
-  // 导航到单词打卡页面
-  router.push({
-    name: 'WordCheckIn',
-    params: { typeId: selectedType.value.id }
-  }).catch(() => {})
+    if (!result.success) {
+      alert("保存词汇类型失败,请重试");
+      return;
+    }
+
+    // 导航到单词打卡页面
+    router
+      .push({
+        name: "WordCheckIn",
+        params: { typeId: selectedType.value.id },
+      })
+      .catch(() => {});
+  } catch (error) {
+    console.error("选择词汇类型失败:", error);
+    alert("服务器错误: " + error.message);
+  }
 }
 
 /**
  * 返回上一页
  */
 function goBack() {
-  router.back()
+  router.back();
 }
 </script>
 

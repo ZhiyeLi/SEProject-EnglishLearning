@@ -324,6 +324,171 @@ async function initDatabase() {
     }
     console.log("✅ 词汇类型初始数据插入成功");
 
+    // 插入示例单词数据
+    const sampleWords = [
+      // 初级词汇示例
+      {
+        word: "hello",
+        part_of_speech: "interjection",
+        phonetic: "/həˈloʊ/",
+        definition: "用于问候或引起注意",
+        example: "Hello! How are you today?",
+        type: "elementary",
+        synonyms: "hi, hey, greetings",
+        antonyms: "goodbye, bye",
+        usage_notes: "最常见的英语问候语",
+      },
+      {
+        word: "book",
+        part_of_speech: "noun",
+        phonetic: "/bʊk/",
+        definition: "一本书;印刷或书写的文学作品",
+        example: "I am reading an interesting book.",
+        type: "elementary",
+        synonyms: "volume, publication, work",
+        antonyms: "",
+        usage_notes: "可数名词",
+      },
+      {
+        word: "study",
+        part_of_speech: "verb",
+        phonetic: "/ˈstʌdi/",
+        definition: "学习;研究",
+        example: "I study English every day.",
+        type: "elementary",
+        synonyms: "learn, research, examine",
+        antonyms: "ignore, neglect",
+        usage_notes: "常见动词,后可接宾语",
+      },
+      // 四六级词汇示例
+      {
+        word: "accomplish",
+        part_of_speech: "verb",
+        phonetic: "/əˈkɑːmplɪʃ/",
+        definition: "完成;达到;实现",
+        example: "We have accomplished our mission successfully.",
+        type: "cet46",
+        synonyms: "achieve, complete, fulfill",
+        antonyms: "fail, abandon",
+        usage_notes: "正式用语,表示成功完成某事",
+      },
+      {
+        word: "opportunity",
+        part_of_speech: "noun",
+        phonetic: "/ˌɑːpərˈtuːnəti/",
+        definition: "机会;时机",
+        example: "This is a great opportunity to learn new skills.",
+        type: "cet46",
+        synonyms: "chance, occasion, opening",
+        antonyms: "misfortune, disadvantage",
+        usage_notes: "可数名词,常与介词for连用",
+      },
+      // 考研词汇示例
+      {
+        word: "methodology",
+        part_of_speech: "noun",
+        phonetic: "/ˌmeθəˈdɑːlədʒi/",
+        definition: "方法论;方法学",
+        example: "The research methodology is very rigorous.",
+        type: "postgraduate",
+        synonyms: "approach, system, procedure",
+        antonyms: "",
+        usage_notes: "学术用语,常用于研究领域",
+      },
+      {
+        word: "phenomenon",
+        part_of_speech: "noun",
+        phonetic: "/fəˈnɑːmɪnən/",
+        definition: "现象;杰出的人或事物",
+        example: "This is an interesting social phenomenon.",
+        type: "postgraduate",
+        synonyms: "occurrence, event, fact",
+        antonyms: "",
+        usage_notes: "复数形式为phenomena",
+      },
+      // 托福雅思词汇示例
+      {
+        word: "sophisticated",
+        part_of_speech: "adjective",
+        phonetic: "/səˈfɪstɪkeɪtɪd/",
+        definition: "复杂的;精致的;老练的",
+        example: "The device uses sophisticated technology.",
+        type: "toefl_ielts",
+        synonyms: "complex, advanced, refined",
+        antonyms: "simple, primitive, naive",
+        usage_notes: "可用于描述人或事物",
+      },
+      {
+        word: "integral",
+        part_of_speech: "adjective",
+        phonetic: "/ˈɪntɪɡrəl/",
+        definition: "完整的;必需的;构成整体所必需的",
+        example: "Exercise is an integral part of a healthy lifestyle.",
+        type: "toefl_ielts",
+        synonyms: "essential, fundamental, vital",
+        antonyms: "unnecessary, optional",
+        usage_notes: "常与介词to连用",
+      },
+      // 专业术语词汇示例
+      {
+        word: "algorithm",
+        part_of_speech: "noun",
+        phonetic: "/ˈælɡərɪðəm/",
+        definition: "算法",
+        example: "This algorithm can solve the problem efficiently.",
+        type: "professional",
+        synonyms: "procedure, process, formula",
+        antonyms: "",
+        usage_notes: "计算机科学术语",
+      },
+      {
+        word: "protocol",
+        part_of_speech: "noun",
+        phonetic: "/ˈproʊtəkɔːl/",
+        definition: "协议;规程",
+        example: "We must follow the communication protocol.",
+        type: "professional",
+        synonyms: "procedure, code, convention",
+        antonyms: "",
+        usage_notes: "多用于技术和外交领域",
+      },
+    ];
+
+    for (const word of sampleWords) {
+      // 先获取type_id
+      const typeResult = await new Promise((resolve, reject) => {
+        const db = require("../config/database").db;
+        db.get(
+          "SELECT type_id FROM word_types WHERE name = ?",
+          [word.type],
+          (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+          }
+        );
+      });
+
+      if (typeResult) {
+        await dbRun(
+          `INSERT OR IGNORE INTO words 
+          (word, part_of_speech, phonetic, definition, example, type_id, synonyms, antonyms, usage_notes) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            word.word,
+            word.part_of_speech,
+            word.phonetic,
+            word.definition,
+            word.example,
+            typeResult.type_id,
+            word.synonyms,
+            word.antonyms,
+            word.usage_notes,
+          ]
+        );
+      }
+    }
+    console.log("✅ 示例单词数据插入成功");
+
     console.log("🎉 数据库初始化完成！");
   } catch (error) {
     console.error("❌ 数据库初始化失败:", error);

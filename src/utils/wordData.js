@@ -2,312 +2,353 @@
  * 单词数据管理文件
  * 管理不同类型词汇的数据结构和存储方式
  */
+import { wordApi } from "@/api";
 
-// 定义单词类型及其信息
+// 定义单词类型及其信息（保持向后兼容）
 export const WORD_TYPES = {
   ELEMENTARY: {
-    id: 'elementary',
-    name: '初级词汇',
-    description: '适合初学者',
-    color: 'emerald',
-    icon: 'fa-leaf',
-    totalWords: 1000, // 示例数据
-    words: generateSampleWords('初级词汇', 1000)
+    id: "elementary",
+    name: "初级词汇",
+    description: "适合初学者",
+    color: "emerald",
+    icon: "fa-leaf",
+    totalWords: 1000,
   },
   CET46: {
-    id: 'cet46',
-    name: '四六级词汇',
-    description: '大学英语四六级',
-    color: 'blue',
-    icon: 'fa-book',
+    id: "cet46",
+    name: "四六级词汇",
+    description: "大学英语四六级",
+    color: "blue",
+    icon: "fa-book",
     totalWords: 1500,
-    words: generateSampleWords('四六级词汇', 1500)
   },
   POSTGRADUATE: {
-    id: 'postgraduate',
-    name: '考研词汇',
-    description: '考研英语必备',
-    color: 'purple',
-    icon: 'fa-graduation-cap',
+    id: "postgraduate",
+    name: "考研词汇",
+    description: "考研英语必备",
+    color: "purple",
+    icon: "fa-graduation-cap",
     totalWords: 2000,
-    words: generateSampleWords('考研词汇', 2000)
   },
   TOEFL_IELTS: {
-    id: 'toefl_ielts',
-    name: '托福雅思词汇',
-    description: '出国考试必备',
-    color: 'orange',
-    icon: 'fa-globe',
+    id: "toefl_ielts",
+    name: "托福雅思词汇",
+    description: "出国考试必备",
+    color: "orange",
+    icon: "fa-globe",
     totalWords: 2500,
-    words: generateSampleWords('托福雅思词汇', 2500)
   },
   PROFESSIONAL: {
-    id: 'professional',
-    name: '专业术语词汇',
-    description: '行业专业用语',
-    color: 'pink',
-    icon: 'fa-flask',
+    id: "professional",
+    name: "专业术语词汇",
+    description: "行业专业用语",
+    color: "pink",
+    icon: "fa-flask",
     totalWords: 800,
-    words: generateSampleWords('专业术语词汇', 800)
-  }
-}
-
-/**
- * 生成示例单词数据（模拟从接口获取）
- * @param {string} type - 词汇类型
- * @param {number} count - 单词个数
- * @returns {array} 单词数组
- */
-function generateSampleWords(type, count) {
-  const sampleWords = {
-    '初级词汇': ['apple', 'banana', 'cat', 'dog', 'egg', 'flower', 'green', 'happy', 'idea', 'jump'],
-    '四六级词汇': ['abandon', 'ability', 'abolish', 'absorb', 'abstract', 'accelerate', 'access', 'accomplish', 'accurate', 'accuse'],
-    '考研词汇': ['analogy', 'analyze', 'ancient', 'animate', 'announce', 'anticipate', 'anxiety', 'apartment', 'apparatus', 'apparent'],
-    '托福雅思词汇': ['aberrant', 'abeyance', 'abhor', 'abide', 'aberration', 'abet', 'abeyant', 'abhorrence', 'abiding', 'ability'],
-    '专业术语词汇': ['algorithm', 'amplitude', 'bandwidth', 'catalyst', 'coefficient', 'database', 'encryption', 'algorithm', 'framework', 'gradient']
-  }
-
-  const words = sampleWords[type] || []
-  const result = []
-  
-  for (let i = 0; i < count; i++) {
-    result.push({
-      id: i + 1,
-      word: words[i % words.length] + (i >= words.length ? i : ''),
-      translation: '中文释义' + (i + 1),
-      pronunciation: '/pruːn/示例',
-      example: '示例句子' + (i + 1),
-      isPassed: false, // 是否已打卡
-      passedDate: null, // 打卡日期
-      reviewCount: 0 // 复习次数
-    })
-  }
-  
-  return result
-}
+  },
+};
 
 /**
  * 用户单词打卡进度存储
  */
 export class WordProgressManager {
   constructor() {
-    this.storageKey = 'wordProgress'
-    this.planKey = 'wordPlan'
-    this.selectedTypeKey = 'selectedWordType'
-    this.pausedKey = 'wordPaused'
+    this.initialized = false;
+    this.typeList = [];
   }
 
   /**
-   * 初始化用户的单词进度
+   * 初始化 - 从后端获取单词类型列表
    */
-  initProgress() {
-    const existing = this.getProgress()
-    if (!existing) {
-      const progress = {}
-      Object.keys(WORD_TYPES).forEach(key => {
-        progress[WORD_TYPES[key].id] = {
-          typeId: WORD_TYPES[key].id,
-          passedCount: 0,
-          totalCount: WORD_TYPES[key].totalWords,
-          passedWords: [], // 已打卡单词的id列表
-          lastPassedDate: null,
-          consecutiveDays: 0
-        }
-      })
-      this.setProgress(progress)
+  async init() {
+    if (this.initialized) return;
+
+    try {
+      const response = await wordApi.getWordTypeList();
+      if (response.code === 200) {
+        this.typeList = response.data;
+        this.initialized = true;
+      }
+    } catch (error) {
+      console.error("初始化单词类型失败:", error);
+      // 使用本地WORD_TYPES作为备份
+      this.typeList = Object.values(WORD_TYPES);
     }
   }
 
   /**
-   * 获取所有进度数据
+   * 获取单词类型列表
    */
-  getProgress() {
-    const data = localStorage.getItem(this.storageKey)
-    return data ? JSON.parse(data) : null
+  async getWordTypeList() {
+    if (!this.initialized) {
+      await this.init();
+    }
+    return this.typeList;
   }
 
   /**
-   * 设置进度数据
+   * 获取用户进度
    */
-  setProgress(progress) {
-    localStorage.setItem(this.storageKey, JSON.stringify(progress))
+  async getProgress() {
+    try {
+      const response = await wordApi.getUserWordProgress();
+      if (response.code === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("获取用户进度失败:", error);
+    }
+    return null;
   }
 
   /**
    * 获取指定类型的进度
    */
-  getTypeProgress(typeId) {
-    const progress = this.getProgress()
-    return progress ? progress[typeId] : null
+  async getTypeProgress(typeId) {
+    try {
+      const allProgress = await this.getProgress();
+      if (allProgress && allProgress[typeId]) {
+        return allProgress[typeId];
+      }
+      // 返回默认值
+      return { passedCount: 0, passedWords: [] };
+    } catch (error) {
+      console.error("获取类型进度失败:", error);
+      return { passedCount: 0, passedWords: [] };
+    }
   }
 
   /**
-   * 更新指定类型的进度
+   * 获取指定类型的单词列表
    */
-  updateTypeProgress(typeId, data) {
-    const progress = this.getProgress()
-    if (progress && progress[typeId]) {
-      progress[typeId] = { ...progress[typeId], ...data }
-      this.setProgress(progress)
-      return progress[typeId]
+  async getWordsByType(typeId, params = {}) {
+    try {
+      const response = await wordApi.getWordsByType({
+        typeId,
+        ...params,
+      });
+      if (response.code === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("获取单词列表失败:", error);
     }
+    return [];
+  }
+
+  /**
+   * 获取已掌握的单词
+   */
+  async getPassedWords() {
+    try {
+      const response = await wordApi.getPassedWords();
+      if (response.code === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("获取已掌握单词失败:", error);
+    }
+    return [];
   }
 
   /**
    * 标记单词为已打卡
    */
-  markWordAsPassed(typeId, wordId) {
-    const progress = this.getTypeProgress(typeId)
-    if (progress) {
-      if (!progress.passedWords.includes(wordId)) {
-        progress.passedWords.push(wordId)
-        progress.passedCount = progress.passedWords.length
-        progress.lastPassedDate = new Date().toISOString().split('T')[0]
-        this.updateTypeProgress(typeId, progress)
+  async markWordAsPassed(typeId, wordId) {
+    try {
+      const response = await wordApi.markWordPassed({
+        typeId,
+        wordId,
+      });
+      if (response.code === 200) {
+        return { success: true, data: response.data };
       }
+    } catch (error) {
+      console.error("标记单词失败:", error);
     }
+    return { success: false };
   }
 
   /**
-   * 标记单词为未打卡
+   * 取消标记单词
    */
-  unmarkWordAsPassed(typeId, wordId) {
-    const progress = this.getTypeProgress(typeId)
-    if (progress) {
-      const index = progress.passedWords.indexOf(wordId)
-      if (index > -1) {
-        progress.passedWords.splice(index, 1)
-        progress.passedCount = progress.passedWords.length
-        this.updateTypeProgress(typeId, progress)
+  async unmarkWordAsPassed(typeId, wordId) {
+    try {
+      const response = await wordApi.unmarkWordPassed({
+        typeId,
+        wordId,
+      });
+      if (response.code === 200) {
+        return { success: true };
       }
+    } catch (error) {
+      console.error("取消标记单词失败:", error);
     }
+    return { success: false };
   }
 
   /**
-   * 获取打卡计划
+   * 批量标记单词
    */
-  getPlan() {
-    const data = localStorage.getItem(this.planKey)
-    return data ? JSON.parse(data) : null
+  async batchMarkWords(typeId, wordIds) {
+    try {
+      const response = await wordApi.batchMarkWordsPassed({
+        typeId,
+        wordIds,
+      });
+      if (response.code === 200) {
+        return { success: true, data: response.data };
+      }
+    } catch (error) {
+      console.error("批量标记单词失败:", error);
+    }
+    return { success: false };
   }
 
   /**
-   * 设置打卡计划
+   * 获取单词详情
    */
-  setPlan(plan) {
-    localStorage.setItem(this.planKey, JSON.stringify(plan))
-  }
-
-  /**
-   * 创建打卡计划
-   * @param {string} typeId - 词汇类型ID
-   * @param {number} wordsPerDay - 每天打卡个数
-   * @returns {object} 计划信息
-   */
-  createPlan(typeId, wordsPerDay) {
-    const progress = this.getTypeProgress(typeId)
-    if (!progress) return null
-
-    // 验证输入范围
-    if (wordsPerDay < 1 || wordsPerDay > 100) {
-      return { error: '每日打卡数量必须在1-100之间' }
+  async getWordDetail(wordId) {
+    try {
+      const response = await wordApi.getWordDetail(wordId);
+      if (response.code === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("获取单词详情失败:", error);
     }
-
-    // 计算剩余单词数和完成所需天数
-    const remainingWords = progress.totalCount - progress.passedCount
-    const daysNeeded = Math.ceil(remainingWords / wordsPerDay)
-    const lastDayWords = remainingWords % wordsPerDay || wordsPerDay
-
-    const plan = {
-      typeId,
-      wordsPerDay,
-      remainingWords,
-      daysNeeded,
-      lastDayWords,
-      startDate: new Date().toISOString().split('T')[0],
-      status: 'active' // active, paused, completed
-    }
-
-    this.setPlan(plan)
-    return plan
-  }
-
-  /**
-   * 更新计划
-   */
-  updatePlan(updates) {
-    const plan = this.getPlan()
-    if (plan) {
-      const updated = { ...plan, ...updates }
-      this.setPlan(updated)
-      return updated
-    }
-  }
-
-  /**
-   * 暂停计划
-   */
-  pausePlan() {
-    const plan = this.getPlan()
-    if (plan) {
-      plan.status = 'paused'
-      this.setPlan(plan)
-    }
-  }
-
-  /**
-   * 恢复计划
-   */
-  resumePlan() {
-    const plan = this.getPlan()
-    if (plan) {
-      plan.status = 'active'
-      this.setPlan(plan)
-    }
+    return null;
   }
 
   /**
    * 获取已选择的词汇类型
    */
-  getSelectedType() {
-    const data = localStorage.getItem(this.selectedTypeKey)
-    return data ? JSON.parse(data) : null
+  async getSelectedType() {
+    try {
+      const response = await wordApi.getSelectedWordType();
+      if (response.code === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("获取选择的词汇类型失败:", error);
+    }
+    return null;
   }
 
   /**
    * 设置已选择的词汇类型
-   * 当切换类型时，自动清空旧类型的打卡计划
    */
-  setSelectedType(typeId) {
-    // 检查是否有已选择的类型且与新类型不同
-    const currentSelected = this.getSelectedType()
-    if (currentSelected && currentSelected.typeId !== typeId) {
-      // 切换了类型，清空旧的打卡计划
-      this.clearPlan()
+  async setSelectedType(typeId) {
+    try {
+      const response = await wordApi.setSelectedWordType({ typeId });
+      if (response.code === 200) {
+        return { success: true };
+      }
+    } catch (error) {
+      console.error("设置词汇类型失败:", error);
     }
-    
-    localStorage.setItem(this.selectedTypeKey, JSON.stringify({
-      typeId,
-      selectedDate: new Date().toISOString().split('T')[0]
-    }))
+    return { success: false };
   }
 
   /**
-   * 清空打卡计划
+   * 获取打卡计划
    */
-  clearPlan() {
-    localStorage.removeItem(this.planKey)
+  async getPlan() {
+    try {
+      const response = await wordApi.getUserCheckInPlan();
+      if (response.code === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("获取打卡计划失败:", error);
+    }
+    return null;
   }
 
   /**
-   * 清空所有数据（仅用于测试）
+   * 创建打卡计划
    */
-  clearAll() {
-    localStorage.removeItem(this.storageKey)
-    localStorage.removeItem(this.planKey)
-    localStorage.removeItem(this.selectedTypeKey)
+  async createPlan(typeId, wordsPerDay) {
+    // 验证输入范围
+    if (wordsPerDay < 1 || wordsPerDay > 100) {
+      return { error: "每日打卡数量必须在1-100之间" };
+    }
+
+    try {
+      const response = await wordApi.createCheckInPlan({
+        typeId,
+        wordsPerDay,
+      });
+      if (response.code === 200) {
+        return response.data;
+      } else {
+        return { error: response.message };
+      }
+    } catch (error) {
+      console.error("创建打卡计划失败:", error);
+      return { error: "创建失败" };
+    }
+  }
+
+  /**
+   * 更新计划状态
+   */
+  async updatePlanStatus(status) {
+    try {
+      const response = await wordApi.updatePlanStatus({ status });
+      if (response.code === 200) {
+        return { success: true, data: response.data };
+      }
+    } catch (error) {
+      console.error("更新计划状态失败:", error);
+    }
+    return { success: false };
+  }
+
+  /**
+   * 暂停计划
+   */
+  async pausePlan() {
+    return await this.updatePlanStatus("paused");
+  }
+
+  /**
+   * 恢复计划
+   */
+  async resumePlan() {
+    return await this.updatePlanStatus("active");
+  }
+
+  /**
+   * 获取今日打卡状态
+   */
+  async getTodayCheckInStatus() {
+    try {
+      const response = await wordApi.getTodayCheckInStatus();
+      if (response.code === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("获取今日打卡状态失败:", error);
+    }
+    return null;
+  }
+
+  /**
+   * 获取打卡统计
+   */
+  async getCheckInStatistics() {
+    try {
+      const response = await wordApi.getCheckInStatistics();
+      if (response.code === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("获取打卡统计失败:", error);
+    }
+    return null;
   }
 }
 
 // 导出单一实例
-export const wordProgressManager = new WordProgressManager()
+export const wordProgressManager = new WordProgressManager();

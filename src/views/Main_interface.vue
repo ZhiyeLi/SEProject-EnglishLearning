@@ -10,7 +10,8 @@
           <i class="fas fa-lightbulb text-lg" />
           <span
             class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >学习建议</span>
+            >学习建议</span
+          >
         </button>
         <button
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
@@ -19,7 +20,8 @@
           <i class="fas fa-cog text-lg" />
           <span
             class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >设置</span>
+            >设置</span
+          >
         </button>
         <button
           class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors"
@@ -27,7 +29,8 @@
           <i class="fas fa-bell text-lg" />
           <span
             class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
-          >3</span>
+            >3</span
+          >
         </button>
       </template>
     </NavBar>
@@ -45,7 +48,7 @@
               type="text"
               placeholder="搜索好友..."
               class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
-            >
+            />
             <i
               class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"
             />
@@ -171,7 +174,9 @@
                   class="text-2xl font-bold text-emerald-600 mb-3 flex items-center"
                 >
                   已连续打卡 -- 天！！！
-                  <span class="ml-2 text-yellow-500 animate-pulse"><i class="fas fa-fire" /></span>
+                  <span class="ml-2 text-yellow-500 animate-pulse"
+                    ><i class="fas fa-fire"
+                  /></span>
                 </h2>
                 <ul class="space-y-2 text-gray-700 text-base">
                   <li class="flex items-center">
@@ -230,27 +235,13 @@
 
             <div class="grid grid-cols-7 gap-2 text-center">
               <!-- 星期标题：保留 -->
-              <div class="text-sm font-medium text-gray-500 py-2">
-                一
-              </div>
-              <div class="text-sm font-medium text-gray-500 py-2">
-                二
-              </div>
-              <div class="text-sm font-medium text-gray-500 py-2">
-                三
-              </div>
-              <div class="text-sm font-medium text-gray-500 py-2">
-                四
-              </div>
-              <div class="text-sm font-medium text-gray-500 py-2">
-                五
-              </div>
-              <div class="text-sm font-medium text-gray-500 py-2">
-                六
-              </div>
-              <div class="text-sm font-medium text-gray-500 py-2">
-                日
-              </div>
+              <div class="text-sm font-medium text-gray-500 py-2">一</div>
+              <div class="text-sm font-medium text-gray-500 py-2">二</div>
+              <div class="text-sm font-medium text-gray-500 py-2">三</div>
+              <div class="text-sm font-medium text-gray-500 py-2">四</div>
+              <div class="text-sm font-medium text-gray-500 py-2">五</div>
+              <div class="text-sm font-medium text-gray-500 py-2">六</div>
+              <div class="text-sm font-medium text-gray-500 py-2">日</div>
 
               <!-- 本周计划显示 -->
               <div
@@ -272,10 +263,7 @@
                 >
                   无计划
                 </div>
-                <div
-                  v-else
-                  class="space-y-1"
-                >
+                <div v-else class="space-y-1">
                   <div
                     v-for="plan in getUncompletedPlans(dayPlans).slice(0, 2)"
                     :key="plan.id"
@@ -330,7 +318,7 @@
                     src="https://picsum.photos/seed/english1/400/300"
                     alt="英语听力技巧"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  >
+                  />
                 </div>
                 <div class="flex-grow">
                   <h4
@@ -345,10 +333,14 @@
                     class="mt-3 text-sm text-gray-500 flex items-center justify-between"
                   >
                     <div>
-                      <span class="mr-4"><i class="far fa-eye mr-1" /> 2.3k 阅读</span>
+                      <span class="mr-4"
+                        ><i class="far fa-eye mr-1" /> 2.3k 阅读</span
+                      >
                       <span><i class="far fa-comment mr-1" /> 56 评论</span>
                     </div>
-                    <span class="text-emerald-500"><i class="far fa-clock mr-1" /> 5分钟阅读</span>
+                    <span class="text-emerald-500"
+                      ><i class="far fa-clock mr-1" /> 5分钟阅读</span
+                    >
                   </div>
                 </div>
               </div>
@@ -364,7 +356,7 @@
                     src="https://picsum.photos/seed/english2/400/300"
                     alt="英语作文技巧"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  >
+                  />
                 </div>
                 <div class="flex-grow">
                   <h4
@@ -379,10 +371,14 @@
                     class="mt-3 text-sm text-gray-500 flex items-center justify-between"
                   >
                     <div>
-                      <span class="mr-4"><i class="far fa-eye mr-1" /> 3.1k 阅读</span>
+                      <span class="mr-4"
+                        ><i class="far fa-eye mr-1" /> 3.1k 阅读</span
+                      >
                       <span><i class="far fa-comment mr-1" /> 89 评论</span>
                     </div>
-                    <span class="text-emerald-500"><i class="far fa-clock mr-1" /> 7分钟阅读</span>
+                    <span class="text-emerald-500"
+                      ><i class="far fa-clock mr-1" /> 7分钟阅读</span
+                    >
                   </div>
                 </div>
               </div>
@@ -398,7 +394,7 @@
                     src="https://picsum.photos/seed/english3/400/300"
                     alt="英语语法学习"
                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  >
+                  />
                 </div>
                 <div class="flex-grow">
                   <h4
@@ -413,10 +409,14 @@
                     class="mt-3 text-sm text-gray-500 flex items-center justify-between"
                   >
                     <div>
-                      <span class="mr-4"><i class="far fa-eye mr-1" /> 1.8k 阅读</span>
+                      <span class="mr-4"
+                        ><i class="far fa-eye mr-1" /> 1.8k 阅读</span
+                      >
                       <span><i class="far fa-comment mr-1" /> 42 评论</span>
                     </div>
-                    <span class="text-emerald-500"><i class="far fa-clock mr-1" /> 6分钟阅读</span>
+                    <span class="text-emerald-500"
+                      ><i class="far fa-clock mr-1" /> 6分钟阅读</span
+                    >
                   </div>
                 </div>
               </div>
@@ -440,9 +440,7 @@
           <div
             class="bg-emerald-50 rounded-lg p-3 mb-3 border border-emerald-100"
           >
-            <div class="font-medium text-gray-800 text-base">
-              高考3500词
-            </div>
+            <div class="font-medium text-gray-800 text-base">高考3500词</div>
             <div class="text-base text-gray-600 mt-2 space-y-1">
               <p class="flex justify-between">
                 <span>已背单词</span>
@@ -519,9 +517,7 @@
           <div
             class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
           >
-            <h3 class="text-lg font-semibold text-gray-800">
-              添加好友
-            </h3>
+            <h3 class="text-lg font-semibold text-gray-800">添加好友</h3>
             <button
               class="text-gray-400 hover:text-gray-600 transition-colors"
               @click="showAddFriendModal = false"
@@ -535,14 +531,16 @@
             <div class="space-y-4">
               <!-- 搜索好友输入框 -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">搜索好友（用户名/ID）</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >搜索好友（用户名/ID）</label
+                >
                 <div class="relative">
                   <input
                     v-model="searchFriendValue"
                     type="text"
                     placeholder="请输入好友信息..."
                     class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
-                  >
+                  />
                   <i
                     class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                   />
@@ -560,10 +558,7 @@
                 >
                   未找到相关好友
                 </div>
-                <div
-                  v-else
-                  class="divide-y"
-                >
+                <div v-else class="divide-y">
                   <div
                     v-for="(friend, index) in searchResults"
                     :key="index"
@@ -573,14 +568,12 @@
                       :src="friend.avatar"
                       alt="好友头像"
                       class="w-10 h-10 rounded-full object-cover mr-3"
-                    >
+                    />
                     <div class="flex-grow">
                       <p class="font-medium text-gray-800">
                         {{ friend.name }}
                       </p>
-                      <p class="text-xs text-gray-500">
-                        ID: {{ friend.id }}
-                      </p>
+                      <p class="text-xs text-gray-500">ID: {{ friend.id }}</p>
                     </div>
                     <button
                       class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
@@ -629,9 +622,7 @@
           <div
             class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
           >
-            <h3 class="text-lg font-semibold text-gray-800">
-              好友请求
-            </h3>
+            <h3 class="text-lg font-semibold text-gray-800">好友请求</h3>
             <button
               class="text-gray-400 hover:text-gray-600 transition-colors"
               @click="showFriendRequestModal = false"
@@ -649,10 +640,7 @@
               <i class="fas fa-inbox text-4xl mb-2 text-gray-300" />
               <p>暂无未处理的好友请求</p>
             </div>
-            <div
-              v-else
-              class="space-y-3 divide-y"
-            >
+            <div v-else class="space-y-3 divide-y">
               <div
                 v-for="(request, index) in friendRequests"
                 :key="index"
@@ -663,14 +651,12 @@
                     :src="request.avatar"
                     alt="请求者头像"
                     class="w-12 h-12 rounded-full object-cover mr-3"
-                  >
+                  />
                   <div>
                     <p class="font-medium text-gray-800">
                       {{ request.name }}
                     </p>
-                    <p class="text-xs text-gray-500">
-                      ID: {{ request.id }}
-                    </p>
+                    <p class="text-xs text-gray-500">ID: {{ request.id }}</p>
                     <p class="text-xs text-gray-400 mt-1">
                       {{ request.time }}
                     </p>
@@ -828,7 +814,7 @@ const showFriendRequestModal = ref(false);
 
 onMounted(async () => {
   // 初始化单词打卡数据
-  wordProgressManager.initProgress();
+  await wordProgressManager.init();
 
   // 初始化计划数据
   await planManager.initPlans();
@@ -858,7 +844,7 @@ const currentDateStr = computed(() => {
 const weekPlans = ref([[], [], [], [], [], [], []]);
 
 // 加载本周计划
-function loadWeekPlans() {
+async function loadWeekPlans() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -873,7 +859,7 @@ function loadWeekPlans() {
   for (let i = 0; i < 7; i++) {
     const date = new Date(monday);
     date.setDate(monday.getDate() + i);
-    const dayPlans = planManager.getPlansByDate(date);
+    const dayPlans = await planManager.getPlansByDate(date);
     newWeekPlans.push(dayPlans);
   }
 
@@ -938,9 +924,9 @@ function gotoTimeTable() {
 function gotoCourse() {
   router.push({ name: "Course" }).catch(() => {});
 }
-function startWordCheckIn() {
+async function startWordCheckIn() {
   // 检查用户是否已选择过词汇类型
-  const selectedType = wordProgressManager.getSelectedType();
+  const selectedType = await wordProgressManager.getSelectedType();
 
   if (selectedType) {
     // 如果已选择过，直接进入打卡页面
