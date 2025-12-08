@@ -1,14 +1,14 @@
 <template>
   <el-dialog 
-    title="编辑个人资料" 
     v-model="isOpen" 
+    title="编辑个人资料" 
     width="500px"
     :close-on-click-modal="false"
   >
     <el-form 
+      ref="formRef" 
       :model="form" 
-      :rules="rules" 
-      ref="formRef"
+      :rules="rules"
       label-width="80px"
       class="mt-4"
     >
@@ -16,8 +16,15 @@
       <el-form-item label="头像">
         <div class="flex items-center gap-4">
           <!-- 预览头像 -->
-          <el-avatar :size="80" class="border-2 border-gray-200">
-            <img :src="form.avatar" alt="预览头像" class="w-full h-full object-cover">
+          <el-avatar
+            :size="80"
+            class="border-2 border-gray-200"
+          >
+            <img
+              :src="form.avatar"
+              alt="预览头像"
+              class="w-full h-full object-cover"
+            >
           </el-avatar>
           <!-- 上传按钮 -->
           <el-upload
@@ -28,85 +35,111 @@
             :before-upload="beforeAvatarUpload"
             accept="image/*"
             :auto-upload="true"
-          ><!-- 替换为你的真实上传接口 -->
-            <el-button type="primary" size="small">更换头像</el-button>
+          >
+            <!-- 替换为你的真实上传接口 -->
+            <el-button
+              type="primary"
+              size="small"
+            >
+              更换头像
+            </el-button>
           </el-upload>
         </div>
       </el-form-item>
 
       <!-- 昵称 -->
-      <el-form-item label="昵称" prop="name">
+      <el-form-item
+        label="昵称"
+        prop="name"
+      >
         <el-input 
           v-model="form.name" 
           placeholder="请输入昵称"
-          maxLength="16"
-        ></el-input>
+          max-length="16"
+        />
       </el-form-item>
 
       <!-- 个性签名 -->
-      <el-form-item label="个性签名" prop="signature">
+      <el-form-item
+        label="个性签名"
+        prop="signature"
+      >
         <el-input 
           v-model="form.signature" 
           placeholder="请输入个性签名"
           type="textarea"
           :rows="3"
-          maxLength="50"
-        ></el-input>
+          max-length="50"
+        />
       </el-form-item>
 
       <!-- 地区（可选） -->
-      <el-form-item label="地区" prop="location">
+      <el-form-item
+        label="地区"
+        prop="location"
+      >
         <el-input 
           v-model="form.location" 
           placeholder="请输入地区"
-          maxLength="20"
-        ></el-input>
+          max-length="20"
+        />
       </el-form-item>
 
 
-    <!-- 密码修改区域 -->
-      <el-divider content-position="left">修改密码</el-divider>
+      <!-- 密码修改区域 -->
+      <el-divider content-position="left">
+        修改密码
+      </el-divider>
       
       <!-- 验证方式选择 -->
       <el-form-item label="验证方式">
-        <el-radio-group v-model="verifyMethod" @change="resetPasswordForm">
-          <el-radio label="password">输入原密码</el-radio>
-          <el-radio label="email">邮箱验证</el-radio>
-          <el-radio label="phone">手机验证</el-radio>
+        <el-radio-group
+          v-model="verifyMethod"
+          @change="resetPasswordForm"
+        >
+          <el-radio label="password">
+            输入原密码
+          </el-radio>
+          <el-radio label="email">
+            邮箱验证
+          </el-radio>
+          <el-radio label="phone">
+            手机验证
+          </el-radio>
         </el-radio-group>
       </el-form-item>
       
       <!-- 原密码验证 -->
       <el-form-item 
-        label="原密码" 
+        v-if="verifyMethod === 'password'" 
+        label="原密码"
         prop="oldPassword"
-        v-if="verifyMethod === 'password'"
       >
         <el-input 
           v-model="form.oldPassword" 
           type="password"
           placeholder="请输入原密码"
-        ></el-input>
+        />
       </el-form-item>
       
       <!-- 邮箱验证 -->
       <el-form-item 
-        label="验证码" 
+        v-if="verifyMethod === 'email'" 
+        label="验证码"
         prop="verifyCode"
-        v-if="verifyMethod === 'email'"
       >
         <el-row :gutter="10">
           <el-col :span="14">
             <el-input 
               v-model="form.verifyCode" 
               placeholder="请输入邮箱验证码"
-            ></el-input>
+            />
           </el-col>
           <el-col :span="10">
             <el-button 
               type="text" 
-              @click="sendVerifyCode('email')"
               :disabled="codeSending"
+              @click="sendVerifyCode('email')"
             >
               {{ codeSending ? `${countDown}秒后重发` : `发送至${formatContact(userStore.userInfo.email)}` }}
             </el-button>
@@ -116,22 +149,22 @@
       
       <!-- 手机验证 -->
       <el-form-item 
-        label="验证码" 
+        v-if="verifyMethod === 'phone'" 
+        label="验证码"
         prop="verifyCode"
-        v-if="verifyMethod === 'phone'"
       >
         <el-row :gutter="10">
           <el-col :span="14">
             <el-input 
               v-model="form.verifyCode" 
               placeholder="请输入手机验证码"
-            ></el-input>
+            />
           </el-col>
           <el-col :span="10">
             <el-button 
               type="text" 
-              @click="sendVerifyCode('phone')"
               :disabled="codeSending"
+              @click="sendVerifyCode('phone')"
             >
               {{ codeSending ? `${countDown}秒后重发` : `发送至${formatContact(userStore.userInfo.phone)}` }}
             </el-button>
@@ -140,27 +173,40 @@
       </el-form-item>
       
       <!-- 新密码 -->
-      <el-form-item label="新密码" prop="newPassword">
+      <el-form-item
+        label="新密码"
+        prop="newPassword"
+      >
         <el-input 
           v-model="form.newPassword" 
           type="password"
           placeholder="请输入新密码（6-20位）"
-        ></el-input>
+        />
       </el-form-item>
       
       <!-- 确认密码 -->
-      <el-form-item label="确认密码" prop="confirmPassword">
+      <el-form-item
+        label="确认密码"
+        prop="confirmPassword"
+      >
         <el-input 
           v-model="form.confirmPassword" 
           type="password"
           placeholder="请再次输入新密码"
-        ></el-input>
+        />
       </el-form-item>
     </el-form>
     <!-- 对话框底部按钮 -->
     <template #footer>
-      <el-button @click="isOpen = false">取消</el-button>
-      <el-button type="primary" @click="submitForm">保存修改</el-button>
+      <el-button @click="isOpen = false">
+        取消
+      </el-button>
+      <el-button
+        type="primary"
+        @click="submitForm"
+      >
+        保存修改
+      </el-button>
     </template>
   </el-dialog>
 </template>

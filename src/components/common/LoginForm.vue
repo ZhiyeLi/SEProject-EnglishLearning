@@ -135,8 +135,8 @@
                 <!-- 切换按钮放在输入框右侧 -->
                 <button
                   class="switch-account-type-btn"
-                  @click="toggleAccountType"
                   :disabled="isForgotLoading"
+                  @click="toggleAccountType"
                 >
                   {{ isPhone ? '切换邮箱' : '切换手机号' }}
                 </button>

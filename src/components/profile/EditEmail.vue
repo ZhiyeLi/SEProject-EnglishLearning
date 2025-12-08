@@ -1,34 +1,45 @@
 <template>
   <el-dialog 
-    title="修改绑定邮箱" 
     v-model="isOpen" 
+    title="修改绑定邮箱" 
     width="500px"
     :close-on-click-modal="false"
   >
     <el-form 
+      ref="formRef" 
       :model="form" 
-      :rules="rules" 
-      ref="formRef"
+      :rules="rules"
       label-width="80px"
       class="mt-4"
     >
       <!-- 邮箱修改区域 -->
-      <el-divider content-position="left">修改绑定邮箱</el-divider>
+      <el-divider content-position="left">
+        修改绑定邮箱
+      </el-divider>
 
       <!-- 验证方式选择 -->
       <el-form-item label="验证方式">
-        <el-radio-group v-model="verifyMethod" @change="resetEmailForm">
-          <el-radio label="password">输入原密码</el-radio>
-          <el-radio label="email">原邮箱验证</el-radio>
-          <el-radio label="phone">手机验证</el-radio>
+        <el-radio-group
+          v-model="verifyMethod"
+          @change="resetEmailForm"
+        >
+          <el-radio label="password">
+            输入原密码
+          </el-radio>
+          <el-radio label="email">
+            原邮箱验证
+          </el-radio>
+          <el-radio label="phone">
+            手机验证
+          </el-radio>
         </el-radio-group>
       </el-form-item>
       
       <!-- 原密码验证 -->
       <el-form-item 
-        label="原密码" 
+        v-if="verifyMethod === 'password'" 
+        label="原密码"
         prop="oldPassword"
-        v-if="verifyMethod === 'password'"
         :error="passwordError"
       >
         <el-input 
@@ -36,27 +47,27 @@
           type="password"
           placeholder="请输入原密码"
           @blur="validateOldPassword"
-        ></el-input>
+        />
       </el-form-item>
       
       <!-- 原邮箱验证 -->
       <el-form-item 
-        label="验证码" 
+        v-if="verifyMethod === 'email'" 
+        label="验证码"
         prop="verifyCode"
-        v-if="verifyMethod === 'email'"
       >
         <el-row :gutter="10">
           <el-col :span="14">
             <el-input 
               v-model="form.verifyCode" 
               placeholder="请输入原邮箱验证码"
-            ></el-input>
+            />
           </el-col>
           <el-col :span="10">
             <el-button 
               type="text" 
-              @click="sendVerifyCode('email')"
               :disabled="codeSending"
+              @click="sendVerifyCode('email')"
             >
               {{ codeSending ? `${countDown}秒后重发` : `发送至${formatContact(userStore.userInfo.email)}` }}
             </el-button>
@@ -66,22 +77,22 @@
       
       <!-- 手机验证 -->
       <el-form-item 
-        label="验证码" 
+        v-if="verifyMethod === 'phone'" 
+        label="验证码"
         prop="verifyCode"
-        v-if="verifyMethod === 'phone'"
       >
         <el-row :gutter="10">
           <el-col :span="14">
             <el-input 
               v-model="form.verifyCode" 
               placeholder="请输入手机验证码"
-            ></el-input>
+            />
           </el-col>
           <el-col :span="10">
             <el-button 
               type="text" 
-              @click="sendVerifyCode('phone')"
               :disabled="codeSending"
+              @click="sendVerifyCode('phone')"
             >
               {{ codeSending ? `${countDown}秒后重发` : `发送至${formatContact(userStore.userInfo.phone)}` }}
             </el-button>
@@ -90,28 +101,34 @@
       </el-form-item>
       
       <!-- 新邮箱 -->
-      <el-form-item label="新邮箱" prop="newEmail">
+      <el-form-item
+        label="新邮箱"
+        prop="newEmail"
+      >
         <el-input 
           v-model="form.newEmail" 
           type="email"
           placeholder="请输入新邮箱"
-        ></el-input>
+        />
       </el-form-item>
       
       <!-- 新邮箱验证码 -->
-      <el-form-item label="新邮箱验证" prop="newEmailCode">
+      <el-form-item
+        label="新邮箱验证"
+        prop="newEmailCode"
+      >
         <el-row :gutter="10">
           <el-col :span="14">
             <el-input 
               v-model="form.newEmailCode" 
               placeholder="请输入新邮箱验证码"
-            ></el-input>
+            />
           </el-col>
           <el-col :span="10">
             <el-button 
               type="text" 
-              @click="sendNewEmailCode"
               :disabled="newCodeSending || !form.newEmail"
+              @click="sendNewEmailCode"
             >
               {{ newCodeSending ? `${newCountDown}秒后重发` : '发送验证码' }}
             </el-button>
@@ -121,8 +138,15 @@
     </el-form>
     <!-- 对话框底部按钮 -->
     <template #footer>
-      <el-button @click="isOpen = false">取消</el-button>
-      <el-button type="primary" @click="submitEmailForm">保存修改</el-button>
+      <el-button @click="isOpen = false">
+        取消
+      </el-button>
+      <el-button
+        type="primary"
+        @click="submitEmailForm"
+      >
+        保存修改
+      </el-button>
     </template>
   </el-dialog>
 </template>

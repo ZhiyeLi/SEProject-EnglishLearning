@@ -69,8 +69,10 @@
                     定期修改密码以保护账户安全
                   </p>
                 </div>
-                <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4"
-                        @click="isEditpwdOpen = true">
+                <button
+                  class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4"
+                  @click="isEditpwdOpen = true"
+                >
                   修改
                 </button>
               </div>
@@ -83,10 +85,11 @@
                     {{ userStore.userInfo.email || '未绑定' }}
                   </p>
                 </div>
-                <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4"
-                        @click="isEditemailOpen = true">
+                <button
+                  class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0 ml-4"
+                  @click="isEditemailOpen = true"
+                >
                   {{ userStore.userInfo.email ? '修改' : '绑定' }}
-
                 </button>
               </div>
               <div class="flex items-center justify-between py-3">
