@@ -2,6 +2,35 @@ const { dbRun, dbGet, dbAll } = require("../config/database");
 const ResponseUtil = require("../utils/response");
 
 /**
+ * 将数据库的计划记录转换为前端期望的格式
+ * 主要是将 if_completed、start_time、end_time 等字段名转换
+ */
+function formatPlan(plan) {
+  if (!plan) return null;
+  return {
+    id: plan.id,
+    userId: plan.user_id,
+    date: plan.date,
+    title: plan.title,
+    description: plan.description,
+    category: plan.category,
+    priority: plan.priority,
+    startTime: plan.start_time,
+    endTime: plan.end_time,
+    completed: plan.if_completed === 1,
+    createdAt: plan.created_at,
+    updatedAt: plan.updated_at,
+  };
+}
+
+/**
+ * 将多个计划记录转换为前端格式
+ */
+function formatPlans(plans) {
+  return plans.map(formatPlan);
+}
+
+/**
  * 获取指定时间范围内的计划
  * 如果不传日期参数,返回所有计划
  */
@@ -44,7 +73,7 @@ const getPlans = async (req, res) => {
       );
     }
 
-    return ResponseUtil.success(res, plans);
+    return ResponseUtil.success(res, formatPlans(plans));
   } catch (error) {
     console.error("获取计划失败:", error);
     return ResponseUtil.error(res, "获取计划失败", 500);
@@ -73,7 +102,7 @@ const getTodayPlans = async (req, res) => {
       [userId, today]
     );
 
-    return ResponseUtil.success(res, plans);
+    return ResponseUtil.success(res, formatPlans(plans));
   } catch (error) {
     console.error("获取今日计划失败:", error);
     return ResponseUtil.error(res, "获取今日计划失败", 500);
@@ -102,7 +131,7 @@ const getPlansByDate = async (req, res) => {
       [userId, date]
     );
 
-    return ResponseUtil.success(res, plans);
+    return ResponseUtil.success(res, formatPlans(plans));
   } catch (error) {
     console.error("获取指定日期计划失败:", error);
     return ResponseUtil.error(res, "获取指定日期计划失败", 500);
@@ -151,7 +180,7 @@ const createPlan = async (req, res) => {
       result.lastID,
     ]);
 
-    return ResponseUtil.success(res, plan, "计划创建成功");
+    return ResponseUtil.success(res, formatPlan(plan), "计划创建成功");
   } catch (error) {
     console.error("创建计划失败:", error);
     return ResponseUtil.error(res, "创建计划失败", 500);
@@ -239,7 +268,7 @@ const updatePlan = async (req, res) => {
 
     const updatedPlan = await dbGet("SELECT * FROM plans WHERE id = ?", [id]);
 
-    return ResponseUtil.success(res, updatedPlan, "计划更新成功");
+    return ResponseUtil.success(res, formatPlan(updatedPlan), "计划更新成功");
   } catch (error) {
     console.error("更新计划失败:", error);
     return ResponseUtil.error(res, "更新计划失败", 500);
@@ -253,7 +282,6 @@ const togglePlanComplete = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
-    const { completed } = req.body;
 
     const plan = await dbGet(
       "SELECT * FROM plans WHERE id = ? AND user_id = ?",
@@ -264,12 +292,18 @@ const togglePlanComplete = async (req, res) => {
       return ResponseUtil.error(res, "计划不存在或无权限", 404);
     }
 
+    // 切换完成状态（如果当前是完成则变成未完成，反之亦然）
+    const newCompleted = plan.if_completed === 1 ? 0 : 1;
+
     await dbRun(
       "UPDATE plans SET if_completed = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-      [completed ? 1 : 0, id]
+      [newCompleted, id]
     );
 
-    return ResponseUtil.success(res, { success: true }, "状态更新成功");
+    // 获取更新后的计划并返回
+    const updatedPlan = await dbGet("SELECT * FROM plans WHERE id = ?", [id]);
+
+    return ResponseUtil.success(res, formatPlan(updatedPlan), "状态更新成功");
   } catch (error) {
     console.error("切换计划状态失败:", error);
     return ResponseUtil.error(res, "切换计划状态失败", 500);
@@ -354,7 +388,7 @@ const getFirstPlanDate = async (req, res) => {
       [userId]
     );
 
-    return ResponseUtil.success(res, { date: result?.firstDate || null });
+    return ResponseUtil.success(res, { firstDate: result?.firstDate || null });
   } catch (error) {
     console.error("获取首次计划日期失败:", error);
     return ResponseUtil.error(res, "获取首次计划日期失败", 500);

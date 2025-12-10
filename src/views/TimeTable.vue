@@ -9,8 +9,7 @@
           <i class="fas fa-lightbulb text-lg" />
           <span
             class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-            >学习建议</span
-          >
+          >学习建议</span>
         </button>
         <button
           class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
@@ -18,8 +17,7 @@
           <i class="fas fa-cog text-lg" />
           <span
             class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-            >设置</span
-          >
+          >设置</span>
         </button>
         <button
           class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors"
@@ -27,8 +25,7 @@
           <i class="fas fa-bell text-lg" />
           <span
             class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
-            >3</span
-          >
+          >3</span>
         </button>
       </template>
     </NavBar>
@@ -52,12 +49,21 @@
               <i class="fas fa-calendar-day text-emerald-500 mr-3" />
               今日计划 - {{ todayDateStr }}
             </h2>
-            <CustomButton
-              type="primary"
-              icon="fa-plus"
-              text="管理本日计划"
-              @click="openPlanModal(today)"
-            />
+            <div class="flex items-center space-x-3">
+              <button
+                class="text-emerald-600 hover:text-emerald-700 font-medium transition-colors flex items-center"
+                @click="showCompletedPlansModal = true"
+              >
+                <i class="fas fa-list-alt mr-1.5" />
+                计划总览
+              </button>
+              <CustomButton
+                type="primary"
+                icon="fa-plus"
+                text="管理本日计划"
+                @click="openPlanModal(today)"
+              />
+            </div>
           </div>
 
           <!-- 未完成的计划 -->
@@ -65,7 +71,9 @@
             v-if="todayPlans.some((p) => !p.completed)"
             class="space-y-3 mb-6"
           >
-            <h3 class="text-lg font-semibold text-gray-700 mb-3">待完成</h3>
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">
+              待完成
+            </h3>
             <div
               v-for="plan in todayPlans.filter((p) => !p.completed)"
               :key="plan.id"
@@ -106,7 +114,10 @@
           </div>
 
           <!-- 已完成的计划 -->
-          <div v-if="todayPlans.some((p) => p.completed)" class="space-y-3">
+          <div
+            v-if="todayPlans.some((p) => p.completed)"
+            class="space-y-3"
+          >
             <h3
               class="text-lg font-semibold text-gray-700 mb-3 flex items-center"
             >
@@ -139,7 +150,10 @@
           </div>
 
           <!-- 空状态 -->
-          <div v-if="todayPlans.length === 0" class="text-center py-12">
+          <div
+            v-if="todayPlans.length === 0"
+            class="text-center py-12"
+          >
             <i class="fas fa-calendar-plus text-gray-300 text-6xl mb-4" />
             <p class="text-gray-500 text-lg">
               今天还没有计划，点击上方按钮添加吧！
@@ -202,7 +216,10 @@
               ]"
               @click="date && openPlanModal(date)"
             >
-              <div v-if="date" class="h-full flex flex-col">
+              <div
+                v-if="date"
+                class="h-full flex flex-col"
+              >
                 <div class="flex items-center justify-between mb-2">
                   <span
                     class="text-sm font-medium"
@@ -257,6 +274,15 @@
       @save="savePlans"
     />
 
+    <!-- 已完成计划管理弹窗 -->
+    <CompletedPlansModal
+      :visible="showCompletedPlansModal"
+      :plans="plans"
+      @close="showCompletedPlansModal = false"
+      @view-date="handleViewDate"
+      @refresh="loadPlans"
+    />
+
     <!-- 底部栏 -->
     <EndBar />
   </div>
@@ -269,6 +295,7 @@ import NavBar from "@/components/common/NavBar.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import CustomButton from "@/components/common/CustomButton.vue";
 import PlanModal from "@/components/business/PlanModal.vue";
+import CompletedPlansModal from "@/components/business/CompletedPlansModal.vue";
 import { planManager } from "@/utils/planData.js";
 
 const router = useRouter();
@@ -299,6 +326,7 @@ const plans = ref([]);
 
 // 弹窗相关
 const showPlanModal = ref(false);
+const showCompletedPlansModal = ref(false);
 const selectedDate = ref(new Date());
 
 // 用户首次添加计划的日期（改为响应式ref）
@@ -476,9 +504,20 @@ function getPriorityDotClass(priority) {
 
 // 切换计划完成状态
 async function togglePlanComplete(plan) {
-  await planManager.togglePlanComplete(plan.id);
-  // 更新本地plans数据
-  await loadPlans();
+  try {
+    await planManager.togglePlanComplete(plan.id);
+    // 更新本地plans数据
+    await loadPlans();
+  } catch (error) {
+    console.error("切换计划状态失败:", error);
+    alert("操作失败，请重试");
+  }
+}
+
+// 查看指定日期的计划
+function handleViewDate(date) {
+  showCompletedPlansModal.value = false;
+  openPlanModal(date);
 }
 
 // 上一个月

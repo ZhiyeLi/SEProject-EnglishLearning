@@ -46,7 +46,9 @@
               :class="[
                 selectedPlanIndex === getActualIndex(index)
                   ? 'border-emerald-500 bg-emerald-50'
-                  : 'border-gray-200 hover:border-emerald-300 hover:bg-gray-50',
+                  : plan.completed
+                    ? 'border-green-200 hover:border-green-300 bg-green-50 hover:bg-green-100 opacity-80'
+                    : 'border-gray-200 hover:border-emerald-300 hover:bg-gray-50',
                 getPriorityBorderClass(plan.priority),
               ]"
               @click="selectPlan(index)"
@@ -54,7 +56,12 @@
               <div class="flex items-start justify-between">
                 <div class="flex-grow min-w-0">
                   <div class="flex items-center mb-1">
+                    <i
+                      v-if="plan.completed"
+                      class="fas fa-check-circle text-emerald-500 mr-2 flex-shrink-0 text-sm"
+                    />
                     <div
+                      v-else
                       class="w-2 h-2 rounded-full mr-2 flex-shrink-0"
                       :class="getPriorityDotClass(plan.priority)"
                     />
@@ -64,6 +71,12 @@
                     >
                       {{ plan.title || "未命名计划" }}
                     </h4>
+                    <span
+                      v-if="plan.completed"
+                      class="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700"
+                    >
+                      已完成
+                    </span>
                   </div>
                   <p
                     v-if="plan.description"
@@ -393,6 +406,7 @@ function removePlan(sortedIndex) {
   const actualIndex = getActualIndex(sortedIndex);
 
   if (confirm(`确定要删除计划"${plan.title || "未命名计划"}"吗？`)) {
+    // 从本地数组中移除（保存时会通过diff算法自动删除后端数据）
     localPlans.value.splice(actualIndex, 1);
 
     // 调整选中索引
@@ -405,9 +419,7 @@ function removePlan(sortedIndex) {
       selectedPlanIndex.value--;
     }
   }
-}
-
-// 切换完成状态
+} // 切换完成状态
 function toggleComplete(sortedIndex) {
   const actualIndex = getActualIndex(sortedIndex);
   const plan = localPlans.value[actualIndex];
@@ -453,6 +465,12 @@ function savePlans() {
     );
     return;
   }
+
+  console.log("=== PlanModal savePlans ===");
+  console.log(
+    "validPlans:",
+    validPlans.map((p) => ({ id: p.id, title: p.title }))
+  );
 
   emit("save", validPlans);
 }

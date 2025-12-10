@@ -6,7 +6,10 @@
       <!-- 左侧Logo和导航链接 -->
       <div class="flex items-center space-x-6">
         <!-- Logo -->
-        <div class="flex items-center" @click="gotoHome">
+        <div
+          class="flex items-center"
+          @click="gotoHome"
+        >
           <i class="fas fa-language text-emerald-600 text-3xl mr-3" />
           <span class="text-2xl font-bold text-gray-800">英语学习平台</span>
         </div>
@@ -44,7 +47,7 @@
               :src="userStore.userInfo.avatar"
               alt="用户头像"
               class="w-full h-full object-cover"
-            />
+            >
           </button>
 
           <!-- 下拉菜单 -->
@@ -59,7 +62,7 @@
                   :src="userStore.userInfo.avatar"
                   alt="用户头像"
                   class="w-12 h-12 rounded-full mr-4 object-cover"
-                />
+                >
                 <div>
                   <p class="text-base font-medium text-gray-800">
                     {{ userStore.userInfo.name }}

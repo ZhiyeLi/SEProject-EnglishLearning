@@ -40,7 +40,8 @@ class PlanManager {
     if (!this.initialized) {
       await this.initPlans();
     }
-    return this.plans;
+    // 返回新数组引用，确保Vue响应式更新
+    return [...this.plans];
   }
 
   /**
@@ -48,7 +49,13 @@ class PlanManager {
    */
   async getPlansByDate(date) {
     try {
-      const dateStr = new Date(date).toISOString().split("T")[0];
+      // 使用本地时区格式化日期，避免时区转换问题
+      const dateObj = new Date(date);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const day = String(dateObj.getDate()).padStart(2, "0");
+      const dateStr = `${year}-${month}-${day}`;
+
       const response = await planApi.getPlansByDate(dateStr);
       if (response.code === 200) {
         return response.data.map((plan) => ({
@@ -171,11 +178,14 @@ class PlanManager {
       const response = await planApi.togglePlanComplete(planId);
 
       if (response.code === 200) {
-        const plan = this.plans.find((p) => p.id === planId);
-        if (plan) {
-          plan.completed = response.data.completed;
-          plan.updatedAt = response.data.updatedAt;
-          return plan;
+        const planIndex = this.plans.findIndex((p) => p.id === planId);
+        if (planIndex !== -1) {
+          // 使用后端返回的完整计划数据更新本地缓存
+          this.plans[planIndex] = {
+            ...response.data,
+            date: new Date(response.data.date),
+          };
+          return this.plans[planIndex];
         }
       }
     } catch (error) {
@@ -230,16 +240,82 @@ class PlanManager {
   }
 
   /**
-   * 批量保存某日的计划（先删除旧的，再添加新的）
+   * 批量保存某日的计划（智能diff：只处理变化的部分）
    */
   async saveDayPlans(date, newPlans) {
-    await this.deletePlansByDate(date);
-    const addedPlans = await this.addPlans(
-      newPlans.map((plan) => ({
-        ...plan,
-        date: new Date(date),
-      }))
+    // 确保日期格式正确，防止时区转换导致日期错误
+    const dateObj = new Date(date);
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const dateStr = `${year}-${month}-${day}`;
+
+    // 获取该日期的旧计划
+    const oldPlans = await this.getPlansByDate(date);
+    const oldPlanIds = new Set(oldPlans.map((p) => p.id));
+    const newPlanIds = new Set(newPlans.filter((p) => p.id).map((p) => p.id));
+
+    console.log("=== saveDayPlans Debug ===");
+    console.log("旧计划IDs:", Array.from(oldPlanIds));
+    console.log("新计划IDs:", Array.from(newPlanIds));
+
+    // 找出需要删除的计划（在旧计划中但不在新计划中）
+    const plansToDelete = oldPlans.filter((p) => !newPlanIds.has(p.id));
+    console.log(
+      "需要删除的计划:",
+      plansToDelete.map((p) => ({ id: p.id, title: p.title }))
     );
+
+    // 找出需要更新的计划（有id且存在于旧计划中）
+    const plansToUpdate = newPlans.filter((p) => p.id && oldPlanIds.has(p.id));
+
+    // 找出需要创建的计划（没有id的新计划）
+    const plansToCreate = newPlans.filter((p) => !p.id);
+
+    // 执行删除
+    for (const plan of plansToDelete) {
+      try {
+        await this.deletePlan(plan.id);
+      } catch (error) {
+        console.error(`删除计划失败 (id: ${plan.id}):`, error);
+      }
+    }
+
+    // 执行更新
+    for (const plan of plansToUpdate) {
+      try {
+        await this.updatePlan(plan.id, {
+          title: plan.title,
+          description: plan.description,
+          category: plan.category,
+          priority: plan.priority,
+          startTime: plan.startTime,
+          endTime: plan.endTime,
+          completed: plan.completed,
+        });
+      } catch (error) {
+        console.error(`更新计划失败 (id: ${plan.id}):`, error);
+      }
+    }
+
+    // 执行创建
+    const addedPlans = [];
+    for (const plan of plansToCreate) {
+      try {
+        const addedPlan = await this.addPlan({
+          ...plan,
+          date: dateStr,
+        });
+        if (addedPlan) {
+          addedPlans.push(addedPlan);
+        }
+      } catch (error) {
+        console.error("创建计划失败:", error);
+      }
+    }
+
+    // 确保触发响应式更新：创建新数组引用
+    this.plans = [...this.plans];
 
     return addedPlans;
   }

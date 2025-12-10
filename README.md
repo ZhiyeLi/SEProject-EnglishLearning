@@ -50,6 +50,17 @@ npm install
 
 ## 💻 第二步：日常开发 (Development)
 
+### 🟢 启动后端服务
+
+在调试之前，请先启动后端服务,即
+
+```bash
+cd server
+npm run dev
+```
+
+> 更具体的操作（包括数据库的初始化命令）请查看文件./server/README.md
+
 ### 🟢 启动开发服务器
 
 这是你每天开发时最常用的命令：

@@ -18,7 +18,9 @@
       <h1 class="text-4xl font-bold text-gray-800 mb-3">
         <i class="fas fa-book-open text-emerald-500 mr-2" />选择词汇类型
       </h1>
-      <p class="text-lg text-gray-600">选择您想要背诵的单词类型</p>
+      <p class="text-lg text-gray-600">
+        选择您想要背诵的单词类型
+      </p>
     </div>
 
     <!-- 词汇类型选择卡片网格 -->
@@ -112,9 +114,7 @@
 
               <!-- 进度百分比 -->
               <p class="text-sm text-gray-600">
-                已完成：<span class="font-semibold text-emerald-600"
-                  >{{ getProgressPercentage(type.id) }}%</span
-                >
+                已完成：<span class="font-semibold text-emerald-600">{{ getProgressPercentage(type.id) }}%</span>
               </p>
             </div>
           </div>
@@ -151,7 +151,10 @@
     </div>
 
     <!-- 提示信息 -->
-    <div v-if="!selectedType" class="mt-8 text-center text-gray-600">
+    <div
+      v-if="!selectedType"
+      class="mt-8 text-center text-gray-600"
+    >
       <p class="text-base">
         <i class="fas fa-info-circle mr-2" />请选择一个词汇类型开始学习
       </p>
