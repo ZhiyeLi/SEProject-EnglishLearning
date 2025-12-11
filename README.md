@@ -127,9 +127,6 @@ npm run build
 - [Vue CLI 配置指南](https://cli.vuejs.org/zh/config/)
 - [ESLint 规则说明](https://eslint.org/docs/user-guide/rules)
 
-
-
-
 英语学习平台后端服务文档
 
 # 📘 英语学习平台后端服务 (English Learning Platform)
@@ -149,8 +146,8 @@ npm run build
 - Maven: `3.6` 或更高版本 (或使用项目内置 mvnw)
 - _检查命令:_ `mvn -v`
 
-
 ---
+
 🛠️ 第一步：项目初始化 (Setup)
 
 1. 配置国内加速镜像 (可选但推荐)
@@ -180,26 +177,28 @@ cd english_learning_platform
 CREATE DATABASE IF NOT EXISTS db_for_engnet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 关于初始化脚本的说明 (Script Guide)
-- 初始化脚本 `schema.sql` 需联系管理员获取
+
+- 初始化脚本 `db_for_engnet.sql` 在项目根目录中
 - 执行脚本可通过 MySQL 客户端、Navicat 等工具完成，确保脚本执行无报错
 
-4. 配置文件修改 (核心步骤)
+1. 配置文件修改 (核心步骤)
 
 编辑 `src/main/resources/application.yml`，修改数据库连接及JWT配置：
 
 spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/db_for_engnet?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: 你的数据库用户名
-    password: 你的数据库密码
+datasource:
+url: jdbc:mysql://localhost:3306/db_for_engnet?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+username: 你的数据库用户名
+password: 你的数据库密码
 
 # 可选（生产环境推荐配置）
-jwt:
-  secret: 你的密钥字符串（建议至少32位）
-  expiration: 86400000  # 24小时（毫秒）
 
+jwt:
+secret: 你的密钥字符串（建议至少32位）
+expiration: 86400000 # 24小时（毫秒）
 
 ---
+
 💻 第二步：日常开发 (Development)
 
 🟢 启动开发服务器
@@ -207,18 +206,21 @@ jwt:
 这是你日常开发时最常用的命令：
 
 # Linux/Mac 系统
+
 ./mvnw spring-boot:run
 
 # Windows 系统
+
 mvnw.cmd spring-boot:run
 
 命令解释：
+
 - 功能: 启动 Spring Boot 内置服务器（默认端口 8080）。
 - 特性 (热更新): 开发中修改代码后，部分变更可实时生效（视配置而定）。
 - 访问地址: 服务默认启动在 `http://localhost:8080`。
 
-
 ---
+
 📋 核心API接口说明 (API List)
 
 🔐 认证接口（无需认证）
@@ -247,23 +249,23 @@ mvnw.cmd spring-boot:run
 
 - - `PUT /api/user/info` - 更新用户信息
 
-
 ---
+
 📁 项目结构说明 (Project Structure)
 
 src/main/java/com/example/english_learning_platform/
-├── config/           # 配置类（安全配置、数据库配置等）
-├── controller/       # API接口层
-├── dto/              # 数据传输对象
-├── entity/           # 数据库实体类
-├── exception/        # 异常处理
-├── repository/       # 数据访问层
-├── service/          # 业务逻辑层
-│   └── impl/         # 业务逻辑实现
-└── util/             # 工具类（JWT、响应结果等）
-
+├── config/ # 配置类（安全配置、数据库配置等）
+├── controller/ # API接口层
+├── dto/ # 数据传输对象
+├── entity/ # 数据库实体类
+├── exception/ # 异常处理
+├── repository/ # 数据访问层
+├── service/ # 业务逻辑层
+│ └── impl/ # 业务逻辑实现
+└── util/ # 工具类（JWT、响应结果等）
 
 ---
+
 🧱 技术栈说明 (Tech Stack)
 
 - - 框架: Spring Boot 4.0.0
@@ -278,24 +280,26 @@ src/main/java/com/example/english_learning_platform/
 
 - - JDK: Java 17
 
-
 ---
+
 ❓ 常见问题 (Troubleshooting)
 
 Q1: 启动时报数据库连接错误？
 
 - 原因: 数据库未启动、账号密码错误或数据库未创建。
 - 解决:
- 1. 检查 MySQL 服务是否正常运行
- 2. 确认 `application.yml` 中的数据库用户名/密码正确
- 3. 确保 `db_for_engnet` 数据库已创建
+
+1.  检查 MySQL 服务是否正常运行
+2.  确认 `application.yml` 中的数据库用户名/密码正确
+3.  确保 `db_for_engnet` 数据库已创建
 
 Q2: JWT 验证失败？
 
 - 原因: Token 过期或密钥不一致。
 - 解决:
- 1. 检查 Token 是否超过默认 24 小时有效期
- 2. 确认前后端使用的 JWT 密钥完全一致
+
+1.  检查 Token 是否超过默认 24 小时有效期
+2.  确认前后端使用的 JWT 密钥完全一致
 
 Q3: Maven 依赖下载缓慢？
 

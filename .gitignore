@@ -42,11 +42,8 @@ target/
 *.iijump
 *.iws.backup
 
-# 数据库相关
-*.sql
-*.sqlite
+# 数据库文件
 *.db
-!schema.sql  # 如果有版本化的数据库脚本可保留
 
 # 配置文件（敏感信息）
 src/main/resources/application-dev.yml
