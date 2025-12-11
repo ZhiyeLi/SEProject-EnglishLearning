@@ -40,7 +40,21 @@ export const useUserStore = defineStore("user", {
 
     // 登录成功处理
     loginSuccess(userData) {
-      this.userInfo = { ...this.userInfo, ...userData.userInfo };
+      // 适配后端返回的数据结构
+      const userInfo = userData.user || userData;
+
+      this.userInfo = {
+        name: userInfo.userName,
+        id: userInfo.userId,
+        avatar: userInfo.avatar,
+        email: userInfo.userEmail,
+        phone: userInfo.phone || "未设置", // 后端暂无phone字段
+        signature: userInfo.signature,
+        joinTime: userInfo.createdAt,
+        location: userInfo.location || "未知", // 后端暂无location字段
+        streak: userInfo.streak,
+      };
+
       this.isLogin = true;
       // 持久化到 localStorage
       localStorage.setItem("userStore", JSON.stringify(this.$state));
@@ -102,9 +116,8 @@ export const useUserStore = defineStore("user", {
       try {
         const response = await authApi.getCurrentUser();
         if (response.code === 200) {
-          this.userInfo = response.data;
-          this.isLogin = true;
-          localStorage.setItem("userStore", JSON.stringify(this.$state));
+          // 复用 loginSuccess 的数据处理逻辑
+          this.loginSuccess(response.data);
           return { success: true };
         } else {
           return { success: false, message: response.message };

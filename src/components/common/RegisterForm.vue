@@ -1,23 +1,13 @@
 <template>
   <div class="auth-form-panel">
-    <h2 class="auth-title">
-      创建账号
-    </h2>
-    <p class="auth-desc">
-      注册后即可解锁全部英语学习功能～
-    </p>
+    <h2 class="auth-title">创建账号</h2>
+    <p class="auth-desc">注册后即可解锁全部英语学习功能～</p>
 
-    <form
-      class="auth-form"
-      @submit.prevent="handleRegister"
-    >
+    <form class="auth-form" @submit.prevent="handleRegister">
       <!-- 注册用户名 -->
       <div class="form-group">
         <div class="neu-input-wrapper">
-          <font-awesome-icon
-            icon="user"
-            class="input-icon"
-          />
+          <font-awesome-icon icon="user" class="input-icon" />
           <input
             v-model="form.username"
             type="text"
@@ -25,12 +15,9 @@
             placeholder="请设置用户名（4-20位）"
             class="neu-input"
             :disabled="isLoading"
-          >
+          />
         </div>
-        <p
-          v-if="errors.username"
-          class="error-tip"
-        >
+        <p v-if="errors.username" class="error-tip">
           {{ errors.username }}
         </p>
       </div>
@@ -38,10 +25,7 @@
       <!-- 注册邮箱 -->
       <div class="form-group">
         <div class="neu-input-wrapper">
-          <font-awesome-icon
-            icon="envelope"
-            class="input-icon"
-          />
+          <font-awesome-icon icon="envelope" class="input-icon" />
           <input
             v-model="form.email"
             type="email"
@@ -49,12 +33,9 @@
             placeholder="请输入邮箱地址"
             class="neu-input"
             :disabled="isLoading"
-          >
+          />
         </div>
-        <p
-          v-if="errors.email"
-          class="error-tip"
-        >
+        <p v-if="errors.email" class="error-tip">
           {{ errors.email }}
         </p>
       </div>
@@ -62,10 +43,7 @@
       <!-- 注册密码 -->
       <div class="form-group">
         <div class="neu-input-wrapper">
-          <font-awesome-icon
-            icon="lock"
-            class="input-icon"
-          />
+          <font-awesome-icon icon="lock" class="input-icon" />
           <input
             v-model="form.password"
             :type="pwdVisible ? 'text' : 'password'"
@@ -73,17 +51,14 @@
             placeholder="请设置密码（6-20位）"
             class="neu-input"
             :disabled="isLoading"
-          >
+          />
           <font-awesome-icon
             :icon="pwdVisible ? 'eye-slash' : 'eye'"
             class="pwd-toggle-icon"
             @click="togglePwdVisible"
           />
         </div>
-        <p
-          v-if="errors.password"
-          class="error-tip"
-        >
+        <p v-if="errors.password" class="error-tip">
           {{ errors.password }}
         </p>
       </div>
@@ -91,10 +66,7 @@
       <!-- 确认密码 -->
       <div class="form-group">
         <div class="neu-input-wrapper">
-          <font-awesome-icon
-            icon="lock"
-            class="input-icon"
-          />
+          <font-awesome-icon icon="lock" class="input-icon" />
           <input
             v-model="form.confirmPwd"
             :type="pwdVisible ? 'text' : 'password'"
@@ -102,44 +74,43 @@
             placeholder="请确认密码"
             class="neu-input"
             :disabled="isLoading"
-          >
+          />
         </div>
         <!-- 密码不一致提示（前端即时校验） -->
         <p
           v-if="
             form.password &&
-              form.confirmPwd &&
-              form.password !== form.confirmPwd &&
-              !errors.confirmPwd
+            form.confirmPwd &&
+            form.password !== form.confirmPwd &&
+            !errors.confirmPwd
           "
           class="error-tip"
         >
           两次密码输入不一致
         </p>
-        <p
-          v-if="errors.confirmPwd"
-          class="error-tip"
-        >
+        <p v-if="errors.confirmPwd" class="error-tip">
           {{ errors.confirmPwd }}
         </p>
       </div>
 
       <!-- 注册按钮（禁用条件：加载中/表单未通过前端校验） -->
-      <button
-        type="submit"
-        class="neu-btn auth-btn register-btn"
-        :disabled="
-          isLoading ||
+      <div class="btn-group">
+        <button
+          type="submit"
+          class="neu-btn auth-btn register-btn"
+          :disabled="
+            isLoading ||
             !form.username ||
             !form.email ||
             !form.password ||
             !form.confirmPwd ||
             form.password !== form.confirmPwd
-        "
-      >
-        <span v-if="!isLoading">注册</span>
-        <span v-if="isLoading">注册中...</span>
-      </button>
+          "
+        >
+          <span v-if="!isLoading">注册</span>
+          <span v-if="isLoading">注册中...</span>
+        </button>
+      </div>
 
       <!-- 切换到登录模式的按钮 -->
       <div class="switch-mode">
@@ -148,7 +119,8 @@
           class="switch-link"
           :disabled="isLoading"
           @click="$emit('switch-to-login')"
-        >去登录</span>
+          >去登录</span
+        >
       </div>
     </form>
   </div>
@@ -243,8 +215,8 @@ const handleRegister = async () => {
     // 3. 标准化响应处理
     if (response.code === 200) {
       // 注册成功：通知父组件跳转
-      emit("registerSuccess", response.data);
       alert("注册成功！请前往登录");
+      emit("registerSuccess", response.data);
     } else {
       // 后端返回具体错误（如用户名已存在），按字段显示
       if (response.data.message.includes("用户名")) {
@@ -287,11 +259,11 @@ const handleRegister = async () => {
   font-size: 14px;
   color: #374151;
   text-align: center;
-  margin: 0 0 40px 0;
+  margin: 0 0 24px 0;
 }
 
 .form-group {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   position: relative;
 }
 
@@ -403,7 +375,7 @@ const handleRegister = async () => {
 
 .switch-mode {
   text-align: center;
-  margin-top: 24px;
+  margin-top: 16px;
   font-size: 14px;
   color: #374151;
 }

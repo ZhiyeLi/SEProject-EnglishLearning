@@ -6,12 +6,19 @@ import request from "@/utils/request";
 export const authApi = {
   // 用户注册
   register(data) {
-    return request.post("/api/auth/register", data);
+    return request.post("/api/auth/register", {
+      userName: data.username,
+      userPassword: data.password,
+      userEmail: data.email,
+    });
   },
 
   // 用户登录
   login(data) {
-    return request.post("/api/auth/login", data);
+    return request.post("/api/auth/login", {
+      userName: data.username,
+      userPassword: data.password,
+    });
   },
 
   // 发送验证码

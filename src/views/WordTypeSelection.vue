@@ -18,9 +18,7 @@
       <h1 class="text-4xl font-bold text-gray-800 mb-3">
         <i class="fas fa-book-open text-emerald-500 mr-2" />选择词汇类型
       </h1>
-      <p class="text-lg text-gray-600">
-        选择您想要背诵的单词类型
-      </p>
+      <p class="text-lg text-gray-600">选择您想要背诵的单词类型</p>
     </div>
 
     <!-- 词汇类型选择卡片网格 -->
@@ -114,7 +112,9 @@
 
               <!-- 进度百分比 -->
               <p class="text-sm text-gray-600">
-                已完成：<span class="font-semibold text-emerald-600">{{ getProgressPercentage(type.id) }}%</span>
+                已完成：<span class="font-semibold text-emerald-600"
+                  >{{ getProgressPercentage(type.id) }}%</span
+                >
               </p>
             </div>
           </div>
@@ -151,10 +151,7 @@
     </div>
 
     <!-- 提示信息 -->
-    <div
-      v-if="!selectedType"
-      class="mt-8 text-center text-gray-600"
-    >
+    <div v-if="!selectedType" class="mt-8 text-center text-gray-600">
       <p class="text-base">
         <i class="fas fa-info-circle mr-2" />请选择一个词汇类型开始学习
       </p>
@@ -165,17 +162,33 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { WORD_TYPES, wordProgressManager } from "@/utils/wordData.js";
+import { wordProgressManager } from "@/utils/wordData.js";
+
+// 为不同类型定义图标和颜色映射
+const typeStyles = {
+  1: { color: "emerald", icon: "fa-leaf" },
+  2: { color: "blue", icon: "fa-book" },
+  3: { color: "purple", icon: "fa-graduation-cap" },
+  4: { color: "orange", icon: "fa-globe" },
+  5: { color: "pink", icon: "fa-flask" },
+};
 
 const router = useRouter();
 const selectedType = ref(null);
-const wordTypes = ref({});
+const wordTypes = ref([]);
 const progressData = ref({});
 
 onMounted(async () => {
-  // 初始化数据
+  // 初始化数据并从后端获取词汇类型列表
   await wordProgressManager.init();
-  wordTypes.value = WORD_TYPES;
+  const types = await wordProgressManager.getWordTypeList();
+  // 为每个类型添加样式信息
+  wordTypes.value = types.map((type, index) => ({
+    ...type,
+    id: type.typeId, // 使用后端的typeId作为id
+    color: typeStyles[type.typeId]?.color || typeStyles[(index % 5) + 1].color,
+    icon: typeStyles[type.typeId]?.icon || typeStyles[(index % 5) + 1].icon,
+  }));
 
   // 加载所有类型的进度
   await loadAllProgress();
@@ -190,11 +203,7 @@ async function loadAllProgress() {
     progressData.value = allProgress;
   } else {
     // 如果没有进度数据,初始化为空对象
-    const emptyProgress = {};
-    Object.keys(WORD_TYPES).forEach((key) => {
-      emptyProgress[WORD_TYPES[key].id] = { passedCount: 0 };
-    });
-    progressData.value = emptyProgress;
+    progressData.value = {};
   }
 }
 
@@ -210,11 +219,8 @@ function getTypeProgress(typeId) {
  */
 function getProgressPercentage(typeId) {
   const progress = getTypeProgress(typeId);
-  const type =
-    WORD_TYPES[
-      Object.keys(WORD_TYPES).find((k) => WORD_TYPES[k].id === typeId)
-    ];
-  if (!type) return 0;
+  const type = wordTypes.value.find((t) => t.id === typeId);
+  if (!type || !type.totalWords) return 0;
   const percentage = Math.round((progress.passedCount / type.totalWords) * 100);
   return Math.min(percentage, 100);
 }
@@ -236,7 +242,7 @@ async function confirmSelection() {
   }
 
   try {
-    // 保存已选择的类型
+    // 保存已选择的类型 - 使用数字typeId
     const result = await wordProgressManager.setSelectedType(
       selectedType.value.id
     );
@@ -246,7 +252,7 @@ async function confirmSelection() {
       return;
     }
 
-    // 导航到单词打卡页面
+    // 导航到单词打卡页面 - 使用数字typeId
     router
       .push({
         name: "WordCheckIn",

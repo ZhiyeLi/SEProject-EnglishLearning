@@ -1,17 +1,10 @@
 <template>
   <div class="auth-page">
-    <div
-      id="auth-container"
-      class="auth-container"
-    >
+    <div id="auth-container" class="auth-container">
       <!-- 合并为一个 transition 组件，通过 key 区分登录/注册面板 -->
       <transition name="slide">
         <!-- 登录面板 -->
-        <div
-          v-if="isLoginMode"
-          key="login"
-          class="auth-panel"
-        >
+        <div v-if="isLoginMode" key="login" class="auth-panel">
           <LoginForm
             :pwd-visible="pwdVisible"
             @toggle-pwd-visible="togglePwdVisible"
@@ -21,11 +14,7 @@
         </div>
 
         <!-- 注册面板（v-else 与 v-if 相邻） -->
-        <div
-          v-else
-          key="register"
-          class="auth-panel"
-        >
+        <div v-else key="register" class="auth-panel">
           <RegisterForm
             :pwd-visible="pwdVisible"
             @toggle-pwd-visible="togglePwdVisible"
@@ -40,10 +29,10 @@
 
 <script setup>
 // 脚本逻辑不变
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import LoginForm from '@/components/common/LoginForm.vue';
-import RegisterForm from '@/components/common/RegisterForm.vue';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import LoginForm from "@/components/common/LoginForm.vue";
+import RegisterForm from "@/components/common/RegisterForm.vue";
 
 const router = useRouter();
 const isLoginMode = ref(true);
@@ -61,7 +50,13 @@ const togglePwdVisible = () => {
   pwdVisible.value = !pwdVisible.value;
 };
 const handleAuthSuccess = () => {
-  router.push('/');
+  // 如果当前是注册模式，注册成功后切换到登录模式
+  if (!isLoginMode.value) {
+    switchToLogin();
+  } else {
+    // 登录成功，跳转到主页
+    router.push("/");
+  }
 };
 </script>
 
@@ -82,13 +77,13 @@ const handleAuthSuccess = () => {
 
 #auth-container {
   width: 380px;
-  height: 550px;
+  height: 650px;
   background-color: #f0faf4;
   border-radius: 24px;
-  box-shadow: 
+  box-shadow:
     12px 12px 24px rgba(16, 185, 129, 0.15),
     -12px -12px 24px rgba(255, 255, 255, 0.8);
-  overflow: hidden;
+  overflow: auto;
   position: relative;
 }
 

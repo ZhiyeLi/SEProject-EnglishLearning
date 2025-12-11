@@ -49,7 +49,9 @@
                 {{ currentProgress.passedCount }}
               </div>
               <div class="text-sm text-gray-600 mt-2">
-                占比：<span class="font-semibold">{{ progressPercentage }}%</span>
+                占比：<span class="font-semibold"
+                  >{{ progressPercentage }}%</span
+                >
               </div>
             </div>
 
@@ -69,9 +71,13 @@
                 />
               </div>
               <div class="flex justify-between text-sm text-gray-600">
-                <span>{{ currentProgress.passedCount }} /
-                  {{ currentType?.totalWords }}</span>
-                <span class="font-semibold text-emerald-600">{{ progressPercentage }}%</span>
+                <span
+                  >{{ currentProgress.passedCount }} /
+                  {{ currentType?.totalWords }}</span
+                >
+                <span class="font-semibold text-emerald-600"
+                  >{{ progressPercentage }}%</span
+                >
               </div>
             </div>
           </div>
@@ -138,37 +144,25 @@
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
-              <div class="text-sm text-gray-600 mb-1">
-                每日打卡数
-              </div>
+              <div class="text-sm text-gray-600 mb-1">每日打卡数</div>
               <div class="text-2xl font-bold text-emerald-600">
                 {{ currentPlan.wordsPerDay }}
               </div>
-              <div class="text-xs text-gray-600 mt-1">
-                个单词/天
-              </div>
+              <div class="text-xs text-gray-600 mt-1">个单词/天</div>
             </div>
             <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <div class="text-sm text-gray-600 mb-1">
-                剩余单词数
-              </div>
+              <div class="text-sm text-gray-600 mb-1">剩余单词数</div>
               <div class="text-2xl font-bold text-blue-600">
                 {{ currentPlan.remainingWords }}
               </div>
-              <div class="text-xs text-gray-600 mt-1">
-                个单词
-              </div>
+              <div class="text-xs text-gray-600 mt-1">个单词</div>
             </div>
             <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
-              <div class="text-sm text-gray-600 mb-1">
-                需要天数
-              </div>
+              <div class="text-sm text-gray-600 mb-1">需要天数</div>
               <div class="text-2xl font-bold text-purple-600">
                 {{ currentPlan.daysNeeded }}
               </div>
-              <div class="text-xs text-gray-600 mt-1">
-                天
-              </div>
+              <div class="text-xs text-gray-600 mt-1">天</div>
             </div>
           </div>
           <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -180,10 +174,7 @@
               >
                 打卡已暂停
               </span>
-              <span
-                v-else
-                class="text-emerald-600 font-semibold"
-              >
+              <span v-else class="text-emerald-600 font-semibold">
                 按照计划，您将在
                 <strong>{{ currentPlan.daysNeeded }}</strong> 天内完成
                 <strong>{{ currentPlan.remainingWords }}</strong> 个单词的打卡。
@@ -222,19 +213,14 @@
         </div>
 
         <!-- 完成信息 -->
-        <div
-          v-else
-          class="text-center py-12"
-        >
+        <div v-else class="text-center py-12">
           <div class="inline-block">
             <div
               class="w-20 h-20 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 flex items-center justify-center mb-4 shadow-lg"
             >
               <i class="fas fa-trophy text-white text-4xl" />
             </div>
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">
-              恭喜！
-            </h2>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">恭喜！</h2>
             <p class="text-lg text-gray-600 mb-4">
               您已完成 {{ currentType?.name }} 的全部打卡
             </p>
@@ -260,9 +246,7 @@
         <h2 class="text-2xl font-bold text-gray-800 mb-1">
           <i class="fas fa-calendar-check text-emerald-500 mr-2" />制订打卡计划
         </h2>
-        <p class="text-gray-600 mb-6">
-          选择每天要打卡的单词数量（1-100）
-        </p>
+        <p class="text-gray-600 mb-6">选择每天要打卡的单词数量（1-100）</p>
 
         <!-- 错误提示 -->
         <div
@@ -291,7 +275,7 @@
             placeholder="请输入1-100之间的数字"
             class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
             @keyup.enter="confirmPlan"
-          >
+          />
           <p class="text-xs text-gray-600 mt-2">
             💡 根据您选择的数量，系统将自动计算完成打卡所需的天数
           </p>
@@ -388,7 +372,8 @@
             <div class="flex items-center gap-2">
               <span
                 class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded"
-              >已打卡</span>
+                >已打卡</span
+              >
               <button
                 class="text-red-500 hover:text-red-700 transition-colors"
                 title="取消打卡"
@@ -417,12 +402,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { WORD_TYPES, wordProgressManager } from "@/utils/wordData.js";
+import { useRouter, useRoute } from "vue-router";
+import { wordProgressManager } from "@/utils/wordData.js";
 import NavBar from "@/components/common/NavBar.vue";
 import EndBar from "@/components/common/EndBar.vue";
 
 const router = useRouter();
+const route = useRoute();
 
 // 数据
 const currentType = ref(null);
@@ -463,21 +449,33 @@ onMounted(async () => {
     // 初始化数据
     await wordProgressManager.init();
 
-    // 从后端获取已选择的类型
-    const selectedTypeData = await wordProgressManager.getSelectedType();
-    const typeId = selectedTypeData?.typeId;
+    // 优先从路由参数获取typeId
+    let typeId = route.params.typeId;
 
     if (!typeId) {
-      // 如果没有选择过类型，显示提示并重定向到类型选择页面
+      // 如果路由没有typeId，则从后端获取已选择的类型
+      const selectedTypeData = await wordProgressManager.getSelectedType();
+      typeId = selectedTypeData?.typeId;
+    }
+
+    if (!typeId) {
+      // 如果仍然没有typeId，显示提示并重定向到类型选择页面
       alert("请先选择词汇类型");
       router.push({ name: "WordTypeSelection" }).catch(() => {});
       return;
     }
 
-    // 获取当前类型信息
-    const typeObj = Object.values(WORD_TYPES).find((t) => t.id === typeId);
+    // 从后端获取类型列表并找到当前类型
+    const typeList = await wordProgressManager.getWordTypeList();
+    const typeObj = typeList.find((t) => t.typeId == typeId); // 使用 == 以处理字符串和数字的比较
     if (typeObj) {
-      currentType.value = typeObj;
+      // 设置当前类型，使用后端返回的数据格式
+      currentType.value = {
+        id: typeObj.typeId,
+        name: typeObj.name,
+        description: typeObj.description,
+        totalWords: typeObj.totalWords,
+      };
       currentProgress.value = await wordProgressManager.getTypeProgress(typeId);
       if (!currentProgress.value) {
         currentProgress.value = { passedCount: 0, passedWords: [] };

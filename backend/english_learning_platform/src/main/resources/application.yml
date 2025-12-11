@@ -36,12 +36,13 @@ spring:
 server:
   port: 8080
   servlet:
-    context-path: /api
+    context-path:
 
 # 日志配置
 logging:
   level:
     root: INFO
     com.example.english_learning_platform: DEBUG
+    org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE

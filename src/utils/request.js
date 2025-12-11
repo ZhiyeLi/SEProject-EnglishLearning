@@ -7,7 +7,7 @@ import { ElMessage } from "element-plus";
 
 // 创建 axios 实例
 const apiClient = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL || "http://localhost:3000",
+  baseURL: process.env.VUE_APP_API_BASE_URL || "http://localhost:8080",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -58,7 +58,11 @@ apiClient.interceptors.response.use(
           window.location.href = "/login";
           break;
         case 403:
-          ElMessage.error("拒绝访问");
+          ElMessage.error("登录已过期或拒绝访问，请重新登录");
+          // 清除token并跳转到登录页
+          localStorage.removeItem("token");
+          localStorage.removeItem("userStore");
+          window.location.href = "/login";
           break;
         case 404:
           ElMessage.error("请求的资源不存在");
