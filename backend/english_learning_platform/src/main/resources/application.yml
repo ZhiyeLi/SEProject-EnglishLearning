@@ -1,0 +1,19 @@
+server:
+  port: 8081
+spring:
+  datasource:
+    # 替换为你的本地 MySQL 地址、端口、库名
+    url: jdbc:mysql://localhost:3306/db_for_engnet?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: sysu
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none  # 关键：禁用自动建表/更新表（适配已有表）
+    show-sql: false    # 可选：打印SQL便于调试
+    properties:
+      hibernate:
+        format_sql: true
+        # 匹配表名（如果你的表名是user，JPA默认会找users，需指定）
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl

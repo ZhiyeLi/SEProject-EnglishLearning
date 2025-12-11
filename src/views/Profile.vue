@@ -242,13 +242,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';  
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user'; // 引入Pinia用户状态
 // 引入组件库的 NavBar 和 EndBar（路径根据实际组件库位置调整）
 import NavBar from '@/components/common/NavBar.vue';
 import EndBar from '@/components/common/EndBar.vue';
 import EditProfile from '@/components/profile/EditProfile.vue'; // 引入编辑组件
+
 
 const router = useRouter();
 const userStore = useUserStore(); // 注入用户状态
@@ -288,6 +289,11 @@ const navItems = [
   { label: "AI伴学", onClick: gotoAiChat, isActive: false },
 ];
 
+onMounted(async () => {
+  // 强制刷新用户信息，确保最新
+  await userStore.fetchUserInfo(true);
+  console.log('Profile页面用户信息：', userStore.userInfo); // 调试日志
+});
 </script>
 
 <style scoped>

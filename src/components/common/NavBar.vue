@@ -111,6 +111,14 @@
 import { ref, onMounted, onUnmounted, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user'; // 引入Pinia用户状态
+// 主动触发用户信息刷新（确保挂载时已加载）
+
+
+onMounted(async () => {
+  if (userStore.token && !userStore.userInfo.name) {
+    await userStore.fetchUserInfo(true);
+  }
+});
 
 
 // 接收父组件传递的导航项

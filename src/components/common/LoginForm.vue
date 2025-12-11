@@ -264,7 +264,8 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
-import { useUserStore } from '../../store/modules/user'; // 导入userStore
+import { useUserStore } from '../../store/modules/user';
+import { ElMessage } from 'element-plus'; // 引入ElementUI消息组件
 
 // 父组件传递的props
 const props = defineProps({
@@ -274,12 +275,8 @@ const props = defineProps({
   }
 });
 
-// 初始化store
 const userStore = useUserStore();
-
-// 暴露给父组件的事件
 const emit = defineEmits(['loginSuccess', 'togglePwdVisible', 'switch-to-register']);
-
 
 // 登录表单数据
 const form = reactive({
@@ -301,12 +298,14 @@ const togglePwdVisible = () => {
   emit('togglePwdVisible');
 };
 
-// 登录核心逻辑（对接store）
+// 登录核心逻辑（优化版）
 const handleLogin = async () => {
-  // 表单验证
+  // 重置错误提示
   errors.username = '';
   errors.password = '';
-  if (!form.username) {
+  
+  // 前端表单验证
+  if (!form.username.trim()) {
     errors.username = '请输入用户名';
     return;
   }
@@ -317,31 +316,35 @@ const handleLogin = async () => {
 
   try {
     isLoading.value = true;
+    
     // 调用store中的登录方法
     const result = await userStore.login({
-      username: form.username,
+      username: form.username.trim(),
       password: form.password
     });
 
     if (result.success) {
+      ElMessage.success('登录成功');
       emit('loginSuccess');
     } else {
+      // 根据后端返回的错误信息显示对应提示
       if (result.message.includes('用户名')) {
         errors.username = result.message;
-      } else {
+      } else if (result.message.includes('密码')) {
         errors.password = result.message;
+      } else {
+        ElMessage.error(result.message);
       }
     }
   } catch (error) {
-    errors.password = '登录失败，请稍后重试';
     console.error('登录异常：', error);
+    ElMessage.error('登录失败，请稍后重试');
   } finally {
     isLoading.value = false;
   }
-  
 };
 
-// ---------------------- 忘记密码功能 ----------------------
+// 忘记密码相关逻辑（补充完善）
 const isForgotPwdModalOpen = ref(false);
 const forgotStep = ref(1);
 const forgotForm = reactive({
@@ -357,33 +360,33 @@ const forgotErrors = reactive({
   confirmPassword: ''
 });
 const isForgotLoading = ref(false);
-const countdown = ref(0);
 const isPhone = ref(true);
+const countdown = ref(0);
 const newPwdVisible = ref(false);
 
 // 打开忘记密码弹窗
 const openForgotPwdModal = () => {
   isForgotPwdModalOpen.value = true;
-  forgotForm.account = '';
-  forgotForm.verifyCode = '';
-  forgotForm.newPassword = '';
-  forgotForm.confirmPassword = '';
-  forgotErrors.account = '';
-  forgotErrors.verifyCode = '';
-  forgotErrors.newPassword = '';
-  forgotErrors.confirmPassword = '';
   forgotStep.value = 1;
+  // 重置表单
+  Object.keys(forgotForm).forEach(key => {
+    forgotForm[key] = '';
+  });
+  Object.keys(forgotErrors).forEach(key => {
+    forgotErrors[key] = '';
+  });
+};
+
+// 关闭忘记密码弹窗
+const closeForgotPwdModal = () => {
+  isForgotPwdModalOpen.value = false;
   countdown.value = 0;
 };
 
-// 关闭忘记密码弹窗（返回登录界面）
-const closeForgotPwdModal = () => {
-  isForgotPwdModalOpen.value = false;
-};
-
-// 切换账号类型（手机号/邮箱）
+// 切换账号类型（手机/邮箱）
 const toggleAccountType = () => {
   isPhone.value = !isPhone.value;
+  forgotForm.account = '';
   forgotErrors.account = '';
 };
 
@@ -392,31 +395,25 @@ const toggleNewPwdVisible = () => {
   newPwdVisible.value = !newPwdVisible.value;
 };
 
-// 发送验证码（对接store）
+// 发送验证码
 const sendVerifyCode = async () => {
   forgotErrors.account = '';
-  const reg = isPhone.value 
-    ? /^1[3-9]\d{9}$/ 
-    : /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$/;
-
-  if (!forgotForm.account) {
-    forgotErrors.account = isPhone.value ? '请输入手机号' : '请输入邮箱';
-    return;
-  }
-  if (!reg.test(forgotForm.account)) {
-    forgotErrors.account = isPhone.value ? '请输入正确的手机号' : '请输入正确的邮箱';
+  
+  if (!forgotForm.account.trim()) {
+    forgotErrors.account = `请输入${isPhone.value ? '手机号' : '邮箱'}`;
     return;
   }
 
   try {
     isForgotLoading.value = true;
-    // 调用store发送验证码
     const result = await userStore.sendVerifyCode({
-      account: forgotForm.account,
+      account: forgotForm.account.trim(),
       type: isPhone.value ? 'phone' : 'email'
     });
 
     if (result.success) {
+      ElMessage.success('验证码发送成功');
+      // 开始倒计时
       countdown.value = 60;
       const timer = setInterval(() => {
         countdown.value--;
@@ -424,30 +421,29 @@ const sendVerifyCode = async () => {
           clearInterval(timer);
         }
       }, 1000);
+      // 进入下一步
       forgotStep.value = 2;
     } else {
       forgotErrors.account = result.message;
     }
   } catch (error) {
-    forgotErrors.account = '验证码发送失败，请稍后重试';
     console.error('发送验证码异常：', error);
+    ElMessage.error('发送失败，请稍后重试');
   } finally {
     isForgotLoading.value = false;
   }
 };
 
-// 重置密码（对接store）
+// 重置密码
 const resetPassword = async () => {
-  forgotErrors.verifyCode = '';
-  forgotErrors.newPassword = '';
-  forgotErrors.confirmPassword = '';
+  // 重置错误提示
+  Object.keys(forgotErrors).forEach(key => {
+    forgotErrors[key] = '';
+  });
 
-  if (!forgotForm.verifyCode) {
+  // 前端验证
+  if (!forgotForm.verifyCode.trim()) {
     forgotErrors.verifyCode = '请输入验证码';
-    return;
-  }
-  if (!forgotForm.newPassword) {
-    forgotErrors.newPassword = '请设置新密码';
     return;
   }
   if (forgotForm.newPassword.length < 6) {
@@ -460,12 +456,11 @@ const resetPassword = async () => {
   }
 
   try {
-     isForgotLoading.value = true;
-    // 调用store重置密码
+    isForgotLoading.value = true;
     const result = await userStore.resetPassword({
-      account: forgotForm.account,
+      account: forgotForm.account.trim(),
       type: isPhone.value ? 'phone' : 'email',
-      verifyCode: forgotForm.verifyCode,
+      verifyCode: forgotForm.verifyCode.trim(),
       newPassword: forgotForm.newPassword
     });
 
@@ -476,8 +471,8 @@ const resetPassword = async () => {
       forgotErrors.verifyCode = result.message;
     }
   } catch (error) {
-    forgotErrors.confirmPassword = '密码重置失败，请稍后重试';
     console.error('重置密码异常：', error);
+    ElMessage.error('重置失败，请稍后重试');
   } finally {
     isForgotLoading.value = false;
   }

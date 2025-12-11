@@ -1,17 +1,9 @@
 <template>
   <div class="auth-page">
-    <div
-      id="auth-container"
-      class="auth-container"
-    >
-      <!-- 合并为一个 transition 组件，通过 key 区分登录/注册面板 -->
+    <div id="auth-container" class="auth-container">
       <transition name="slide">
         <!-- 登录面板 -->
-        <div
-          v-if="isLoginMode"
-          key="login"
-          class="auth-panel"
-        >
+        <div v-if="isLoginMode" key="login" class="auth-panel">
           <LoginForm
             :pwd-visible="pwdVisible"
             @toggle-pwd-visible="togglePwdVisible"
@@ -20,12 +12,8 @@
           />
         </div>
 
-        <!-- 注册面板（v-else 与 v-if 相邻） -->
-        <div
-          v-else
-          key="register"
-          class="auth-panel"
-        >
+        <!-- 注册面板 -->
+        <div v-else key="register" class="auth-panel">
           <RegisterForm
             :pwd-visible="pwdVisible"
             @toggle-pwd-visible="togglePwdVisible"
@@ -39,13 +27,15 @@
 </template>
 
 <script setup>
-// 脚本逻辑不变
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/store/modules/user'; // 引入用户store
+import { ElMessage } from 'element-plus'; // 引入消息提示
 import LoginForm from '@/components/common/LoginForm.vue';
 import RegisterForm from '@/components/common/RegisterForm.vue';
 
 const router = useRouter();
+const userStore = useUserStore();
 const isLoginMode = ref(true);
 const pwdVisible = ref(false);
 
@@ -53,15 +43,29 @@ const switchToRegister = () => {
   isLoginMode.value = false;
   window.scrollTo(0, 0);
 };
+
 const switchToLogin = () => {
   isLoginMode.value = true;
   window.scrollTo(0, 0);
 };
+
 const togglePwdVisible = () => {
   pwdVisible.value = !pwdVisible.value;
 };
+
+// 处理登录/注册成功
 const handleAuthSuccess = () => {
-  router.push('/');
+  // 获取跳转前的页面路径，默认跳转到首页
+  const redirectPath = userStore.redirectPath || '/';
+  
+  // 显示成功消息
+  ElMessage.success(isLoginMode.value ? '登录成功' : '注册成功');
+  
+  // 跳转到对应页面
+  router.push(redirectPath).then(() => {
+    // 重置跳转路径
+    userStore.setRedirectPath('');
+  });
 };
 </script>
 

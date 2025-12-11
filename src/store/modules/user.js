@@ -1,56 +1,75 @@
 import { defineStore } from 'pinia'
-import axios from 'axios';
-import { ElMessage } from 'element-plus'; // 引入消息提示组件
+import { ElMessage } from 'element-plus';
 import { userApi } from '@/api'
+import router from '@/router' // 引入路由实例
+
 export const useUserStore = defineStore('user', {
   state: () => ({
-    // 初始用户信息（实际项目中可从接口加载）
     userInfo: {
       name: '张三（未登录示例状态）',
       id: 'user',
-      password: '123456',
+      password: '123456', // 注意：实际项目中不应存储明文密码
       avatar: 'https://picsum.photos/seed/zhang3/100/100',
       email: 'zhangsan666@qq.com',
       phone: '12345678910',
-      signature: '未登录', // 个性签名
-      joinTime: '未登录', // 加入时间
-      location: '未登录' // 地区
+      signature: '未登录',
+      joinTime: '未登录',
+      location: '未登录'
     },
     isLogin: false,
+    redirectPath: '', // 新增：登录后跳转路径
+    token: localStorage.getItem('token') || '' // 新增：单独存储token
   }),
+  getters: {
+    // 新增：获取用户ID（从userInfo或token解析）
+    userId() {
+      return this.userInfo.id || (this.token ? this.getUserIdFromToken() : null)
+    }
+  },
   actions: {
-     // 登录方法（包含后端交互）
-    async login(loginData) {
-      // 测试模式：不调用真实接口，直接返回成功
-      const isTestMode = false; // 测试时设为true，实际开发设为false
-      if (isTestMode) {
-        // 模拟登录成功数据
-        const mockUserData = {
-          token: 'test_token_' + Date.now(),
-          userInfo: {
-            name: loginData.username,
-            id: 'test_user_' + Math.random().toString(36).substr(2, 9),
-            avatar: 'https://picsum.photos/seed/' + loginData.username + '/100/100',
-            email: loginData.username + '@test.com',
-            phone: '138' + Math.floor(Math.random() * 100000000),
-            signature: '测试用户签名',
-            joinTime: new Date().toLocaleDateString(),
-            location: '测试城市'
-          }
-        };
-        localStorage.setItem('token', mockUserData.token);
-        this.loginSuccess(mockUserData);
-        return { success: true };
-      }
-
-      // 真实接口调用逻辑（保持不变）
+    // 新增：从token解析用户ID（简单实现，实际需配合JWT工具）
+    getUserIdFromToken() {
       try {
-          const response = await userApi.login(loginData);
+        if (!this.token) return null
+        const base64Url = this.token.split('.')[1]
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => 
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''))
+        return JSON.parse(jsonPayload).userId
+      } catch (error) {
+        console.error('解析token失败：', error)
+        return null
+      }
+    },
 
+    // 登录方法优化：登录成功后调用用户信息接口
+    async login(loginData) {
+      try {
+        const response = await userApi.login(loginData);
         if (response.code === 200) {
-          localStorage.setItem('token', response.data.token);
-          this.loginSuccess(response.data);
-          return { success: true };
+          // 1. 先存储token（必须，因为获取用户信息接口需要token鉴权）
+          this.token = response.data.token
+          localStorage.setItem('token', this.token)
+          
+          // 2. 登录成功后，主动调用用户信息接口拉取最新数据
+          const fetchSuccess = await this.fetchUserInfo(true); // 强制刷新用户信息
+          if (fetchSuccess) {
+            this.loginSuccess({ userInfo: this.userInfo }); // 用接口返回的用户信息更新
+            // 3. 跳转指定路径（如有）
+            if (this.redirectPath) {
+              router.push(this.redirectPath).catch(() => {});
+              this.redirectPath = ''; // 清空跳转路径
+            } else {
+              router.push('/').catch(() => {}); // 默认跳首页
+            }
+            return { success: true };
+          } else {
+            // 获取用户信息失败，清空token并提示
+            this.token = '';
+            localStorage.removeItem('token');
+            return { success: false, message: '登录成功，但获取用户信息失败' };
+          }
         } else {
           return { success: false, message: response.message };
         }
@@ -60,51 +79,77 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    // 登录成功处理
+    // 登录成功处理优化：仅做状态更新和提示
     loginSuccess(userData) {
       this.userInfo = { ...this.userInfo, ...userData.userInfo };
       this.isLogin = true;
-      // 持久化到 localStorage
-      localStorage.setItem('userStore', JSON.stringify(this.$state));
-      // 显示登录成功提示
+      this.persistState(); // 统一持久化方法
       ElMessage.success('登录成功');
     },
 
-    //登出
-    logout() {
-      // 调用API登出
+    // 登出优化
+    logout(redirect = '/login') {
+      // 调用API登出（不阻塞后续操作）
       userApi.logout().catch(() => {});
-      this.$reset(); // 重置为初始状态
-      localStorage.removeItem('userStore');
+      this.$reset();
       localStorage.removeItem('token');
-      // 显示登出成功提示
+      localStorage.removeItem('userStore');
       ElMessage.success('登出成功');
+      // 登出后跳转
+      router.push(redirect).catch(() => {})
     },
 
-    // 获取用户信息
-    async fetchUserInfo() {
-      try {
-        const response = await userApi.getUserInfo();
-        if (response.code === 200) {
-          this.userInfo = response.data;
-          this.isLogin = true;
-          localStorage.setItem('userStore', JSON.stringify(this.$state));
-          return true;
-        }
-      } catch (error) {
-        console.error('获取用户信息失败：', error);
-        this.logout();
-      }
+    // src/store/modules/user.js 中补充完整fetchUserInfo方法
+    // src/store/modules/user.js
+// src/store/modules/user.js
+async fetchUserInfo(force = false) {
+  if (!this.token) {
+    console.error('无 Token，无法获取用户信息');
+    return false;
+  }
+  if (this.isLogin && !force) return true;
+
+  try {
+    const response = await userApi.getUserInfo();
+    if (response.code === 200 && response.data) {
+      // 关键：将接口的 username 映射为前端的 name
+      const userData = {
+        // 前端字段名 ← 接口返回字段名
+        name: response.data.username, // 核心映射
+        id: response.data.id,
+        avatar: response.data.avatar || 'https://picsum.photos/seed/zhang3/100/100',
+        email: response.data.email,
+        phone: response.data.phone,
+        signature: response.data.signature,
+        joinTime: response.data.joinTime,
+        location: response.data.location
+      };
+      // 完全替换 userInfo，确保字段匹配
+      this.userInfo = userData;
+      this.isLogin = true;
+      this.persistState();
+      console.log('用户信息更新成功（映射后）：', this.userInfo); // 调试日志
+      return true;
+    } else {
+      console.error('用户信息接口返回异常：', response);
+      ElMessage.error('获取用户信息失败：' + (response.message || '接口返回异常'));
       return false;
-    },
+    }
+  } catch (error) {
+    console.error('获取用户信息失败：', error);
+    ElMessage.error('获取用户信息失败，请稍后重试');
+    this.logout();
+    return false;
+  }
+},
 
-    // 更新用户信息
+    // 更新用户信息优化
     async updateUserInfo(newInfo) {
       try {
         const response = await userApi.updateUserInfo(newInfo);
         if (response.code === 200) {
-          this.userInfo = { ...this.userInfo, ...newInfo };
-          localStorage.setItem('userStore', JSON.stringify(this.$state));
+          this.userInfo = { ...this.userInfo, ...response.data };
+          this.persistState();
           return { success: true };
         }
         return { success: false, message: response.message };
@@ -114,68 +159,34 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    // 更新密码
-    async updatePassword(passwordData) {
-      // 1. 前置校验：未登录直接返回失败
-      if (!this.isLogin) {
-        return { success: false, message: '请先登录后再修改密码' };
-      }
-
-      // 2. 解构参数：旧密码、新密码、确认新密码
-      const { oldPassword, newPassword, confirmNewPassword } = passwordData;
-
-      // 3. 前端校验（避免无效请求）
-      if (!oldPassword || !newPassword || !confirmNewPassword) {
-        return { success: false, message: '请完整填写所有密码项' };
-      }
-      if (newPassword !== confirmNewPassword) {
-        return { success: false, message: '两次输入的新密码不一致' };
-      }
-      if (newPassword.length < 6) {
-        return { success: false, message: '新密码长度不能少于6位' };
-      }
-      if (oldPassword === newPassword) {
-        return { success: false, message: '新密码不能与旧密码相同' };
-      }
-
-      try {
-        // 4. 调用后端接口修改密码
-        const response = await userApi.updatePassword({
-          oldPassword,
-          newPassword
-        });
-
-        // 5. 接口响应处理
-        if (response.code === 200) {
-          // 可选：若后端返回更新后的用户信息，同步到本地
-          if (response.data.userInfo) {
-            this.userInfo = { ...this.userInfo, ...response.data.userInfo };
-          }
-          // 更新本地缓存
-          localStorage.setItem('userStore', JSON.stringify(this.$state));
-          return { success: true, message: '密码修改成功，请重新登录' };
-        } else {
-          return { success: false, message: response.message || '密码修改失败' };
-        }
-      } catch (error) {
-        console.error('修改密码接口异常：', error);
-        // 特殊处理：401/403 可能是旧密码错误，针对性提示
-        if (error.response?.status === 401 || error.response?.status === 403) {
-          return { success: false, message: '旧密码输入错误，请核对' };
-        }
-        return { success: false, message: '网络异常，密码修改失败，请稍后重试' };
-      }
+    // 新增：设置登录后跳转路径
+    setRedirectPath(path) {
+      this.redirectPath = path;
     },
 
-    // 从本地缓存加载用户信息（页面刷新后恢复状态）
+    // 新增：统一状态持久化方法
+    persistState() {
+      localStorage.setItem('userStore', JSON.stringify({
+        userInfo: this.userInfo,
+        isLogin: this.isLogin,
+        redirectPath: this.redirectPath
+      }));
+    },
+
+    // 从本地缓存加载用户信息优化
     loadUserFromLocalStorage() {
       const cachedUser = localStorage.getItem('userStore');
       if (cachedUser) {
-        this.$state = JSON.parse(cachedUser);
+        const { userInfo, isLogin, redirectPath } = JSON.parse(cachedUser);
+        this.userInfo = userInfo;
+        this.isLogin = isLogin;
+        this.redirectPath = redirectPath;
       }
+      // 从localStorage同步token
+      this.token = localStorage.getItem('token') || '';
     },
 
-    // 发送验证码
+    // 发送验证码（保持不变）
     async sendVerifyCode(params) {
       try {
         const response = await userApi.sendVerifyCode(params);
@@ -189,20 +200,21 @@ export const useUserStore = defineStore('user', {
       }
     },
     
-    // 重置密码
+    // 重置密码优化
     async resetPassword(params) {
       try {
         const response = await userApi.resetPassword(params);
-
         if (response.code === 200) {
-          // 如果是当前登录用户，同步更新本地密码
           if (this.isLogin && 
               (this.userInfo.phone === params.account || this.userInfo.email === params.account)) {
-            this.updatePassword(params.newPassword);
+            // 这里应该调用更新密码接口，而不是直接修改
+            // 实际项目中需要后端配合返回更新后的信息
+            ElMessage.success('密码已重置，请重新登录');
+            this.logout(); // 重置当前用户密码后登出
           }
           return { success: true };
         } else {
-          return { success: false, message: response.data.message };
+          return { success: false, message: response.message || '密码重置失败' };
         }
       } catch (error) {
         console.error('重置密码接口异常：', error);

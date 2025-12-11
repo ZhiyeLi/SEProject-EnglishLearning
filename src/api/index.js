@@ -3,15 +3,15 @@ import request from '@/utils/request';
 
 // 用户相关API
 export const userApi = {
-  login: (data) => request.post('/auth/login', data),
-  logout: () => request.post('/auth/logout'),
-  getUserInfo: () => request.get('/user/info'),
-  updateUserInfo: (data) => request.put('/user/info', data),
-  updatePassword: (data) => request.put('/user/password', data),
-  sendVerifyCode: (data) => request.post('/auth/verify-code', data),
-  resetPassword: (data) => request.post('/auth/reset-password', data)
+  login: (data) => request.post('/api/auth/login', data),  // 增加/api前缀
+  logout: () => request.post('/api/user/logout'),
+  register: (data) => request.post('/api/auth/register', data),  // 添加注册API
+  getUserInfo: () => request.get('/api/user/info'),
+  updateUserInfo: (data) => request.put('/api/user/info', data),
+  updatePassword: (data) => request.put('/api/user/password', data),
+  sendVerifyCode: (account) => request.post('/api/auth/verify-code', { account }),
+  resetPassword: (data) => request.post('/api/auth/reset-password', data)
 };
-
 // 计划相关API
 export const planApi = {
   getPlans: () => request.get('/plans'),

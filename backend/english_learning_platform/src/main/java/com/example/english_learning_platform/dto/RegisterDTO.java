@@ -14,6 +14,6 @@ public class RegisterDTO {
     @Size(min = 6, max = 20, message = "密码长度需在6-20位之间")
     private String password;
 
-    private String email;
-    private String phone;
+//    private String email;
+//    private String phone;
 }

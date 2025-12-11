@@ -23,9 +23,14 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // 前后端分离关闭CSRF
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login").permitAll() // 登录接口允许匿名访问
                         .requestMatchers("/api/courses/**").permitAll() // 课程列表允许匿名访问
+                        // 允许测试接口匿名访问
+                        .requestMatchers("/api/test/**").permitAll()
+                        // 允许登录/注册接口匿名访问
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/user/**").permitAll()
                         .anyRequest().authenticated() // 其他接口需要认证
+
                 );
         return http.build();
     }
