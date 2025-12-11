@@ -16,8 +16,8 @@
 2. **运行导入脚本**
 
    ```bash
-   cd C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform
-   import_mysql.bat
+   cd .\backend\english_learning_platform
+   .\import_mysql.bat
    ```
 
    脚本会提示输入 MySQL root 密码，然后自动完成：
