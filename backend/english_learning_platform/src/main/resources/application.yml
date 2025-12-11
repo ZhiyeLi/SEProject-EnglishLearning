@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: english-learning-platform
+
+  datasource:
+    # MySQL 数据库配置
+    url: jdbc:mysql://localhost:3306/english_learning?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8&allowPublicKeyRetrieval=true
+    username: root
+    # 请输入你的数据库密码
+    password: 114514
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    # 连接池配置
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  jpa:
+    # Hibernate 配置
+    hibernate:
+      ddl-auto: update # 开发环境使用 update，生产环境使用 validate
+    show-sql: true # 显示 SQL 语句
+    properties:
+      hibernate:
+        format_sql: true # 格式化 SQL
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # JSON 配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.example.english_learning_platform: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

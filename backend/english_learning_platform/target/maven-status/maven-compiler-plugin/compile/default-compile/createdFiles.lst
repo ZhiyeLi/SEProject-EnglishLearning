@@ -1,0 +1,8 @@
+com\example\english_learning_platform\entity\Word.class
+com\example\english_learning_platform\controller\TestController.class
+com\example\english_learning_platform\repository\WordRepository.class
+com\example\english_learning_platform\EnglishLearningPlatformApplication.class
+com\example\english_learning_platform\entity\User.class
+com\example\english_learning_platform\repository\WordTypeRepository.class
+com\example\english_learning_platform\entity\WordType.class
+com\example\english_learning_platform\repository\UserRepository.class
