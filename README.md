@@ -46,7 +46,7 @@ npm run build
 
 ### 🚀 快速开始
 
-#### 使用自动导入脚本
+#### 使用自动导入脚本初始化数据库
 
 在此之前，确保你已经将 MySQL 的 bin 目录加入 PATH，路径通常是：
 
@@ -81,8 +81,9 @@ npm run build
        password: your_actual_password # 改为你的 MySQL 密码
    ```
 
-4. **启动项目**
-   ```bash
-   mvn clean install
-   mvn spring-boot:run
-   ```
+#### 启动项目
+
+```bash
+mvn clean install
+mvn spring-boot:run
+```
