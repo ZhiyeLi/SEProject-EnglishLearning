@@ -34,67 +34,65 @@
 
     <!-- 主内容区 -->
     <main class="flex-grow flex flex-col md:flex-row">
-      <!-- 左侧好友列表：使用FriendItem组件 -->
-      <aside
-        class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20"
-      >
+      <!-- 左侧好友列表：保留 -->
+      <aside class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20">
         <div class="p-5 h-full flex flex-col">
           <!-- 搜索框：保留 -->
           <div class="relative mb-6">
-            <input
-              type="text"
-              placeholder="搜索好友..."
+            <input 
+              type="text" 
+              placeholder="搜索好友..." 
               class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
             >
-            <i
-              class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"
-            />
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
           </div>
-
-          <!-- 好友列表区域：使用FriendItem -->
+          
+          <!-- 好友列表区域 -->
           <div class="flex-grow overflow-y-auto -mx-2 px-2">
-            <h3
-              class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 mt-2"
-            >
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 mt-2">
               好友列表
             </h3>
-
+            
             <ul class="space-y-2">
-              <FriendItem
-                name="示例好友"
-                avatar="https://picsum.photos/seed/friend1/100/100"
-                status="online"
-                extra-info="今日已背50个单词"
-              >
-                <template #actions>
-                  <button
-                    class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
-                  >
-                    <i class="fas fa-comment" />
-                  </button>
-                </template>
-              </FriendItem>
+              <!-- 加载状态 -->
+              <li v-if="loading" class="p-3 text-center text-gray-500">
+                <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+              </li>
+              <!-- 错误提示 -->
+              <li v-else-if="error" class="p-3 text-center text-red-500">
+                {{ error }}
+              </li>
+              <!-- 无好友提示 -->
+              <li v-else-if="friendList.length === 0" class="p-3 text-center text-gray-500">
+                暂无好友，快去添加吧！
+              </li>
+              <!-- 遍历真实好友列表 -->
+              <li v-for="friend in friendList" :key="friend.id">
+                <FriendItem 
+                  :name="friend.name" 
+                  :avatar="friend.avatar || 'https://picsum.photos/seed/default/100/100'" 
+                  :status="friend.status || 'offline'" 
+                  :class="friend.id === currentFriendId ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''"
+                >
+                </FriendItem>
+              </li>
               <li>
-                <button
+                <button 
                   class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group"
                   @click="showAddFriendModal = true"
                 >
-                  <i
-                    class="fas fa-plus-circle mr-2 group-hover:scale-110 transition-transform"
-                  />
+                  <i class="fas fa-plus-circle mr-2 group-hover:scale-110 transition-transform" />
                   点击添加更多好友
                 </button>
               </li>
 
               <!-- 好友请求按钮（放在添加好友按钮下方） -->
               <li>
-                <button
+                <button 
                   class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group relative"
                   @click="showFriendRequestModal = true"
                 >
-                  <i
-                    class="fas fa-user-plus mr-2 group-hover:scale-110 transition-transform"
-                  />
+                  <i class="fas fa-user-plus mr-2 group-hover:scale-110 transition-transform" />
                   查看好友请求
                   <!-- 未处理请求数小红点 -->
                   <span
@@ -107,15 +105,13 @@
               </li>
             </ul>
           </div>
-
-          <!-- 底部功能選項：好友 在左、聊天 在中間（預設選中好友） -->
+          
+          <!-- 底部功能选项：添加了点击事件 -->
           <div class="border-t border-gray-100 mt-4 pt-3 flex justify-around">
             <button
               :class="[
                 'flex flex-col items-center py-1 transition-colors',
-                activeTab === 'friends'
-                  ? 'text-emerald-600 hover:text-emerald-700'
-                  : 'text-gray-600 hover:text-emerald-600',
+                activeTab === 'friends' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
               ]"
               @click="gotoHome"
             >
@@ -126,9 +122,7 @@
             <button
               :class="[
                 'flex flex-col items-center py-1 transition-colors',
-                activeTab === 'chat'
-                  ? 'text-emerald-600 hover:text-emerald-700'
-                  : 'text-gray-600 hover:text-emerald-600',
+                activeTab === 'chat' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
               ]"
               @click="gotoChat"
             >
@@ -139,9 +133,7 @@
             <button
               :class="[
                 'flex flex-col items-center py-1 transition-colors',
-                activeTab === 'rank'
-                  ? 'text-emerald-600 hover:text-emerald-700'
-                  : 'text-gray-600 hover:text-emerald-600',
+                activeTab === 'rank' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
               ]"
               @click="activeTab = 'rank'"
             >
@@ -512,24 +504,20 @@
         v-if="showAddFriendModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
       >
-        <div
-          class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100"
-        >
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100">
           <!-- 弹窗头部 -->
-          <div
-            class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
-          >
+          <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h3 class="text-lg font-semibold text-gray-800">
               添加好友
             </h3>
-            <button
+            <button 
               class="text-gray-400 hover:text-gray-600 transition-colors"
               @click="showAddFriendModal = false"
             >
               <i class="fas fa-times text-lg" />
             </button>
           </div>
-
+          
           <!-- 弹窗内容 -->
           <div class="px-6 py-4">
             <div class="space-y-4">
@@ -537,18 +525,16 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">搜索好友（用户名/ID）</label>
                 <div class="relative">
-                  <input
+                  <input 
                     v-model="searchFriendValue"
-                    type="text"
-                    placeholder="请输入好友信息..."
+                    type="text" 
+                    placeholder="请输入好友信息..." 
                     class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
                   >
-                  <i
-                    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  />
+                  <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 </div>
               </div>
-
+              
               <!-- 搜索结果 -->
               <div
                 v-if="searchFriendValue"
@@ -564,14 +550,14 @@
                   v-else
                   class="divide-y"
                 >
-                  <div
-                    v-for="(friend, index) in searchResults"
+                  <div 
+                    v-for="(friend, index) in searchResults" 
                     :key="index"
                     class="flex items-center p-3 hover:bg-gray-50 transition-colors"
                   >
-                    <img
-                      :src="friend.avatar"
-                      alt="好友头像"
+                    <img 
+                      :src="friend.avatar" 
+                      alt="好友头像" 
                       class="w-10 h-10 rounded-full object-cover mr-3"
                     >
                     <div class="flex-grow">
@@ -582,7 +568,7 @@
                         ID: {{ friend.id }}
                       </p>
                     </div>
-                    <button
+                    <button 
                       class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
                       @click="addFriend(friend)"
                     >
@@ -593,18 +579,16 @@
               </div>
             </div>
           </div>
-
+          
           <!-- 弹窗底部 -->
-          <div
-            class="px-6 py-3 border-t border-gray-200 flex justify-end space-x-2"
-          >
-            <button
+          <div class="px-6 py-3 border-t border-gray-200 flex justify-end space-x-2">
+            <button 
               class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               @click="showAddFriendModal = false"
             >
               取消
             </button>
-            <button
+            <button 
               class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
               :disabled="!friendId && !searchFriendValue"
               @click="confirmAddFriend"
@@ -615,88 +599,90 @@
         </div>
       </div>
     </teleport>
-
     <!-- 好友请求确认弹窗 -->
-    <teleport to="body">
-      <div
-        v-if="showFriendRequestModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
-      >
-        <div
-          class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100"
+<teleport to="body">
+  <div
+    v-if="showFriendRequestModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
+  >
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100">
+      <!-- 弹窗头部（原有） -->
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800">
+          好友请求
+        </h3>
+        <button 
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+          @click="showFriendRequestModal = false"
         >
-          <!-- 弹窗头部 -->
-          <div
-            class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
-          >
-            <h3 class="text-lg font-semibold text-gray-800">
-              好友请求
-            </h3>
-            <button
-              class="text-gray-400 hover:text-gray-600 transition-colors"
-              @click="showFriendRequestModal = false"
-            >
-              <i class="fas fa-times text-lg" />
-            </button>
-          </div>
+          <i class="fas fa-times text-lg" />
+        </button>
+      </div>
 
-          <!-- 弹窗内容 -->
-          <div class="px-6 py-4 max-h-80 overflow-y-auto">
-            <div
-              v-if="friendRequests.length === 0"
-              class="p-8 text-center text-gray-500"
-            >
-              <i class="fas fa-inbox text-4xl mb-2 text-gray-300" />
-              <p>暂无未处理的好友请求</p>
-            </div>
-            <div
-              v-else
-              class="space-y-3 divide-y"
-            >
-              <div
-                v-for="(request, index) in friendRequests"
-                :key="index"
-                class="py-3 flex items-center justify-between"
+      <!-- 弹窗内容（修改：添加加载状态） -->
+      <div class="px-6 py-4 max-h-80 overflow-y-auto">
+        <!-- 加载状态 -->
+        <div v-if="friendRequestLoading" class="p-8 text-center text-gray-500">
+          <i class="fas fa-spinner fa-spin text-4xl mb-2 text-gray-300" />
+          <p>加载中...</p>
+        </div>
+        <!-- 无请求 -->
+        <div
+          v-else-if="friendRequests.length === 0"
+          class="p-8 text-center text-gray-500"
+        >
+          <i class="fas fa-inbox text-4xl mb-2 text-gray-300" />
+          <p>暂无未处理的好友请求</p>
+        </div>
+        <!-- 有请求列表（原有：保留time显示） -->
+        <div
+          v-else
+          class="space-y-3 divide-y"
+        >
+          <div 
+            v-for="(request, index) in friendRequests" 
+            :key="index"
+            class="py-3 flex items-center justify-between"
+          >
+            <div class="flex items-center">
+              <img 
+                :src="request.avatar" 
+                alt="请求者头像" 
+                class="w-12 h-12 rounded-full object-cover mr-3"
               >
-                <div class="flex items-center">
-                  <img
-                    :src="request.avatar"
-                    alt="请求者头像"
-                    class="w-12 h-12 rounded-full object-cover mr-3"
-                  >
-                  <div>
-                    <p class="font-medium text-gray-800">
-                      {{ request.name }}
-                    </p>
-                    <p class="text-xs text-gray-500">
-                      ID: {{ request.id }}
-                    </p>
-                    <p class="text-xs text-gray-400 mt-1">
-                      {{ request.time }}
-                    </p>
-                  </div>
-                </div>
-                <div class="flex space-x-2">
-                  <button
-                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
-                    @click="acceptFriendRequest(index)"
-                  >
-                    <i class="fas fa-check mr-1" /> 接受
-                  </button>
-                  <button
-                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
-                    @click="rejectFriendRequest(index)"
-                  >
-                    <i class="fas fa-times mr-1" /> 拒绝
-                  </button>
-                </div>
+              <div>
+                <p class="font-medium text-gray-800">
+                  {{ request.senderName }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  ID: {{ request.requesterId }} <!-- 显示发送者ID（替换原有request.id，因为request.id是请求的主键） -->
+                </p>
+                <p class="text-xs text-gray-400 mt-1">
+                  {{ request.time }} <!-- 显示格式化后的时间 -->
+                </p>
               </div>
             </div>
+            <div class="flex space-x-2">
+              <button 
+                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                @click="acceptFriendRequest(index)"
+              >
+                <i class="fas fa-check mr-1" /> 接受
+              </button>
+              <button 
+                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                @click="rejectFriendRequest(index)"
+              >
+                <i class="fas fa-times mr-1" /> 拒绝
+              </button>
+            </div>
           </div>
-
+        </div>
+      </div>
+      
           <!-- 弹窗底部 -->
           <div class="px-6 py-3 border-t border-gray-200 flex justify-end">
-            <button
+            <button 
               class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
               @click="showFriendRequestModal = false"
             >
@@ -817,6 +803,15 @@ import FriendItem from "@/components/business/FriendItem.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import CustomButton from "@/components/common/CustomButton.vue";
 
+import { friendApi } from '@/api/friend'; // 后端好友接口
+
+const searchLoading = ref(false); // 搜索用户的加载状态
+
+const loading = ref(false); // 加载状态
+const error = ref(''); // 错误提示
+const friendList = ref([]); // 后端返回的真实好友列表
+const currentFriendId = ref(''); // 当前选中好友ID
+
 // 添加好友弹窗相关响应式变量
 const showAddFriendModal = ref(false);
 const searchFriendValue = ref("");
@@ -827,6 +822,9 @@ const searchResults = ref([]);
 const showFriendRequestModal = ref(false);
 
 onMounted(async () => {
+  await fetchFriendList(); // 加载好友列表
+  await fetchFriendRequests(); // 新增：加载好友请求列表
+
   // 初始化单词打卡数据
   await wordProgressManager.init();
 
@@ -968,120 +966,211 @@ const navItems = [
   { label: "AI伴学", onClick: gotoAiChat },
 ];
 
-//添加好友弹窗部分
+//好友列表显示部分
+//从后端获取好友list
+const fetchFriendList = async () => {
+  try {
+    loading.value = true;
+    const res = await friendApi.getFriendList(); // 调用后端接口
 
-// 模拟好友数据,后期改为数据库调用
-const mockFriends = [
-  {
-    id: "1001",
-    name: "模拟用户1",
-    avatar: "https://picsum.photos/seed/friend1001/100/100",
-  },
-  {
-    id: "1002",
-    name: "模拟用户2",
-    avatar: "https://picsum.photos/seed/friend1002/100/100",
-  },
-  {
-    id: "1003",
-    name: "模拟用户3",
-    avatar: "https://picsum.photos/seed/friend1003/100/100",
-  },
-  {
-    id: "1004",
-    name: "模拟用户4",
-    avatar: "https://picsum.photos/seed/friend1004/100/100",
-  },
-  {
-    id: "1005",
-    name: "模拟用户5",
-    avatar: "https://picsum.photos/seed/friend1005/100/100",
-  },
-];
-
-watch(searchFriendValue, (val) => {
-  if (val) {
-    // 模拟搜索延迟
-    setTimeout(() => {
-      const results = mockFriends.filter(
-        (friend) => friend.name.includes(val) || friend.id.includes(val)
-      );
-      searchResults.value = results;
-    }, 300);
-  } else {
-    searchResults.value = [];
+    if (res.code === 200) {
+      friendList.value = res.data.map(friend => ({
+        id: friend.userId, // 后端userId → 前端id
+        name: friend.userName, // 后端userName → 前端name
+        avatar: friend.avatar, // 头像字段直接复用
+        status: friend.userStatus || 'offline', // 后端userStatus → 前端status，兜底默认值
+        signature: friend.signature // 保留个性签名字段
+      })); 
+    } else {
+      // 处理接口返回成功但code非200的情况
+      error.value = res.message || '获取好友列表失败';
+      console.error('获取好友列表失败：', res.message);
+    } 
+  } catch (err) {
+    // 完善错误处理：区分网络错误、接口响应错误
+    error.value = '网络异常，获取好友列表失败';
+    console.error('获取好友列表异常：', err);
+    if (err.response) {
+      error.value = err.response.data.message || error.value;
+      console.error('后端返回的错误信息：', err.response.data.message);
+    }
+  } finally {
+    loading.value = false;
   }
+};
+
+//添加好友弹窗部分
+let searchTimer = null; // 搜索防抖定时器
+// 监听搜索关键词，调用后端接口搜索用户
+watch(searchFriendValue, (val) => {
+  // 1. 清空之前的定时器（防抖）
+  if (searchTimer) clearTimeout(searchTimer);
+
+  // 2. 如果输入为空，清空结果
+  if (!val.trim()) {
+    searchResults.value = [];
+    return;
+  }
+
+  // 3. 开启新的定时器，延迟 500ms 执行搜索
+  searchTimer = setTimeout(async () => {
+    try {
+      searchLoading.value = true;
+      
+      const res = await friendApi.searchFriend({ keyword: val });
+      
+      if (res.code === 200) {
+        // 格式化后端返回的用户数据
+        searchResults.value = res.data.map(user => ({
+          id: user.userId, 
+          name: user.userName, 
+          avatar: user.avatar || 'https://picsum.photos/seed/default/100/100', 
+          status: user.userStatus || 'offline'
+        }));
+      } else {
+        searchResults.value = [];
+      }
+    } catch (err) {
+      searchResults.value = [];
+      console.error('搜索用户异常：', err);
+    } finally {
+      searchLoading.value = false;
+    }
+  }, 500); // 500ms 防抖时间
 });
 
-// 新增添加好友相关方法
-const searchFriendById = () => {
-  if (friendId.value) {
-    const friend = mockFriends.find((f) => f.id === friendId.value);
-    if (friend) {
-      searchResults.value = [friend];
-      searchFriendValue.value = friend.name;
-    } else {
+
+// 发送好友请求逻辑
+const addFriend = async (friend) => {
+  if (!friend || !friend.id) {
+    alert("用户信息无效");
+    return;
+  }
+
+  try {
+    // 调用后端接口
+    const res = await friendApi.sendFriendRequest({
+      receiverId: friend.id // 传递目标用户ID
+    });
+
+    if (res.code === 200) {
+      alert(res.message || '好友请求已发送');
+      
+      // 发送成功后关闭弹窗并清空搜索
+      showAddFriendModal.value = false;
+      searchFriendValue.value = '';
       searchResults.value = [];
-      // 提示未找到
-      alert("未找到该ID的好友");
+      friendId.value = '';
+    } else {
+      // 处理业务错误（如：已经是好友、已发送过请求等）
+      alert(res.message || '发送请求失败');
     }
+  } catch (err) {
+    console.error('发送好友请求异常:', err);
   }
 };
 
-const addFriend = (friend) => {
-  // 模拟添加好友逻辑，后期替换为真实API调用
-  console.log("添加好友:", friend);
-  alert(`已发送好友请求给 ${friend.name}`);
-  // 关闭弹窗并重置表单
-  showAddFriendModal.value = false;
-  searchFriendValue.value = "";
-  friendId.value = "";
-  searchResults.value = [];
-};
-
+// 确认添加按钮点击事件（保持逻辑一致，调用上面的addFriend）
 const confirmAddFriend = () => {
   if (searchResults.value.length > 0) {
+    // 如果有搜索结果，默认添加第一个
     addFriend(searchResults.value[0]);
-  } else if (friendId.value) {
-    searchFriendById();
+  } else {
+    alert("请先搜索并选择一个用户");
   }
 };
 
 // 好友请求弹窗部分
-// 模拟未处理的好友请求数据
-const friendRequests = ref([
-  {
-    id: "2001",
-    name: "模拟请求1",
-    avatar: "https://picsum.photos/seed/friend2001/100/100",
-  },
-  {
-    id: "2002",
-    name: "模拟请求2",
-    avatar: "https://picsum.photos/seed/friend2002/100/100",
-  },
-]);
+const friendRequestLoading = ref(false); // 好友请求加载状态
+const friendRequests = ref([]); // 好友请求列表
+
+// 新增：时间格式化工具函数（将后端的时间戳/日期字符串转为友好格式）
+const formatTime = (timeStr) => {
+  if (!timeStr) return '未知时间';
+  const date = new Date(timeStr);
+  // 格式：2025-12-12 14:30
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+};
+
+// 从后端获取好友请求列表
+const fetchFriendRequests = async () => {
+  try {
+    friendRequestLoading.value = true;
+    const res = await friendApi.getFriendRequests(); // 调用新增的接口
+    console.log('后端返回的好友请求原始数据：', res.data);
+    if (res.code === 200) {
+      // 格式化后端返回的请求数据（适配前端渲染）
+      friendRequests.value = res.data.map(request => ({
+        id: request.requestId, // 好友请求的唯一ID（后端主键）
+        requesterId: request.senderId, // 发送请求的用户ID
+        name: request.senderName, // 发送者昵称
+        avatar: request.senderAvatar || 'https://picsum.photos/seed/default/100/100', // 发送者头像
+        time: formatTime(request.createdAt), // 发送时间（格式化）
+      }));
+    } else {
+      friendRequests.value = [];
+      alert(res.message || '获取好友请求失败');
+    }
+  } catch (err) {
+    friendRequests.value = [];
+    console.error('获取好友请求异常:', err);
+    const errMsg = err.response?.data?.message;
+    alert(errMsg);
+  } finally {
+    friendRequestLoading.value = false;
+  }
+};
 
 // 接受好友请求
-const acceptFriendRequest = (index) => {
+const acceptFriendRequest = async (index) => {
   const request = friendRequests.value[index];
-  console.log("接受好友请求:", request);
-  // 模拟添加到好友列表逻辑
-  alert(`已接受 ${request.name} 的好友请求，对方已添加到你的好友列表`);
-  // 从请求列表中移除
-  friendRequests.value.splice(index, 1);
-  // 可在这里调用真实API：接受好友请求
+  if (!request || !request.id) {
+    alert('请求信息无效');
+    return;
+  }
+
+  try {
+    // 调用接受请求的接口
+    const res = await friendApi.acceptFriendRequest(request.id);
+    if (res.code === 200) {
+      alert(`已接受 ${request.name} 的好友请求！`);
+      // 1. 从请求列表中移除该请求
+      friendRequests.value.splice(index, 1);
+      // 2. 刷新好友列表（可选：让新好友立即显示在列表中）
+      await fetchFriendList();
+    } else {
+      alert(res.message || '接受好友请求失败');
+    }
+  } catch (err) {
+    console.error('接受好友请求异常:', err);
+    const errMsg = err.response?.data?.message || '网络异常，无法接受请求';
+    alert(errMsg);
+  }
 };
 
 // 拒绝好友请求
-const rejectFriendRequest = (index) => {
+const rejectFriendRequest = async (index) => {
   const request = friendRequests.value[index];
-  console.log("拒绝好友请求:", request);
-  // 模拟拒绝逻辑
-  alert(`已拒绝 ${request.name} 的好友请求`);
-  // 从请求列表中移除
-  friendRequests.value.splice(index, 1);
-  // 可在这里调用真实API：拒绝好友请求
+  if (!request || !request.id) {
+    alert('请求信息无效');
+    return;
+  }
+
+  try {
+    // 调用拒绝请求的接口
+    const res = await friendApi.rejectFriendRequest(request.id);
+    if (res.code === 200) {
+      alert(`已拒绝 ${request.name} 的好友请求！`);
+      // 从请求列表中移除该请求
+      friendRequests.value.splice(index, 1);
+    } else {
+      alert(res.message || '拒绝好友请求失败');
+    }
+  } catch (err) {
+    console.error('拒绝好友请求异常:', err);
+    const errMsg = err.response?.data?.message || '网络异常，无法拒绝请求';
+    alert(errMsg);
+  }
 };
 
 // 学习建议弹窗部分
