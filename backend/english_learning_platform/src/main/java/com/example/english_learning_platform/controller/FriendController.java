@@ -20,11 +20,14 @@ public class FriendController {
     public FriendController(FriendService friendService) {
         this.friendService = friendService;
     }
-    
+
     @GetMapping("/search")
-    public ApiResponse<List<User>> searchFriend(@RequestParam String keyword) {
+    public ApiResponse<List<User>> searchFriends(
+            @RequestAttribute("userId") Long userId,
+            @RequestParam String keyword) {
+
         try {
-            List<User> users = friendService.searchFriend(keyword);
+            List<User> users = friendService.searchNewFriends(keyword,userId);
             return ApiResponse.success(users);
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());

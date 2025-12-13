@@ -4,10 +4,11 @@
 import request from "@/utils/request";
 
 export const friendApi = {
-  // 搜索好友
+  // 搜索添加好友
   searchFriend(params) {
     return request.get("/api/friends/search", { params });
   },
+
 
   // 发送好友请求
   sendFriendRequest(data) {
@@ -20,13 +21,13 @@ export const friendApi = {
   },
 
   // 接受好友请求
-  acceptFriendRequest(data) {
-    return request.post("/api/friends/accept", data);
+  acceptFriendRequest(requestId) {
+    return request.post("/api/friends/accept", { "requestId": requestId });
   },
 
   // 拒绝好友请求
-  rejectFriendRequest(data) {
-    return request.post("/api/friends/reject", data);
+  rejectFriendRequest(requestId) {
+    return request.post("/api/friends/reject", { "requestId": requestId });
   },
 
   // 获取好友列表
@@ -48,4 +49,5 @@ export const friendApi = {
   getUnreadCount() {
     return request.get("/api/friends/unread-count");
   },
+
 };

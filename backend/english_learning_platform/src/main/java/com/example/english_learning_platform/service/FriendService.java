@@ -25,15 +25,32 @@ public class FriendService {
         this.friendRequestRepository = friendRequestRepository;
         this.messageRepository = messageRepository;
     }
-    
-    public List<User> searchFriend(String keyword) {
-        return userRepository.findAll().stream()
-                .filter(user -> user.getUserName().contains(keyword) || 
-                               user.getUserEmail().contains(keyword))
+
+    public List<User> searchNewFriends(String keyword, Long currentUserId) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 先查出所有符合关键词的用户 (包含自己和好友)
+        List<User> allMatches = userRepository.findByUserNameContainingOrUserEmailContaining(keyword, keyword);
+
+        // 查出当前用户的所有好友 ID
+        Set<Long> myFriendIds = friendRepository.findByUserId(currentUserId)
+                .stream()
+                .map(friend -> friend.getFriendId()) // 获取好友的ID字段
+                .collect(Collectors.toSet());
+
+        // 在内存中过滤
+        return allMatches.stream()
+                // 排除自己 (比较 userId)
+                .filter(user -> !user.getUserId().equals(currentUserId))
+                // 排除已存在的好友
+                .filter(user -> !myFriendIds.contains(user.getUserId()))
+                // 限制返回数量 (例如只返回前 20 个)
                 .limit(20)
                 .collect(Collectors.toList());
     }
-    
+
     @Transactional
     public FriendRequest sendFriendRequest(Long senderId, Long receiverId) {
         // 检查是否已经是好友
@@ -67,12 +84,18 @@ public class FriendService {
         if (!request.getReceiverId().equals(userId)) {
             throw new RuntimeException("无权限操作");
         }
-        
-        // 创建好友关系
-        Friend friend = new Friend();
-        friend.setUserId(request.getSenderId());
-        friend.setFriendId(request.getReceiverId());
-        friendRepository.save(friend);
+
+        // 建立正向关系：申请人 -> 我
+        Friend forwardShip = new Friend();
+        forwardShip.setUserId(request.getSenderId());
+        forwardShip.setFriendId(request.getReceiverId());
+        friendRepository.save(forwardShip);
+
+        // 建立反向关系：我 -> 申请人 (新增部分)
+        Friend backwardShip = new Friend();
+        backwardShip.setUserId(request.getReceiverId());
+        backwardShip.setFriendId(request.getSenderId());
+        friendRepository.save(backwardShip);
         
         // 更新请求状态
         request.setStatus("accepted");

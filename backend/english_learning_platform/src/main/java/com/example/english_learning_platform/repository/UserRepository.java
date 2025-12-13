@@ -2,8 +2,11 @@ package com.example.english_learning_platform.repository;
 
 import com.example.english_learning_platform.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,4 +34,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * 检查邮箱是否存在
      */
     boolean existsByUserEmail(String userEmail);
+
+    /**
+     * 查找除了自身和好友外的用户
+     */
+    List<User> findByUserNameContainingOrUserEmailContaining(String userName, String userEmail);
 }
