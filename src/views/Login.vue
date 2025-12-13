@@ -1,10 +1,17 @@
 <template>
   <div class="auth-page">
-    <div id="auth-container" class="auth-container">
+    <div
+      id="auth-container"
+      class="auth-container"
+    >
       <!-- 合并为一个 transition 组件，通过 key 区分登录/注册面板 -->
       <transition name="slide">
         <!-- 登录面板 -->
-        <div v-if="isLoginMode" key="login" class="auth-panel">
+        <div
+          v-if="isLoginMode"
+          key="login"
+          class="auth-panel"
+        >
           <LoginForm
             :pwd-visible="pwdVisible"
             @toggle-pwd-visible="togglePwdVisible"
@@ -14,7 +21,11 @@
         </div>
 
         <!-- 注册面板（v-else 与 v-if 相邻） -->
-        <div v-else key="register" class="auth-panel">
+        <div
+          v-else
+          key="register"
+          class="auth-panel"
+        >
           <RegisterForm
             :pwd-visible="pwdVisible"
             @toggle-pwd-visible="togglePwdVisible"

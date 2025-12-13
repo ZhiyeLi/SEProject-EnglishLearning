@@ -3,28 +3,12 @@
     <!-- 导航栏 -->
     <NavBar :nav-items="navItems">
       <template #actions>
-        <button
-          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-        >
-          <i class="fas fa-lightbulb text-lg" />
-          <span
-            class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >学习建议</span>
-        </button>
-        <button
-          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-        >
-          <i class="fas fa-cog text-lg" />
-          <span
-            class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >设置</span>
-        </button>
-        <button class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors">
-          <i class="fas fa-bell text-lg" />
-          <span
-            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
-          >3</span>
-        </button>
+        <ActionButtons
+          @suggestions="() => {}"
+          @settings="gotoSettings"
+          @home="gotoHome"
+          @notifications="() => {}"
+        />
       </template>
     </NavBar>
 
@@ -534,6 +518,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user';
 import NavBar from '@/components/common/NavBar.vue';
+import ActionButtons from '@/components/common/ActionButtons.vue';
 import EndBar from '@/components/common/EndBar.vue';
 import EditPassword from '@/components/profile/EditPassword.vue'; // 引入编辑组件
 import EditEmail from '@/components/profile/EditEmail.vue'; // 引入编辑组件

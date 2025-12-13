@@ -3,13 +3,12 @@
     <!-- 导航栏 -->
     <NavBar :nav-items="navItems">
       <template #actions>
-        <button
-          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors"
-          title="返回首页"
-          @click="goHome"
-        >
-          <i class="fas fa-home text-lg" />
-        </button>
+        <ActionButtons
+          @suggestions="() => {}"
+          @settings="gotoSettings"
+          @home="goHome"
+          @notifications="() => {}"
+        />
       </template>
     </NavBar>
 
@@ -517,6 +516,7 @@
 import { ref, computed, onMounted, reactive } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "@/components/common/NavBar.vue";
+import ActionButtons from "@/components/common/ActionButtons.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import QuestionCard from "@/components/business/QuestionCard.vue";
 import QuestionPractice from "@/components/business/QuestionPractice.vue";

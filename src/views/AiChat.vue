@@ -3,39 +3,12 @@
     <!-- 引入NavBar组件 -->
     <NavBar :nav-items="navItems">
       <template #actions>
-        <button
-          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-          @click="openSuggestions"
-        >
-          <i class="fas fa-lightbulb text-lg" />
-          <span
-            class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >学习建议</span>
-        </button>
-        <button
-          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-          @click="gotoSettings"
-        >
-          <i class="fas fa-cog text-lg" />
-          <span
-            class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >设置</span>
-        </button>
-        <button
-          class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors"
-        >
-          <i class="fas fa-bell text-lg" />
-          <span
-            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
-          >3</span>
-        </button>
-        <button
-          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors ml-2"
-          title="返回首页"
-          @click="router.push({ name: 'Home' })"
-        >
-          <i class="fas fa-home text-lg" />
-        </button>
+        <ActionButtons
+          @suggestions="openSuggestions"
+          @settings="gotoSettings"
+          @home="gotoHome"
+          @notifications="() => {}"
+        />
       </template>
     </NavBar>
 
@@ -50,16 +23,11 @@
         >
           <!-- 聊天头部 -->
           <div
-            class="bg-gradient-to-r from-emerald-500 to-emerald-600 border-b border-gray-200 p-4 flex items-center shadow-sm"
+            class="bg-gradient-to-r from-emerald-500 to-emerald-600 border-b border-gray-200 p-4 flex items-center justify-start shadow-sm"
           >
-            <div class="flex-grow">
-              <h3 class="font-semibold text-white text-lg flex items-center">
-                <i class="fas fa-robot mr-2" /> AI 学习助手
-              </h3>
-              <span class="text-emerald-100 text-sm">{{
-                systemPromptShort
-              }}</span>
-            </div>
+            <h3 class="font-semibold text-white text-xl flex items-center">
+              <i class="fas fa-robot mr-2" /> AI 学习助手
+            </h3>
           </div>
 
           <!-- 聊天消息区域 -->
@@ -278,6 +246,7 @@
 import { ref, onMounted, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "@/components/common/NavBar.vue";
+import ActionButtons from "@/components/common/ActionButtons.vue";
 // Friend list removed for AI 学习助手页面；组件在其他页面仍可用
 import EndBar from "@/components/common/EndBar.vue";
 
@@ -285,9 +254,6 @@ const router = useRouter();
 
 // 系统固定 prompt（可根据需要修改）
 const SYSTEM_PROMPT = `你是一个友好且实用的英语学习助手，提供具体的建议、例句和练习题，尽量简洁且有步骤。`;
-
-const systemPromptShort =
-  SYSTEM_PROMPT.slice(0, 40) + (SYSTEM_PROMPT.length > 40 ? "..." : "");
 
 const userInput = ref("");
 const messages = ref([

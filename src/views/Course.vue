@@ -6,42 +6,12 @@
     <!-- 导航栏 - 复用现有NavBar组件 -->
     <NavBar :nav-items="navItems">
       <template #actions>
-        <button
-          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-          aria-label="学习建议"
-        >
-          <i
-            class="fas fa-lightbulb text-lg"
-            aria-hidden="true"
-          />
-          <span
-            class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >学习建议</span>
-        </button>
-        <button
-          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-          aria-label="设置"
-        >
-          <i
-            class="fas fa-cog text-lg"
-            aria-hidden="true"
-          />
-          <span
-            class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >设置</span>
-        </button>
-        <button
-          class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors"
-          aria-label="查看通知（3条未读）"
-        >
-          <i
-            class="fas fa-bell text-lg"
-            aria-hidden="true"
-          />
-          <span
-            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
-          >3</span>
-        </button>
+        <ActionButtons
+          @suggestions="() => {}"
+          @settings="gotoSettings"
+          @home="gotoHome"
+          @notifications="() => {}"
+        />
       </template>
     </NavBar>
 
@@ -246,6 +216,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "@/components/common/NavBar.vue";
+import ActionButtons from "@/components/common/ActionButtons.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import courseImg1 from "@/assets/course/id1.png";
 import courseImg2 from "@/assets/course/id2.png";

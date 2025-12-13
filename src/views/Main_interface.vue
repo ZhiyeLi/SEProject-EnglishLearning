@@ -3,32 +3,12 @@
     <!-- 引入NavBar组件，自定义右侧操作按钮 -->
     <NavBar :nav-items="navItems">
       <template #actions>
-        <button
-          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-          @click="showSuggestionsModal = true"
-        >
-          <i class="fas fa-lightbulb text-lg" />
-          <span
-            class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >学习建议</span>
-        </button>
-        <button
-          class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors relative group"
-          @click="gotoSettings"
-        >
-          <i class="fas fa-cog text-lg" />
-          <span
-            class="absolute -top-10 right-0 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          >设置</span>
-        </button>
-        <button
-          class="relative ml-2 text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors"
-        >
-          <i class="fas fa-bell text-lg" />
-          <span
-            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
-          >3</span>
-        </button>
+        <ActionButtons
+          @suggestions="showSuggestionsModal = true"
+          @settings="gotoSettings"
+          @home="gotoHome"
+          @notifications="handleNotifications"
+        />
       </template>
     </NavBar>
 
@@ -55,26 +35,37 @@
             
             <ul class="space-y-2">
               <!-- 加载状态 -->
-              <li v-if="loading" class="p-3 text-center text-gray-500">
-                <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+              <li
+                v-if="loading"
+                class="p-3 text-center text-gray-500"
+              >
+                <i class="fas fa-spinner fa-spin mr-2" />加载中...
               </li>
               <!-- 错误提示 -->
-              <li v-else-if="error" class="p-3 text-center text-red-500">
+              <li
+                v-else-if="error"
+                class="p-3 text-center text-red-500"
+              >
                 {{ error }}
               </li>
               <!-- 无好友提示 -->
-              <li v-else-if="friendList.length === 0" class="p-3 text-center text-gray-500">
+              <li
+                v-else-if="friendList.length === 0"
+                class="p-3 text-center text-gray-500"
+              >
                 暂无好友，快去添加吧！
               </li>
               <!-- 遍历真实好友列表 -->
-              <li v-for="friend in friendList" :key="friend.id">
+              <li
+                v-for="friend in friendList"
+                :key="friend.id"
+              >
                 <FriendItem 
                   :name="friend.name" 
                   :avatar="friend.avatar || 'https://picsum.photos/seed/default/100/100'" 
                   :status="friend.status || 'offline'" 
                   :class="friend.id === currentFriendId ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''"
-                >
-                </FriendItem>
+                />
               </li>
               <li>
                 <button 
@@ -600,85 +591,88 @@
       </div>
     </teleport>
     <!-- 好友请求确认弹窗 -->
-<teleport to="body">
-  <div
-    v-if="showFriendRequestModal"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
-  >
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100">
-      <!-- 弹窗头部（原有） -->
-      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <h3 class="text-lg font-semibold text-gray-800">
-          好友请求
-        </h3>
-        <button 
-          class="text-gray-400 hover:text-gray-600 transition-colors"
-          @click="showFriendRequestModal = false"
-        >
-          <i class="fas fa-times text-lg" />
-        </button>
-      </div>
+    <teleport to="body">
+      <div
+        v-if="showFriendRequestModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
+      >
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all scale-100">
+          <!-- 弹窗头部（原有） -->
+          <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-800">
+              好友请求
+            </h3>
+            <button 
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showFriendRequestModal = false"
+            >
+              <i class="fas fa-times text-lg" />
+            </button>
+          </div>
 
-      <!-- 弹窗内容（修改：添加加载状态） -->
-      <div class="px-6 py-4 max-h-80 overflow-y-auto">
-        <!-- 加载状态 -->
-        <div v-if="friendRequestLoading" class="p-8 text-center text-gray-500">
-          <i class="fas fa-spinner fa-spin text-4xl mb-2 text-gray-300" />
-          <p>加载中...</p>
-        </div>
-        <!-- 无请求 -->
-        <div
-          v-else-if="friendRequests.length === 0"
-          class="p-8 text-center text-gray-500"
-        >
-          <i class="fas fa-inbox text-4xl mb-2 text-gray-300" />
-          <p>暂无未处理的好友请求</p>
-        </div>
-        <!-- 有请求列表（原有：保留time显示） -->
-        <div
-          v-else
-          class="space-y-3 divide-y"
-        >
-          <div 
-            v-for="(request, index) in friendRequests" 
-            :key="index"
-            class="py-3 flex items-center justify-between"
-          >
-            <div class="flex items-center">
-              <img 
-                :src="request.avatar" 
-                alt="请求者头像" 
-                class="w-12 h-12 rounded-full object-cover mr-3"
+          <!-- 弹窗内容（修改：添加加载状态） -->
+          <div class="px-6 py-4 max-h-80 overflow-y-auto">
+            <!-- 加载状态 -->
+            <div
+              v-if="friendRequestLoading"
+              class="p-8 text-center text-gray-500"
+            >
+              <i class="fas fa-spinner fa-spin text-4xl mb-2 text-gray-300" />
+              <p>加载中...</p>
+            </div>
+            <!-- 无请求 -->
+            <div
+              v-else-if="friendRequests.length === 0"
+              class="p-8 text-center text-gray-500"
+            >
+              <i class="fas fa-inbox text-4xl mb-2 text-gray-300" />
+              <p>暂无未处理的好友请求</p>
+            </div>
+            <!-- 有请求列表（原有：保留time显示） -->
+            <div
+              v-else
+              class="space-y-3 divide-y"
+            >
+              <div 
+                v-for="(request, index) in friendRequests" 
+                :key="index"
+                class="py-3 flex items-center justify-between"
               >
-              <div>
-                <p class="font-medium text-gray-800">
-                  {{ request.senderName }}
-                </p>
-                <p class="text-xs text-gray-500">
-                  ID: {{ request.requesterId }} <!-- 显示发送者ID（替换原有request.id，因为request.id是请求的主键） -->
-                </p>
-                <p class="text-xs text-gray-400 mt-1">
-                  {{ request.time }} <!-- 显示格式化后的时间 -->
-                </p>
+                <div class="flex items-center">
+                  <img 
+                    :src="request.avatar" 
+                    alt="请求者头像" 
+                    class="w-12 h-12 rounded-full object-cover mr-3"
+                  >
+                  <div>
+                    <p class="font-medium text-gray-800">
+                      {{ request.senderName }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      ID: {{ request.requesterId }} <!-- 显示发送者ID（替换原有request.id，因为request.id是请求的主键） -->
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">
+                      {{ request.time }} <!-- 显示格式化后的时间 -->
+                    </p>
+                  </div>
+                </div>
+                <div class="flex space-x-2">
+                  <button 
+                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    @click="acceptFriendRequest(index)"
+                  >
+                    <i class="fas fa-check mr-1" /> 接受
+                  </button>
+                  <button 
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    @click="rejectFriendRequest(index)"
+                  >
+                    <i class="fas fa-times mr-1" /> 拒绝
+                  </button>
+                </div>
               </div>
             </div>
-            <div class="flex space-x-2">
-              <button 
-                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
-                @click="acceptFriendRequest(index)"
-              >
-                <i class="fas fa-check mr-1" /> 接受
-              </button>
-              <button 
-                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
-                @click="rejectFriendRequest(index)"
-              >
-                <i class="fas fa-times mr-1" /> 拒绝
-              </button>
-            </div>
           </div>
-        </div>
-      </div>
       
           <!-- 弹窗底部 -->
           <div class="px-6 py-3 border-t border-gray-200 flex justify-end">
@@ -799,6 +793,7 @@ import { useRouter } from "vue-router";
 import { wordProgressManager } from "@/utils/wordData.js";
 import { planManager } from "@/utils/planData.js";
 import NavBar from "@/components/common/NavBar.vue";
+import ActionButtons from "@/components/common/ActionButtons.vue";
 import FriendItem from "@/components/business/FriendItem.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import CustomButton from "@/components/common/CustomButton.vue";
