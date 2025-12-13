@@ -17,27 +17,8 @@
         修改密码
       </el-divider>
 
-      <!-- 验证方式选择 -->
-      <el-form-item label="验证方式">
-        <el-radio-group
-          v-model="verifyMethod"
-          @change="resetPasswordForm"
-        >
-          <el-radio label="password">
-            输入原密码
-          </el-radio>
-          <el-radio label="email">
-            邮箱验证
-          </el-radio>
-          <el-radio label="phone">
-            手机验证
-          </el-radio>
-        </el-radio-group>
-      </el-form-item>
-      
       <!-- 原密码验证 -->
       <el-form-item 
-        v-if="verifyMethod === 'password'" 
         label="原密码"
         prop="oldPassword"
       >
@@ -46,56 +27,6 @@
           type="password"
           placeholder="请输入原密码"
         />
-      </el-form-item>
-      
-      <!-- 邮箱验证 -->
-      <el-form-item 
-        v-if="verifyMethod === 'email'" 
-        label="验证码"
-        prop="verifyCode"
-      >
-        <el-row :gutter="10">
-          <el-col :span="14">
-            <el-input 
-              v-model="form.verifyCode" 
-              placeholder="请输入邮箱验证码"
-            />
-          </el-col>
-          <el-col :span="10">
-            <el-button 
-              type="text" 
-              :disabled="codeSending"
-              @click="sendVerifyCode('email')"
-            >
-              {{ codeSending ? `${countDown}秒后重发` : `发送至${formatContact(userStore.userInfo.email)}` }}
-            </el-button>
-          </el-col>
-        </el-row>
-      </el-form-item>
-      
-      <!-- 手机验证 -->
-      <el-form-item 
-        v-if="verifyMethod === 'phone'" 
-        label="验证码"
-        prop="verifyCode"
-      >
-        <el-row :gutter="10">
-          <el-col :span="14">
-            <el-input 
-              v-model="form.verifyCode" 
-              placeholder="请输入手机验证码"
-            />
-          </el-col>
-          <el-col :span="10">
-            <el-button 
-              type="text" 
-              :disabled="codeSending"
-              @click="sendVerifyCode('phone')"
-            >
-              {{ codeSending ? `${countDown}秒后重发` : `发送至${formatContact(userStore.userInfo.phone)}` }}
-            </el-button>
-          </el-col>
-        </el-row>
       </el-form-item>
       
       <!-- 新密码 -->
@@ -129,6 +60,8 @@
       </el-button>
       <el-button
         type="primary"
+        :loading="isLoading"
+        :disabled="isLoading"
         @click="submitForm"
       >
         保存修改
@@ -142,9 +75,11 @@ import { ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import { useRouter } from 'vue-router';
+import { authApi } from '@/api';
+
 // 注入全局用户状态
 const userStore = useUserStore();
-//导入路由
+// 导入路由
 const router = useRouter();
 // 接收父组件传递的“是否打开对话框”参数
 const props = defineProps({
@@ -160,136 +95,68 @@ const emit = defineEmits(['update:open']);
 // 表单相关
 const formRef = ref(null); // 表单引用
 const form = ref({
-  avatar: '',
-  name: '',
-  signature: '',
-  location: '',
   oldPassword: '',
   newPassword: '',
-  confirmPassword: '',
-  verifyCode: ''
+  confirmPassword: ''
 }); // 表单数据
 
 const isOpen = ref(false); // 对话框显示状态
-
-const verifyMethod = ref('password'); // 验证方式默认值（密码验证）
-const codeSending = ref(false); // 验证码发送状态
-const countDown = ref(60); // 倒计时秒数
-let countDownTimer = null; // 倒计时定时器
+const isLoading = ref(false); // 提交加载状态
 
 // 表单校验规则
 const rules = ref({
   oldPassword: [
-    { required: () => verifyMethod.value === 'password', message: '请输入原密码', trigger: 'blur'},
-    {
-      validator: (rule,value,callback) =>{
-        // 只有选择"输入原密码"方式时才验证
-        if (verifyMethod.value === 'password') {
-          // 比对输入的原密码与userStore中的密码
-          if (value !== userStore.userInfo.password) {
-            callback(new Error('原密码输入错误'));
-          } else {
-            callback();
-          }
-        } else {
-          callback();
-        }
-      }
-    }
-  ],
-  verifyCode: [
-    { required: verifyMethod.value !== 'password', message: '请输入验证码', trigger: 'blur'},
-    { min: 6,max: 6,message: '验证码为6位', trigger: 'blur'}
+    { required: true, message: '请输入原密码', trigger: 'blur'},
+    { min: 6, max: 20, message: '密码长度在6-20之间', trigger: 'blur'}
   ],
   newPassword: [
-    { required: true,message: '请输入新密码', trigger: 'blur'},
-    { min: 6,max: 20,message: '密码长度在6-20之间', trigger: 'blur'}
-  ],
-  confirmPassword: [
-    { required: true,message: '请确认新密码', trigger: 'blur'},
-    { 
-      validator: (rule,value,callback) =>{
-        if(value !==form.value.newPassword){
-          callback(new Error('两次输入的密码不一致'));
-        }
-        else{
+    { required: true, message: '请输入新密码', trigger: 'blur'},
+    { min: 6, max: 20, message: '密码长度在6-20之间', trigger: 'blur'},
+    {
+      validator: (rule, value, callback) => {
+        if (value === form.value.oldPassword) {
+          callback(new Error('新密码不能与原密码相同'));
+        } else {
           callback();
         }
       },
       trigger: 'blur'
     }
   ],
-});
-
-// 格式化邮箱/手机号，隐藏中间部分内容
-const formatContact = (contact) => {
-  if (!contact) return '';
-  // 处理邮箱（如：zhangsan666@qq.com → zhang***@qq.com）
-  if (contact.includes('@')) {
-    const [prefix, suffix] = contact.split('@');
-    return prefix.length > 3 
-      ? `${prefix.slice(0, 3)}***@${suffix}` 
-      : `${prefix}***@${suffix}`;
-  }
-  // 处理手机号（如：12345678910 → 123****8910）
-  if (contact.length === 11) {
-    return contact.replace(/^(\d{3})(\d{4})(\d{4})$/, '$1****$3');
-  }
-  return contact;
-};
-
-// 监听验证方式变化
-watch(verifyMethod, () => {
-  formRef.value.clearValidate(['oldPassword', 'verifyCode']);
+  confirmPassword: [
+    { required: true, message: '请确认新密码', trigger: 'blur'},
+    { 
+      validator: (rule, value, callback) => {
+        if (value !== form.value.newPassword) {
+          callback(new Error('两次输入的密码不一致'));
+        } else {
+          callback();
+        }
+      },
+      trigger: 'blur'
+    }
+  ]
 });
 
 // 重置密码表单
 const resetPasswordForm = () => {
   form.value.oldPassword = '';
-  form.value.verifyCode = '';
   form.value.newPassword = '';
   form.value.confirmPassword = '';
+  formRef.value?.clearValidate();
 };
 
-// 发送验证码
-const sendVerifyCode = (type) => {
-  // 模拟发送验证码
-  codeSending.value = true;
-  
-  // 实际项目中这里调用后端发送验证码接口
-  ElMessage.success(`验证码已发送至${type === 'email' ? userStore.userInfo.email : userStore.userInfo.phone}`);
-  
-  // 倒计时逻辑
-  countDownTimer = setInterval(() => {
-    countDown.value--;
-    if (countDown.value <= 0) {
-      clearInterval(countDownTimer);
-      codeSending.value = false;
-      countDown.value = 60;
-    }
-  }, 1000);
-};
-
-// 监听父组件的 open  props，同步对话框状态并回显数据
+// 监听父组件的 open props，同步对话框状态
 watch(() => props.open, (newVal) => {
   isOpen.value = newVal;
-  // 1. 复制用户信息（包含所有字段）
-    const userInfo = { ...userStore.userInfo };
-    // 2. 删除 password 字段（不回显密码）
-    delete userInfo.password;
-    // 3. 赋值给表单，同时重置密码相关字段
-    form.value = { ...userInfo };
-    resetPasswordForm(); 
+  if (newVal) {
+    resetPasswordForm();
+  }
 }, { immediate: true });
 
 // 监听对话框关闭，向父组件发送关闭事件
 watch(isOpen, (newVal) => {
   emit('update:open', newVal);
-  if (!newVal && countDownTimer) {
-    clearInterval(countDownTimer);
-    codeSending.value = false;
-    countDown.value = 60;
-  }
 });
 
 // 提交表单
@@ -297,64 +164,39 @@ const submitForm = async () => {
   try {
     // 表单校验
     await formRef.value.validate();
-     // 准备更新的数据
-    const updateData = { ...form.value };
-    // 移除密码相关字段（实际项目中应单独处理密码修改接口）
-    const { newPassword, ...userInfo } = updateData;
-    // 调用Pinia的action更新用户信息
-    userStore.updateUserInfo(userInfo);
     
-     // 处理密码修改
-    if (newPassword) {
-      // 1. 验证原密码（仅当验证方式为密码时）
-      if (verifyMethod.value === 'password' && form.value.oldPassword !== userStore.userInfo.password) {
-        ElMessage.error('原密码验证失败');
-        return;
-      }
-      
-      // 2. 调用密码修改接口（实际项目中替换为真实API）
-      // await userApi.updatePassword({ newPassword, verifyCode, type: verifyMethod.value });
-      
-      // 3. 同步更新userStore中的密码
-      userStore.updatePassword(newPassword);
-      // 重置密码表单
-      resetPasswordForm();
-      
-      ElMessage.success('密码修改成功，请重新登录');
-      // 实际项目中这里需要跳转到登录页
-      router.push('/login');
-    }
+    isLoading.value = true;
+    
+    // 调用后端API修改密码
+    // 注意：request 拦截器已处理响应，成功返回 ApiResponse 对象
+    const response = await authApi.changePassword({
+      oldPassword: form.value.oldPassword,
+      newPassword: form.value.newPassword
+    });
+
+    // 响应拦截器已处理，这里获得的就是 ApiResponse 对象
+    ElMessage.success(response.message || '密码修改成功，请重新登录');
+    
+    // 清除用户登录状态
+    userStore.logout();
+    
+    // 重置表单
+    resetPasswordForm();
+    
     // 关闭对话框
     isOpen.value = false;
-    // 提示成功
-    ElMessage.success('资料修改成功！');
+    
+    // 跳转到登录页
+    router.push('/login');
   } catch (error) {
-    // 校验失败或接口错误
-    ElMessage.error('资料修改失败，请检查表单！');
-    console.error('提交失败：', error);
+    // 如果执行到这里，说明响应拦截器已经捕获了错误
+    // 不需要再手动处理错误消息，拦截器已显示
+    console.error('修改密码失败：', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>
 
 <style scoped>
-/* 限制按钮文本容器宽度，防止溢出 */
-.el-col:has(.el-button[type="text"]) {
-  white-space: nowrap; /* 禁止换行 */
-  overflow: hidden;    /* 隐藏溢出内容 */
-  text-overflow: ellipsis; /* 溢出显示省略号 */
-}
-
-/* 调整验证码输入框与按钮的布局比例 */
-.el-row {
-  width: 100%; /* 确保行容器占满宽度 */
-}
-
-/* 适当调整输入框与按钮的占比（原14:10 → 13:11） */
-.el-col:nth-child(1) {
-  flex: 13;
-}
-.el-col:nth-child(2) {
-  flex: 11;
-  padding-left: 8px; /* 减少间距 */
-}
 </style>

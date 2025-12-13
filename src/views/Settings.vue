@@ -21,7 +21,7 @@
             <i class="fas fa-cog text-emerald-600 mr-3" />
             设置
           </h1>
-          <p class="text-gray-800 font-medium mt-2">
+          <p class="text-4xl font-bold mt-4 text-center">
             <span class="text-red-600">自</span><span class="text-orange-600">定</span><span class="text-amber-600">义</span><span class="text-yellow-600">你</span><span class="text-lime-600">的</span><span class="text-emerald-600">学</span><span class="text-teal-600">习</span><span class="text-cyan-600">体</span><span class="text-blue-600">验</span>
           </p>
         </div>
@@ -108,11 +108,17 @@
                     选择适合你的学习难度
                   </p>
                 </div>
-                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
-                  <option>四级词汇</option>
-                  <option>六级词汇</option>
-                  <option>考研词汇</option>
-                  <option>GRE词汇</option>
+                <select
+                  v-model="vocabularyDifficulty"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4"
+                >
+                  <option
+                    v-for="option in vocabularyDifficultyOptions"
+                    :key="option"
+                    :value="option"
+                  >
+                    {{ option }}
+                  </option>
                 </select>
               </div>
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
@@ -144,10 +150,17 @@
                     选择艾宾浩斯遗忘曲线周期
                   </p>
                 </div>
-                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
-                  <option>标准模式（1,3,7,15,30天）</option>
-                  <option>加速模式（1,2,4,7,15天）</option>
-                  <option>缓速模式（1,5,10,20,30天）</option>
+                <select
+                  v-model="reviewStrategy"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4"
+                >
+                  <option
+                    v-for="option in reviewStrategyOptions"
+                    :key="option"
+                    :value="option"
+                  >
+                    {{ option }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -277,14 +290,12 @@
                   v-model="settings.fontSize"
                   class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4"
                 >
-                  <option value="small">
-                    小
-                  </option>
-                  <option value="normal">
-                    标准
-                  </option>
-                  <option value="large">
-                    大
+                  <option
+                    v-for="option in fontSizeOptions"
+                    :key="typeof option === 'object' ? option.value : option"
+                    :value="typeof option === 'object' ? option.value : option"
+                  >
+                    {{ typeof option === 'object' ? option.label : option }}
                   </option>
                 </select>
               </div>
@@ -297,10 +308,17 @@
                     选择应用语言
                   </p>
                 </div>
-                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
-                  <option>中文简体</option>
-                  <option>中文繁体</option>
-                  <option>English</option>
+                <select
+                  v-model="language"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4"
+                >
+                  <option
+                    v-for="option in languageOptions"
+                    :key="option"
+                    :value="option"
+                  >
+                    {{ option }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -376,10 +394,17 @@
                     设置谁可以看到你的学习信息
                   </p>
                 </div>
-                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
-                  <option>公开</option>
-                  <option>仅好友可见</option>
-                  <option>隐私</option>
+                <select
+                  v-model="profileVisibility"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4"
+                >
+                  <option
+                    v-for="option in profileVisibilityOptions"
+                    :key="option"
+                    :value="option"
+                  >
+                    {{ option }}
+                  </option>
                 </select>
               </div>
               <div class="flex items-center justify-between py-3 border-b border-gray-100">
@@ -410,10 +435,17 @@
                     控制谁可以添加你为好友
                   </p>
                 </div>
-                <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4">
-                  <option>所有人</option>
-                  <option>仅现有好友推荐</option>
-                  <option>需要通过验证</option>
+                <select
+                  v-model="friendRequestMode"
+                  class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent flex-shrink-0 ml-4"
+                >
+                  <option
+                    v-for="option in friendRequestModeOptions"
+                    :key="option"
+                    :value="option"
+                  >
+                    {{ option }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -482,17 +514,25 @@
           <!-- 保存按钮 -->
           <div class="flex gap-4 pt-6">
             <button
-              class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              :disabled="isLoading"
+              :class="[
+                'flex-1 py-3 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5',
+                isLoading ? 'bg-emerald-400 text-white cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+              ]"
               @click="saveSettings"
             >
-              <i class="fas fa-save mr-2" />
-              保存设置
+              <i :class="['fas', isLoading ? 'fa-spinner fa-spin' : 'fa-save', 'mr-2']" />
+              {{ isLoading ? '保存中...' : '保存设置' }}
             </button>
             <button
-              class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold transition-all"
+              :disabled="isLoading"
+              :class="[
+                'flex-1 py-3 rounded-lg font-semibold transition-all',
+                isLoading ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+              ]"
               @click="resetSettings"
             >
-              <i class="fas fa-undo mr-2" />
+              <i :class="['fas', isLoading ? 'fa-spinner fa-spin' : 'fa-undo', 'mr-2']" />
               重置
             </button>
           </div>
@@ -522,14 +562,31 @@ import ActionButtons from '@/components/common/ActionButtons.vue';
 import EndBar from '@/components/common/EndBar.vue';
 import EditPassword from '@/components/profile/EditPassword.vue'; // 引入编辑组件
 import EditEmail from '@/components/profile/EditEmail.vue'; // 引入编辑组件
+import { getSettings, updateSettings, resetSettings as resetSettingsAPI } from '@/api/settings';
 
 const router = useRouter();
 const userStore = useUserStore();
 const isEditpwdOpen = ref(false); // 控制编辑对话框显示/隐藏
 const isEditemailOpen = ref(false); // 控制编辑对话框显示/隐藏
+const isLoading = ref(false); // 加载状态
+
+// 可选项数据
+const vocabularyDifficultyOptions = ref([]); // 词汇难度选项
+const reviewStrategyOptions = ref([]); // 复习策略选项
+const profileVisibilityOptions = ref([]); // 个人资料可见范围选项
+const friendRequestModeOptions = ref([]); // 好友请求管理选项
+const languageOptions = ref([]); // 语言选项
+const fontSizeOptions = ref([]); // 字体大小选项
+
 // 响应式数据
 const dailyGoal = ref(50);
 const remindTime = ref('08:00');
+const vocabularyDifficulty = ref('');
+const reviewStrategy = ref('');
+const profileVisibility = ref('');
+const friendRequestMode = ref('');
+const language = ref('');
+
 const settings = ref({
   checkInReminder: true,
   suggestionsReminder: true,
@@ -540,15 +597,83 @@ const settings = ref({
 });
 
 
-// 初始化设置（从 localStorage 加载）
-onMounted(() => {
+// 初始化设置（从后端加载）
+onMounted(async () => {
+  isLoading.value = true;
+  
+  // 先加载默认选项，确保即使出错也有选项显示
+  loadDefaultOptions();
+  
+  try {
+    const response = await getSettings();
+    if (response.code === 200) {
+      const data = response.data;
+      
+      // 加载选项（覆盖默认值）
+      if (data.options) {
+        const opts = data.options;
+        vocabularyDifficultyOptions.value = opts.vocabularyDifficulty || vocabularyDifficultyOptions.value;
+        reviewStrategyOptions.value = opts.reviewStrategy || reviewStrategyOptions.value;
+        profileVisibilityOptions.value = opts.profileVisibility || profileVisibilityOptions.value;
+        friendRequestModeOptions.value = opts.friendRequestMode || friendRequestModeOptions.value;
+        languageOptions.value = opts.language || languageOptions.value;
+        fontSizeOptions.value = opts.fontSize || fontSizeOptions.value;
+      }
+      
+      // 加载用户设置
+      dailyGoal.value = data.dailyGoal || 50;
+      remindTime.value = data.remindTime || '08:00';
+      vocabularyDifficulty.value = data.vocabularyDifficulty || vocabularyDifficultyOptions.value[0] || '四级词汇';
+      reviewStrategy.value = data.reviewStrategy || reviewStrategyOptions.value[0] || '标准模式（1,3,7,15,30天）';
+      profileVisibility.value = data.profileVisibility || profileVisibilityOptions.value[0] || '公开';
+      friendRequestMode.value = data.friendRequestMode || friendRequestModeOptions.value[0] || '所有人';
+      language.value = data.language || languageOptions.value[0] || '中文简体';
+      
+      settings.value = {
+        checkInReminder: data.checkInReminder !== false,
+        suggestionsReminder: data.suggestionsReminder !== false,
+        messageReminder: data.messageReminder !== false,
+        darkMode: data.darkMode === true,
+        fontSize: data.fontSize || 'normal',
+        shareScore: data.shareScore !== false,
+      };
+    } else {
+      console.warn('获取设置失败:', response.message);
+      // 加载本地缓存作为备选
+      loadLocalSettings();
+    }
+  } catch (error) {
+    console.error('Failed to load settings:', error);
+    // 加载本地缓存作为备选
+    loadLocalSettings();
+  } finally {
+    isLoading.value = false;
+  }
+});
+
+// 加载默认可选项（备选方案）
+const loadDefaultOptions = () => {
+  vocabularyDifficultyOptions.value = ['四级词汇', '六级词汇', '考研词汇', 'GRE词汇'];
+  reviewStrategyOptions.value = ['标准模式（1,3,7,15,30天）', '加速模式（1,2,4,7,15天）', '缓速模式（1,5,10,20,30天）'];
+  profileVisibilityOptions.value = ['公开', '仅好友可见', '隐私'];
+  friendRequestModeOptions.value = ['所有人', '仅现有好友推荐', '需要通过验证'];
+  languageOptions.value = ['中文简体', '中文繁体', 'English'];
+  fontSizeOptions.value = [
+    { label: '小', value: 'small' },
+    { label: '标准', value: 'normal' },
+    { label: '大', value: 'large' }
+  ];
+};
+
+// 加载本地缓存（备选方案）
+const loadLocalSettings = () => {
   const savedSettings = localStorage.getItem('appSettings');
   if (savedSettings) {
     try {
       const parsed = JSON.parse(savedSettings);
       settings.value = { ...settings.value, ...parsed };
     } catch (e) {
-      console.error('Failed to load settings:', e);
+      console.error('Failed to load local settings:', e);
     }
   }
 
@@ -561,45 +686,127 @@ onMounted(() => {
   if (savedRemindTime) {
     remindTime.value = savedRemindTime;
   }
-});
+};
 
 // 保存设置
-const saveSettings = () => {
+const saveSettings = async () => {
+  isLoading.value = true;
   try {
-    localStorage.setItem('appSettings', JSON.stringify(settings.value));
-    localStorage.setItem('dailyGoal', dailyGoal.value.toString());
-    localStorage.setItem('remindTime', remindTime.value);
+    // 构建完整的负载数据
+    const payload = {
+      dailyGoal: dailyGoal.value,
+      remindTime: remindTime.value,
+      vocabularyDifficulty: vocabularyDifficulty.value,
+      reviewStrategy: reviewStrategy.value,
+      profileVisibility: profileVisibility.value,
+      friendRequestMode: friendRequestMode.value,
+      language: language.value,
+      checkInReminder: settings.value.checkInReminder,
+      suggestionsReminder: settings.value.suggestionsReminder,
+      messageReminder: settings.value.messageReminder,
+      darkMode: settings.value.darkMode,
+      fontSize: settings.value.fontSize,
+      shareScore: settings.value.shareScore,
+    };
+
+    const response = await updateSettings(payload);
     
-    // 提示成功
-    const message = document.createElement('div');
-    message.className = 'fixed top-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg animate-bounce';
-    message.textContent = '✓ 设置已保存';
-    document.body.appendChild(message);
-    
-    setTimeout(() => {
-      message.remove();
-    }, 3000);
+    if (response.code === 200) {
+      // 响应拦截器已经在成功时显示了提示，这里额外显示
+      showSuccessMessage('✓ 设置已保存');
+      
+      // 同时保存到本地存储（作为备选方案）
+      const allSettings = {
+        ...payload,
+        options: {
+          vocabularyDifficulty: vocabularyDifficultyOptions.value,
+          reviewStrategy: reviewStrategyOptions.value,
+          profileVisibility: profileVisibilityOptions.value,
+          friendRequestMode: friendRequestModeOptions.value,
+          language: languageOptions.value,
+          fontSize: fontSizeOptions.value
+        }
+      };
+      localStorage.setItem('appSettings', JSON.stringify(allSettings));
+    }
   } catch (error) {
+    // 错误已经由响应拦截器处理了，这里额外显示
     console.error('Failed to save settings:', error);
-    alert('保存设置失败！');
+    // 不再重复显示错误，因为拦截器已经显示了
+  } finally {
+    isLoading.value = false;
   }
 };
 
 // 重置设置
-const resetSettings = () => {
+const resetSettings = async () => {
   if (confirm('确定要重置所有设置为默认值吗？')) {
-    settings.value = {
-      checkInReminder: true,
-      suggestionsReminder: true,
-      messageReminder: true,
-      darkMode: false,
-      fontSize: 'normal',
-      shareScore: true,
-    };
-    dailyGoal.value = 50;
-    remindTime.value = '08:00';
-    saveSettings();
+    isLoading.value = true;
+    try {
+      const response = await resetSettingsAPI();
+      
+      if (response.code === 200) {
+        const data = response.data;
+        
+        // 重新加载数据库中的默认值
+        dailyGoal.value = data.dailyGoal || 50;
+        remindTime.value = data.remindTime || '08:00';
+        vocabularyDifficulty.value = data.vocabularyDifficulty || vocabularyDifficultyOptions.value[0] || '四级词汇';
+        reviewStrategy.value = data.reviewStrategy || reviewStrategyOptions.value[0] || '标准模式（1,3,7,15,30天）';
+        profileVisibility.value = data.profileVisibility || profileVisibilityOptions.value[0] || '公开';
+        friendRequestMode.value = data.friendRequestMode || friendRequestModeOptions.value[0] || '所有人';
+        language.value = data.language || languageOptions.value[0] || '中文简体';
+        
+        settings.value = {
+          checkInReminder: data.checkInReminder !== false,
+          suggestionsReminder: data.suggestionsReminder !== false,
+          messageReminder: data.messageReminder !== false,
+          darkMode: data.darkMode === true,
+          fontSize: data.fontSize || 'normal',
+          shareScore: data.shareScore !== false,
+        };
+        
+        // 同步更新本地缓存
+        const allSettings = {
+          dailyGoal: dailyGoal.value,
+          remindTime: remindTime.value,
+          vocabularyDifficulty: vocabularyDifficulty.value,
+          reviewStrategy: reviewStrategy.value,
+          profileVisibility: profileVisibility.value,
+          friendRequestMode: friendRequestMode.value,
+          language: language.value,
+          ...settings.value,
+          options: {
+            vocabularyDifficulty: vocabularyDifficultyOptions.value,
+            reviewStrategy: reviewStrategyOptions.value,
+            profileVisibility: profileVisibilityOptions.value,
+            friendRequestMode: friendRequestModeOptions.value,
+            language: languageOptions.value,
+            fontSize: fontSizeOptions.value
+          }
+        };
+        localStorage.setItem('appSettings', JSON.stringify(allSettings));
+        
+        showSuccessMessage('✓ 设置已重置为默认值');
+      }
+    } catch (error) {
+      console.error('Failed to reset settings:', error);
+    } finally {
+      isLoading.value = false;
+    }
   }
+};
+
+// 显示成功消息
+const showSuccessMessage = (message) => {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'fixed top-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg animate-bounce z-50';
+  messageDiv.textContent = message;
+  document.body.appendChild(messageDiv);
+  
+  setTimeout(() => {
+    messageDiv.remove();
+  }, 3000);
 };
 
 const gotoHome = () => {

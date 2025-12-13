@@ -233,4 +233,29 @@ CREATE TABLE `user_vocabulary` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 表: user_settings
+DROP TABLE IF EXISTS `user_settings`;
+CREATE TABLE `user_settings` (
+  `id` BIGINT AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL,
+  `daily_goal` INT DEFAULT '50',
+  `vocabulary_difficulty` VARCHAR(255) DEFAULT '四级词汇',
+  `review_strategy` VARCHAR(255) DEFAULT '标准模式（1,3,7,15,30天）',
+  `remind_time` VARCHAR(10) DEFAULT '08:00',
+  `check_in_reminder` TINYINT(1) DEFAULT '1',
+  `suggestions_reminder` TINYINT(1) DEFAULT '1',
+  `message_reminder` TINYINT(1) DEFAULT '1',
+  `dark_mode` TINYINT(1) DEFAULT '0',
+  `font_size` VARCHAR(50) DEFAULT 'normal',
+  `language` VARCHAR(50) DEFAULT '中文简体',
+  `share_score` TINYINT(1) DEFAULT '1',
+  `profile_visibility` VARCHAR(255) DEFAULT '公开',
+  `friend_request_mode` VARCHAR(255) DEFAULT '所有人',
+  `options` JSON DEFAULT NULL COMMENT '所有可用的选项列表（包含词汇难度、复习策略等）',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;
