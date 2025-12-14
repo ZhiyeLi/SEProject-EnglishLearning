@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -46,6 +47,7 @@ public class Plan {
     @Column(name = "end_time", length = 255)
     private String endTime;
     
+    @JsonProperty("completed")
     @Column(name = "if_completed", nullable = false)
     private Boolean ifCompleted = false;
     

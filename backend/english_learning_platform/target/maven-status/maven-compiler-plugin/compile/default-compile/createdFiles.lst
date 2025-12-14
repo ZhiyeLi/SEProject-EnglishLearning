@@ -4,6 +4,7 @@ com\example\english_learning_platform\repository\CheckinPlanRepository.class
 com\example\english_learning_platform\EnglishLearningPlatformApplication.class
 com\example\english_learning_platform\entity\UserWordProgress.class
 com\example\english_learning_platform\repository\WordTypeRepository.class
+com\example\english_learning_platform\service\SettingsService.class
 com\example\english_learning_platform\repository\UserRepository.class
 com\example\english_learning_platform\util\JwtUtil.class
 com\example\english_learning_platform\entity\FriendRequest.class
@@ -11,7 +12,9 @@ com\example\english_learning_platform\dto\RegisterRequest.class
 com\example\english_learning_platform\dto\LoginRequest.class
 com\example\english_learning_platform\repository\MessageRepository.class
 com\example\english_learning_platform\repository\UserAnswerDetailRepository.class
+com\example\english_learning_platform\controller\HealthController.class
 com\example\english_learning_platform\repository\UserWordProgressRepository.class
+com\example\english_learning_platform\controller\OptionsController.class
 com\example\english_learning_platform\repository\CourseRepository.class
 com\example\english_learning_platform\entity\WordType.class
 com\example\english_learning_platform\entity\QuestionItem.class
@@ -26,6 +29,7 @@ com\example\english_learning_platform\dto\UserDTO.class
 com\example\english_learning_platform\entity\Question.class
 com\example\english_learning_platform\service\AuthService.class
 com\example\english_learning_platform\repository\UserSelectedTypeRepository.class
+com\example\english_learning_platform\repository\UserSettingsRepository.class
 com\example\english_learning_platform\repository\QuestionItemRepository.class
 com\example\english_learning_platform\entity\DailyStudyRecord.class
 com\example\english_learning_platform\repository\DailyStudyRecordRepository.class
@@ -41,9 +45,13 @@ com\example\english_learning_platform\controller\TestController.class
 com\example\english_learning_platform\service\FriendService.class
 com\example\english_learning_platform\service\WordService.class
 com\example\english_learning_platform\service\PlanService.class
+com\example\english_learning_platform\controller\SettingsController.class
 com\example\english_learning_platform\repository\PlanRepository.class
+com\example\english_learning_platform\dto\FriendListDTO.class
+com\example\english_learning_platform\dto\FriendListDTO$FriendListDTOBuilder.class
 com\example\english_learning_platform\entity\UserSelectedType.class
 com\example\english_learning_platform\repository\FriendRepository.class
+com\example\english_learning_platform\entity\UserSettings.class
 com\example\english_learning_platform\dto\ApiResponse.class
 com\example\english_learning_platform\entity\UserAnswerDetail.class
 com\example\english_learning_platform\entity\Message.class

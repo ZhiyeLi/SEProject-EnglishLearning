@@ -3,6 +3,7 @@ C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\config\SecurityConfig.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\controller\HealthController.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\dto\LoginRequest.java
+C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\entity\UserSettings.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\service\QuestionService.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\controller\TestController.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\filter\JwtAuthenticationFilter.java
@@ -10,12 +11,14 @@ C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\dto\RegisterRequest.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\EnglishLearningPlatformApplication.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\entity\UserQuestionRecord.java
+C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\UserSettingsRepository.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\CheckinPlanRepository.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\controller\AuthController.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\util\JwtUtil.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\MessageRepository.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\UserAnswerDetailRepository.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\entity\User.java
+C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\controller\SettingsController.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\QuestionItemRepository.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\controller\FriendController.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\WordTypeRepository.java
@@ -35,11 +38,13 @@ C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\WordRepository.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\entity\FriendRequest.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\entity\Question.java
+C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\controller\OptionsController.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\controller\QuestionController.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\entity\UserAnswerDetail.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\DailyStudyRecordRepository.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\controller\WordController.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\entity\Plan.java
+C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\dto\FriendListDTO.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\PlanRepository.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\QuestionRepository.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\service\PlanService.java
@@ -52,3 +57,4 @@ C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\UserWordProgressRepository.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\entity\CheckinPlan.java
 C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\UserRepository.java
+C:\Users\MI\Desktop\学习\大三\中级实训\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\service\SettingsService.java
