@@ -326,12 +326,13 @@ class PlanManager {
   async getFirstPlanDate() {
     try {
       const response = await planApi.getFirstPlanDate();
-      if (response.code === 200 && response.data.firstDate) {
+      if (response.code === 200 && response.data && response.data.firstDate) {
         return new Date(response.data.firstDate);
       }
     } catch (error) {
       console.error("获取首次计划日期失败:", error);
     }
+    // 如果没有计划或请求失败，返回当前日期
     return new Date();
   }
 

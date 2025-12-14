@@ -43,6 +43,15 @@ public class PlanService {
         return stats;
     }
     
+    public LocalDate getFirstPlanDate(Long userId) {
+        List<Plan> plans = planRepository.findByUserIdOrderByDateDesc(userId);
+        if (plans.isEmpty()) {
+            return null;
+        }
+        // 找到最早的日期（列表是倒序的，所以取最后一个）
+        return plans.get(plans.size() - 1).getDate();
+    }
+    
     @Transactional
     public Plan createPlan(Plan plan) {
         return planRepository.save(plan);
@@ -60,6 +69,7 @@ public class PlanService {
         if (updates.getStartTime() != null) plan.setStartTime(updates.getStartTime());
         if (updates.getEndTime() != null) plan.setEndTime(updates.getEndTime());
         if (updates.getDate() != null) plan.setDate(updates.getDate());
+        if (updates.getIfCompleted() != null) plan.setIfCompleted(updates.getIfCompleted());
         
         return planRepository.save(plan);
     }

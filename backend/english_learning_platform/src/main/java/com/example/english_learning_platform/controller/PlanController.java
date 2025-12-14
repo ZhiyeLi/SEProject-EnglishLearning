@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +61,19 @@ public class PlanController {
             Long userId = (Long) request.getAttribute("userId");
             Map<String, Object> stats = planService.getPlanStatistics(userId);
             return ApiResponse.success(stats);
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+    
+    @GetMapping("/first-plan-date")
+    public ApiResponse<Map<String, Object>> getFirstPlanDate(HttpServletRequest request) {
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            LocalDate firstDate = planService.getFirstPlanDate(userId);
+            Map<String, Object> result = new HashMap<>();
+            result.put("firstDate", firstDate != null ? firstDate.toString() : null);
+            return ApiResponse.success(result);
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
         }
