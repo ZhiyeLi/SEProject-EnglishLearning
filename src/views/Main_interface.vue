@@ -106,8 +106,8 @@
               ]"
               @click="gotoHome"
             >
-              <i class="fas fa-users text-xl mb-1" />
-              <span class="text-sm">好友</span>
+              <i class="fas fa-home text-xl mb-1" />
+              <span class="text-sm">首页</span>
             </button>
 
             <button
@@ -514,7 +514,7 @@
             <div class="space-y-4">
               <!-- 搜索好友输入框 -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">搜索好友（用户名/ID）</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">搜索好友（用户名/ID/邮箱）</label>
                 <div class="relative">
                   <input 
                     v-model="searchFriendValue"

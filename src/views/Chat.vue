@@ -115,8 +115,8 @@
               ]"
               @click="gotoHome"
             >
-              <i class="fas fa-users text-xl mb-1" />
-              <span class="text-sm">好友</span>
+              <i class="fas fa-home text-xl mb-1" />
+              <span class="text-sm">首页</span>
             </button>
 
             <button
@@ -154,74 +154,104 @@
       "
       >
         <!-- 聊天头部 -->
-        <div class="bg-white border-b border-gray-200 p-4 flex items-center shadow-sm">
-          <button 
-            class="text-gray-600 hover:text-emerald-600 p-2 rounded-full hover:bg-emerald-50 transition-colors mr-2"
-            @click="gotoHome"
-          >
-            <i class="fas fa-arrow-left text-lg" />
-          </button>
-
-          <div class="flex-grow">
+        <div v-if="currentFriend" class="bg-white border-b border-gray-200 p-4 flex items-center shadow-sm">
+          <!-- 当前选中好友的头像和名称 -->
+          <div class="flex items-center flex-grow">
+            <img 
+              :src="currentFriend?.avatar || 'https://picsum.photos/seed/default/100/100'" 
+              :alt="currentFriend?.name" 
+              class="w-8 h-8 rounded-full object-cover mr-2"
+            >
             <h3 class="font-semibold text-gray-800">
-              示例好友
+              {{ currentFriend?.name || '选择好友' }}
             </h3>
-          </div>
+            <!-- 显示好友在线状态 -->
+            <span 
+            v-if="currentFriend?.status === 'online'"
+            class="ml-2 w-2 h-2 bg-green-500 rounded-full"
+            title="在线"
+          ></span>
         </div>
+      </div>
         
         <!-- 聊天消息区域 -->
         <div
           ref="chatContainer"
-          class="flex-grow p-4 overflow-y-auto"
+          class="flex-grow p-4 overflow-y-auto relative"
           style="
           height: 400px; /* 固定消息区高度 */
           max-height: calc(100vh - 220px); /* 适配屏幕最大高度 */
           "
         >
-          <!-- 循环渲染消息列表 -->
-          <div 
-            v-for="(msg, index) in messageList" 
-            :key="index"
-            :class="[
-              'flex items-start mb-4 animate-fadeIn',
-              msg.isMine ? 'justify-end' : ''
-            ]"
-          >
-            <!-- 对方消息头像 -->
-            <img 
-              v-if="!msg.isMine"
-              src="https://picsum.photos/seed/friend1/100/100" 
-              alt="示例好友" 
-              class="w-8 h-8 rounded-full object-cover mr-2 mt-1 flex-shrink-0"
-            >
-    
-            <div class="max-w-[70%]">
-              <div 
-                :class="[
-                  'p-3 rounded-lg shadow-sm',
-                  msg.isMine 
-                    ? 'bg-emerald-500 text-white rounded-tr-none' 
-                    : 'bg-white rounded-tl-none'
-                ]"
-              >
-                <p :class="msg.isMine ? 'text-white' : 'text-gray-800'">
-                  {{ msg.content }}
-                </p>
-              </div>
-            </div>
-    
-            <!-- 我的消息头像（右侧） -->
-            <img 
-              v-if="msg.isMine"
-              src="https://picsum.photos/seed/me/100/100" 
-              alt="我" 
-              class="w-8 h-8 rounded-full object-cover ml-2 mt-1 flex-shrink-0"
-            >   
+        <!-- 消息加载状态 -->
+        <div v-if="messageLoading" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500">
+          <i class="fas fa-spinner fa-spin mr-2" />加载消息中...
+        </div>
+
+        <!-- 未选择好友提示 -->
+        <div v-else-if="!currentFriend" class="h-full flex items-center justify-center text-gray-500">
+          <div class="flex flex-col items-center">
+            <i class="fas fa-comment-dots text-4xl text-gray-300 block"></i>
+            <p class="mt-3">请选择一个好友开始聊天</p>
           </div>
         </div>
+
+        <!-- 无消息提示 -->
+        <div v-else-if="!messageList || messageList.length === 0" class="h-full flex items-center justify-center text-gray-500">
+          <div class="flex flex-col items-center"> 
+            <i class="fas fa-paper-plane text-4xl mb-2 text-gray-300 block mr-0"></i> 
+            <p class="ml-0 mt-3">暂无消息，开始聊天吧！</p> 
+          </div>
+        </div>
+
+        <!-- 循环渲染消息列表 -->
+        <div 
+          v-for="(msg, index) in messageList" 
+          :key="msg.id || index" 
+          :class="[
+            'flex items-start mb-4 animate-fadeIn',
+          msg.isMine ? 'justify-end' : ''
+        ]"
+      >
+        <!-- 对方消息头像（用当前选中好友的头像） -->
+        <img 
+          v-if="!msg.isMine"
+          :src="currentFriend?.avatar || 'https://picsum.photos/seed/friend1/100/100'" 
+          :alt="currentFriend?.name" 
+          class="w-8 h-8 rounded-full object-cover mr-2 mt-1 flex-shrink-0"
+        >
+
+        <div class="max-w-[70%]">
+          <div 
+            :class="[
+              'p-3 rounded-lg shadow-sm',
+              msg.isMine 
+                ? 'bg-emerald-500 text-white rounded-tr-none' 
+                : 'bg-white rounded-tl-none'
+          ]"
+        >
+          <p :class="msg.isMine ? 'text-white' : 'text-gray-800'">
+            {{ msg.content }}
+          </p>
+          <!-- 消息时间 -->
+          <p class="text-xs mt-1 opacity-70">
+            {{ formatTime(msg.time) }}
+          </p>
+        </div>
+      </div>
+    
+            <!-- 我的消息头像 -->
+            <img 
+            v-if="msg.isMine"
+            src="https://picsum.photos/seed/me/100/100" 
+            alt="我" 
+            class="w-8 h-8 rounded-full object-cover ml-2 mt-1 flex-shrink-0"
+          >   
+      </div>
+    </div>
         
         <!-- 消息输入区域 -->
-        <div class="bg-white border-t border-gray-200 p-3">
+        <div v-if="currentFriend" class="bg-white border-t border-gray-200 p-3">
           <div class="flex items-center mb-2">
             <button class="text-gray-500 hover:text-emerald-600 p-2 transition-colors">
               <i class="fas fa-smile" />
@@ -285,7 +315,7 @@
             <div class="space-y-4">
               <!-- 搜索好友输入框 -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">搜索好友（用户名/ID）</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">搜索好友（用户名/ID/邮箱）</label>
                 <div class="relative">
                   <input 
                     v-model="searchFriendValue"
@@ -437,7 +467,9 @@
 <script setup>
 // 引入路由
 import { useRouter } from 'vue-router';
-import { onMounted, ref, watch} from 'vue';
+import { onMounted, ref, watch, onBeforeUnmount } from 'vue';
+import { io } from 'socket.io-client';
+import { useUserStore } from '@/store/modules/user';
 import NavBar from '@/components/common/NavBar.vue';
 import ActionButtons from '@/components/common/ActionButtons.vue';
 import FriendItem from '@/components/business/FriendItem.vue';
@@ -471,18 +503,6 @@ const searchResults = ref([]);
 // 好友请求弹窗相关响应式变量
 const showFriendRequestModal = ref(false);
 
-// 模拟消息列表数据，后期改为数据库信息
-const messageList = ref([
-  {
-    content: '测试聊天信息',
-    isMine: false, // false=对方消息，true=我的消息
-  },
-  {
-    content: '测试聊天信息',
-    isMine: true,
-  }
-]);
-
 // 路由跳转函数
 function gotoChat() {
   activeTab.value = 'chat';
@@ -514,6 +534,10 @@ const gotoCourse = () => {
   router.push({ name: "Course" }).catch(() => {});
 };
 
+function gotoSettings() {
+  router.push({ name: "Settings" }).catch(() => {});
+}
+
 const navItems = [
   { label: '首页', onClick: gotoHome, isActive: false },
   { label: '课程', onClick: gotoCourse },
@@ -523,33 +547,65 @@ const navItems = [
   { label: 'AI伴学', onClick: gotoAiChat }
 ];
 
-// 发送消息
-const sendMessage = () => {
+// Socket.IO
+const socket = ref(null);
+
+// 发送消息（优先使用 Socket.IO，回退到 HTTP）
+const messageSending = ref(false);
+const sendMessage = async () => {
   const content = message.value.trim();
-  if (content) {
-    // 1. 添加消息到消息列表
-    messageList.value.push({
-      content: content,
-      isMine: true,
-    });
-    
-    // 2. 模拟对方回复（可选：不需要则删除此段）
-    setTimeout(() => {
-      messageList.value.push({
-        content: `我收到了：${content}`,
-        isMine: false,
-      });
-      scrollToBottom();
-    }, 1000);
-    
-    // 3. 清空输入框
-    message.value = '';
-    
-    // 4. 滚动到底部
+  if (!content) return;
+  if (!currentFriend.value || !currentFriend.value.id) {
+    alert('请选择一个好友');
+    return;
+  }
+
+  try {
+    messageSending.value = true;
+
+    // 可选：乐观添加（带临时标记），提高响应感知
+    const tempMsg = { id: `temp-${Date.now()}`, content, isMine: true, time: new Date().toISOString() };
+    messageList.value.push(tempMsg);
     scrollToBottom();
-    
-    // 5. 控制台日志
-    console.log('发送消息:', content);
+
+    // 优先使用 socket 发消息
+    if (socket.value && socket.value.connected) {
+      // 发送事件并让后端广播
+      socket.value.emit('send_message', { receiverId: currentFriend.value.id, content });
+      // 留下乐观消息（会由 server 返回的 message_sent/receive_message 补正）
+      message.value = '';
+    } else {
+      // 回退到 HTTP 接口
+      const res = await friendApi.sendMessage({ receiverId: currentFriend.value.id, content });
+
+      if (res && res.code === 200) {
+        const serverMsg = res.data || res;
+        const idx = messageList.value.findIndex(m => m.id && String(m.id).startsWith('temp-'));
+        if (idx !== -1) messageList.value.splice(idx, 1);
+
+        const formatted = {
+          id: serverMsg.messageId || serverMsg.message_id || serverMsg.id || Date.now(),
+          content: serverMsg.content || content,
+          isMine: true,
+          time: serverMsg.sentAt || serverMsg.sent_at || serverMsg.createTime || serverMsg.time || new Date().toISOString(),
+        };
+        messageList.value.push(formatted);
+        message.value = '';
+        scrollToBottom();
+      } else {
+        const idx = messageList.value.findIndex(m => m.id && String(m.id).startsWith('temp-'));
+        if (idx !== -1) messageList.value.splice(idx, 1);
+        alert(res?.message || '发送消息失败');
+      }
+    }
+  } catch (err) {
+    console.error('发送消息异常：', err);
+    // 移除乐观消息
+    const idx = messageList.value.findIndex(m => m.id && String(m.id).startsWith('temp-'));
+    if (idx !== -1) messageList.value.splice(idx, 1);
+    alert('网络异常，发送失败');
+  } finally {
+    messageSending.value = false;
   }
 };
 
@@ -584,6 +640,60 @@ onMounted(async () => {
   
   // 滚动到底部等逻辑
   scrollToBottom();
+
+  // 初始化 Socket.IO 连接（如果 token 可用）
+  try {
+    const token = localStorage.getItem('token');
+    if (token) {
+      socket.value = io(process.env.VUE_APP_SOCKET_URL || 'http://localhost:3000', {
+        auth: { token },
+      });
+
+      socket.value.on('connect', () => {
+        console.log('Socket connected:', socket.value.id);
+      });
+
+      const handleIncomingMessage = (msg) => {
+        // 兼容字段
+        const senderId = msg.senderId || msg.sender_id || msg.sender || msg.from;
+        const receiverId = msg.receiverId || msg.receiver_id || msg.to;
+        const id = msg.messageId || msg.message_id || msg.id || msg.message_id;
+        const time = msg.sentAt || msg.sent_at || msg.createTime || msg.time;
+
+        const formatted = {
+          id,
+          content: msg.content || msg.body || msg.message || '',
+          isMine: String(senderId) === String(currentUserId.value),
+          time: time || new Date().toISOString(),
+          senderId: senderId,
+          receiverId: receiverId,
+        };
+
+        // 去重：如果已存在则跳过
+        if (formatted.id && messageList.value.some(m => String(m.id) === String(formatted.id))) return;
+
+        // 只有当当前对话相关时才追加到 messageList
+        if (currentFriend.value && (String(formatted.senderId) === String(currentFriend.value.id) || String(formatted.receiverId) === String(currentFriend.value.id))) {
+          messageList.value.push(formatted);
+          scrollToBottom();
+        } else {
+          // 未选中该好友时增加本地未读计数
+          const key = String(formatted.senderId || formatted.receiverId || 'unknown');
+          unreadCounts.value[key] = (unreadCounts.value[key] || 0) + 1;
+          console.log('收到与当前会话无关的消息，未读计数：', key, unreadCounts.value[key]);
+        }
+      };
+
+      socket.value.on('receive_message', handleIncomingMessage);
+      socket.value.on('message_sent', handleIncomingMessage);
+
+      socket.value.on('disconnect', () => {
+        console.log('Socket disconnected');
+      });
+    }
+  } catch (e) {
+    console.warn('Socket init failed', e);
+  }
 });
 
 //好友列表显示部分
@@ -697,7 +807,7 @@ const addFriend = async (friend) => {
 const friendRequestLoading = ref(false); // 好友请求加载状态
 const friendRequests = ref([]); // 好友请求列表
 
-// 新增：时间格式化工具函数（将后端的时间戳/日期字符串转为友好格式）
+// 时间格式化工具函数（将后端的时间戳/日期字符串转为友好格式）
 const formatTime = (timeStr) => {
   if (!timeStr) return '未知时间';
   const date = new Date(timeStr);
@@ -785,6 +895,124 @@ const rejectFriendRequest = async (index) => {
     alert(errMsg);
   }
 };
+
+// 选择好友聊天
+
+// 当前选中的好友信息
+const currentFriend = ref(null);
+// 消息列表加载状态
+const messageLoading = ref(false);
+// 当前用户 ID：优先使用 Pinia userStore，其次回退到 localStorage 的 userStore
+const userStore = useUserStore();
+const currentUserId = ref(userStore.userInfo?.id || '');
+
+// 如果 store 还没加载（例如刷新后），尝试从 localStorage 恢复
+if (!currentUserId.value) {
+  try {
+    const cached = localStorage.getItem('userStore');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      currentUserId.value = parsed?.userInfo?.id || '';
+    }
+  } catch (e) {
+    console.warn('解析 localStorage userStore 失败', e);
+  }
+}
+
+// 监听 store 变化，保持 currentUserId 同步
+watch(
+  () => userStore.userInfo?.id,
+  (val) => {
+    if (val) currentUserId.value = val;
+  }
+);
+
+const messageList = ref([]);
+
+// 未读计数（简单本地实现）
+const unreadCounts = ref({});
+
+// 加载指定好友的消息列表
+const fetchMessageList = async (friendId) => {
+  if (!friendId) return;
+  try {
+    messageLoading.value = true;
+    // 调用后端接口，传入好友ID
+    const res = await friendApi.getMessageList({ friendId });
+    if (res.code === 200) {
+      // 格式化消息：兼容 snake_case / camelCase 字段，并正确判定 isMine
+      const msgs = (res.data || []).map(msg => {
+        const senderId = msg.senderId || msg.sender_id || msg.from || msg.userId || msg.user_id;
+        const id = msg.messageId || msg.message_id || msg.id || undefined;
+        const time = msg.sentAt || msg.sent_at || msg.createTime || msg.create_time || msg.time || msg.updatedAt || msg.updated_at;
+
+        return {
+          id,
+          ...msg,
+          isMine: String(senderId) === String(currentUserId.value), // 字符串比較，避免型別不一致
+          content: msg.content || msg.body || msg.message || '',
+          time: time || '',
+          senderId: senderId
+        };
+      });
+
+      // 将消息按时间从旧到新排序，确保最新消息在数组末尾（以便渲染时出现在底部）
+      msgs.sort((a, b) => {
+        const ta = Date.parse(a.time) || 0;
+        const tb = Date.parse(b.time) || 0;
+        return ta - tb;
+      });
+
+      messageList.value = msgs;
+    } else {
+      messageList.value = [];
+      error.value = res.message || '获取消息列表失败';
+    }
+  } catch (err) {
+    messageList.value = [];
+    error.value = '网络异常，获取消息列表失败';
+    console.error('获取消息列表异常：', err);
+  } finally {
+    messageLoading.value = false;
+    scrollToBottom(); // 加载完成后滚动到底部
+  }
+};
+
+// 轮询相关
+// const messagePollInterval = ref(null);
+
+// const clearMessagePoll = () => {
+//   if (messagePollInterval.value) {
+//     clearInterval(messagePollInterval.value);
+//     messagePollInterval.value = null;
+//   }
+// };
+
+const selectFriend = async (friend) => {
+  currentFriendId.value = friend.id; // 保留原有ID记录
+  currentFriend.value = friend; // 存储当前好友完整信息
+  error.value = ''; // 清空错误提示
+
+  // 立即加载历史消息
+  await fetchMessageList(friend.id);
+  // 切换会话时清除该好友的未读计数
+  unreadCounts.value[friend.id] = 0;
+};
+
+onBeforeUnmount(() => {
+  // 断开 socket 连接并清理
+  try {
+    if (socket.value) {
+      socket.value.disconnect();
+      socket.value = null;
+    }
+  } catch (e) {
+    console.warn('Socket disconnect error', e);
+  }
+});
+
+
+
 
 </script>
 
