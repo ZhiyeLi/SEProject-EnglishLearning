@@ -16,7 +16,29 @@ const onlineUsers = new Map();
 // 中间件
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:8080",
+    origin: function (origin, callback) {
+      // 允许的源列表
+      const allowedOrigins = [
+        "http://localhost:8080",
+        "http://localhost:8081",
+        "http://127.0.0.1:8080",
+        "http://127.0.0.1:8081",
+      ];
+      
+      // 允许来自局域网的请求（192.168.x.x 和 10.x.x.x）
+      const isLocalNetwork =
+        origin &&
+        (origin.startsWith("http://192.168.") ||
+          origin.startsWith("http://10.") ||
+          origin.startsWith("http://172."));
+      
+      // 如果是允许列表中的源，或者来自局域网，允许请求
+      if (!origin || allowedOrigins.includes(origin) || isLocalNetwork) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS policy: origin not allowed"));
+      }
+    },
     credentials: true,
   })
 );
@@ -46,7 +68,29 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:8080",
+    origin: function (origin, callback) {
+      // 允许的源列表
+      const allowedOrigins = [
+        "http://localhost:8080",
+        "http://localhost:8081",
+        "http://127.0.0.1:8080",
+        "http://127.0.0.1:8081",
+      ];
+      
+      // 允许来自局域网的请求（192.168.x.x 和 10.x.x.x）
+      const isLocalNetwork =
+        origin &&
+        (origin.startsWith("http://192.168.") ||
+          origin.startsWith("http://10.") ||
+          origin.startsWith("http://172."));
+      
+      // 如果是允许列表中的源，或者来自局域网，允许请求
+      if (!origin || allowedOrigins.includes(origin) || isLocalNetwork) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS policy: origin not allowed"));
+      }
+    },
     credentials: true,
   },
 });
@@ -134,12 +178,27 @@ async function startServer() {
     await initDatabase();
 
     // 启动 http server（Socket.IO 已挂载）
-    server.listen(PORT, () => {
+    server.listen(PORT, "0.0.0.0", () => {
+      const os = require("os");
+      const interfaces = os.networkInterfaces();
+      let ipAddress = "localhost";
+      
+      // 获取第一个非本地网络接口的 IP
+      for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+          if (iface.family === "IPv4" && !iface.internal) {
+            ipAddress = iface.address;
+            break;
+          }
+        }
+        if (ipAddress !== "localhost") break;
+      }
+      
       console.log("=".repeat(50));
       console.log(`🚀 服务器启动成功！`);
       console.log(`📡 监听端口: ${PORT}`);
-      console.log(`🌐 API地址: http://localhost:${PORT}`);
-      console.log(`📊 健康检查: http://localhost:${PORT}/health`);
+      console.log(`🌐 本机访问: http://localhost:${PORT}`);
+      console.log(`🌐 局域网访问: http://${ipAddress}:${PORT}`);
       console.log(`🔧 环境: ${process.env.NODE_ENV || "development"}`);
       console.log("Socket.IO 已启用");
       console.log("=".repeat(50));

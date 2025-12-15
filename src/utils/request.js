@@ -5,9 +5,32 @@
 import axios from "axios";
 import { ElMessage } from "element-plus";
 
+// 动态获取 API 基础 URL
+function getBaseURL() {
+  // 优先使用环境变量（仅在设置了非空值时使用）
+  if (process.env.VUE_APP_API_BASE_URL && process.env.VUE_APP_API_BASE_URL.trim()) {
+    console.log(`[API Debug] Using VUE_APP_API_BASE_URL from env: ${process.env.VUE_APP_API_BASE_URL}`);
+    return process.env.VUE_APP_API_BASE_URL;
+  }
+  
+  // 在浏览器环境中，使用当前访问的主机
+  if (typeof window !== "undefined") {
+    const protocol = window.location.protocol; // http: 或 https:
+    const hostname = window.location.hostname; // 127.0.0.1, localhost, 192.168.x.x 等
+    const port = 8080; // 后端服务端口
+    const baseURL = `${protocol}//${hostname}:${port}`;
+    console.log(`[API Debug] baseURL from window.location: ${baseURL}`);
+    return baseURL;
+  }
+  
+  // 默认值
+  console.log(`[API Debug] Using default baseURL: http://localhost:8080`);
+  return "http://localhost:8080";
+}
+
 // 创建 axios 实例
 const apiClient = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL || "http://localhost:8080",
+  baseURL: getBaseURL(),
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -19,6 +42,7 @@ apiClient.interceptors.request.use(
   (config) => {
     // 从 localStorage 获取 token
     const token = localStorage.getItem("token");
+    console.log(`[API Debug] ${config.method?.toUpperCase()} ${config.url} - baseURL: ${config.baseURL}`);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
