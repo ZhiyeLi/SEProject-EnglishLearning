@@ -21,6 +21,21 @@ public class FriendController {
         this.friendService = friendService;
     }
 
+    // 搜索好友接口
+//    @GetMapping("/search")
+//    public ApiResponse<List<User>> searchFriend(
+//            @RequestAttribute("userId") Long userId, // 当前登录用户ID
+//            @RequestParam String keyword) { // 前端传入的搜索关键词（用户名/ID）
+//        try {
+//            // 调用Service层方法，搜索符合条件的好友
+//            List<User> friends = friendService.searchNewFriends(keyword, userId);
+//            return ApiResponse.success(friends);
+//        } catch (Exception e) {
+//            return ApiResponse.error(e.getMessage());
+//        }
+//    }
+
+    // 搜索添加好友用户接口
     @GetMapping("/search")
     public ApiResponse<List<User>> searchFriends(
             @RequestAttribute("userId") Long userId,

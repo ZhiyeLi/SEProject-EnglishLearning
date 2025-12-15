@@ -26,6 +26,46 @@ public class FriendService {
         this.messageRepository = messageRepository;
     }
 
+//    public List<User> searchFriends(String keyword, Long currentUserId) {
+//        // 1. 空关键词处理：返回空列表
+//        if (keyword == null || keyword.trim().isEmpty()) {
+//            return Collections.emptyList();
+//        }
+//
+//        // 2. 处理关键词：去除空格，尝试转换为Long类型的目标用户ID（targetUserId）
+//        String trimmedKeyword = keyword.trim();
+//        Long targetUserId = null;
+//        try {
+//            targetUserId = Long.valueOf(trimmedKeyword);
+//        } catch (NumberFormatException e) {
+//            // 关键词不是数字，targetUserId保持null
+//        }
+//
+//        // 3. 获取当前用户的所有好友ID列表（从Friend表中查询）
+//        List<Friend> userFriends = friendRepository.findByUserId(currentUserId);
+//        List<Long> friendIds = userFriends.stream()
+//                .map(Friend::getFriendId)
+//                .collect(Collectors.toList());
+//
+//        // 4. 若没有好友，直接返回空列表
+//        if (friendIds.isEmpty()) {
+//            return Collections.emptyList();
+//        }
+//
+//        // 5. 数据库层面查询：好友ID在列表中 + 匹配用户ID/用户名关键词
+//        List<User> matchedFriends = userRepository.findByFriendIdsAndKeyword(
+//                friendIds,
+//                targetUserId,
+//                trimmedKeyword
+//        );
+//
+//        // 6. 最终过滤：排除自己（保险逻辑）+ 限制返回数量（前20条）
+//        return matchedFriends.stream()
+//                .filter(user -> !user.getUserId().equals(currentUserId))
+//                .limit(20)
+//                .collect(Collectors.toList());
+//    }
+
     public List<User> searchNewFriends(String keyword, Long currentUserId) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return Collections.emptyList();

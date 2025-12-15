@@ -9,7 +9,6 @@ export const friendApi = {
     return request.get("/api/friends/search", { params });
   },
 
-
   // 发送好友请求
   sendFriendRequest(data) {
     return request.post("/api/friends/request", data);

@@ -36,7 +36,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUserEmail(String userEmail);
 
     /**
-     * 查找除了自身和好友外的用户
+     * 根据好友ID列表和关键词（用户ID/用户名）查询好友
+     * @param friendIds 好友ID列表
+     * @param targetUserId 关键词转成的用户ID（可为null）
+     * @param keyword 搜索关键词
+     * @return 匹配的用户列表
      */
+    @Query("SELECT u FROM User u WHERE u.userId IN :friendIds " +
+            "AND ( (:targetUserId IS NOT NULL AND u.userId = :targetUserId) " +
+            "OR LOWER(u.userName) LIKE LOWER(CONCAT('%', :keyword, '%')) )")
+    List<User> findByFriendIdsAndKeyword(
+            @Param("friendIds") List<Long> friendIds,
+            @Param("targetUserId") Long targetUserId,
+            @Param("keyword") String keyword
+    );
+
     List<User> findByUserNameContainingOrUserEmailContaining(String userName, String userEmail);
 }
