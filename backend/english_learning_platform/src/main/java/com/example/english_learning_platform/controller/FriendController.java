@@ -1,5 +1,6 @@
 package com.example.english_learning_platform.controller;
 
+import com.example.english_learning_platform.dto.UnreadCountDTO;
 import com.example.english_learning_platform.dto.ApiResponse;
 import com.example.english_learning_platform.entity.FriendRequest;
 import com.example.english_learning_platform.entity.Message;
@@ -8,6 +9,7 @@ import com.example.english_learning_platform.service.FriendService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
+import javax.xml.transform.Result;
 import java.util.List;
 import java.util.Map;
 
@@ -141,12 +143,40 @@ public class FriendController {
         }
     }
     
-    @GetMapping("/unread-count")
+    @GetMapping("/total-unread-count")
     public ApiResponse<Long> getUnreadCount(HttpServletRequest request) {
         try {
             Long userId = (Long) request.getAttribute("userId");
             Long count = friendService.getUnreadCount(userId);
             return ApiResponse.success(count);
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    // 获取按好友分组的未读计数（前端核心使用）
+    @GetMapping("/unread-count")
+    public ApiResponse<List<UnreadCountDTO>> getUnreadCountGroupByFriend(HttpServletRequest request) {
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            List<UnreadCountDTO> unreadCountList = friendService.getUnreadCountGroupByFriend(userId);
+            return ApiResponse.success(unreadCountList); // 返回数组格式：[{friendId:123, count:5}, ...]
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    // 标记消息为已读的接口（前端选中好友后调用）
+    @PostMapping("/mark-as-read")
+    public ApiResponse<String> markMessagesAsRead(
+            HttpServletRequest request,
+            @RequestBody Map<String, Long> data
+    ) {
+        try {
+            Long userId = (Long) request.getAttribute("userId"); // 当前用户（接收者）
+            Long friendId = data.get("friendId"); // 好友ID（发送者）
+            friendService.markMessagesAsRead(userId, friendId);
+            return ApiResponse.success("消息已标记为已读");
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
         }

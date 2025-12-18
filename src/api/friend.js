@@ -49,4 +49,8 @@ export const friendApi = {
     return request.get("/api/friends/unread-count");
   },
 
+  // 标记消息为已读
+  markMessagesAsRead(data) {
+    return request.post("/api/friends/mark-as-read", data);
+  },
 };
