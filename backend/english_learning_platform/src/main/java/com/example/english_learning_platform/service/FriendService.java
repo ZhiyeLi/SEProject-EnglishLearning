@@ -1,5 +1,6 @@
 package com.example.english_learning_platform.service;
 
+import com.example.english_learning_platform.dto.UnreadCountDTO;
 import com.example.english_learning_platform.entity.*;
 import com.example.english_learning_platform.repository.*;
 import org.springframework.stereotype.Service;
@@ -192,5 +193,17 @@ public class FriendService {
     
     public Long getUnreadCount(Long userId) {
         return messageRepository.countByReceiverIdAndIfRead(userId, false);
+    }
+
+    // 获取按好友分组的未读计数
+    public List<UnreadCountDTO> getUnreadCountGroupByFriend(Long userId) {
+        return messageRepository.countUnreadByReceiverIdGroupBySenderId(userId);
+    }
+
+    // 标记某个好友的消息为已读
+    @Transactional
+    public void markMessagesAsRead(Long receiverId, Long senderId) {
+        // 更新该用户（接收者）收到的、来自某个好友（发送者）的所有未读消息为已读
+        messageRepository.updateIfReadByReceiverIdAndSenderId(receiverId, senderId, true);
     }
 }

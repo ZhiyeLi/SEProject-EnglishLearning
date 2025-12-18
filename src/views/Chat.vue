@@ -17,16 +17,6 @@
       <!-- 左侧好友列表：保留 -->
       <aside class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20">
         <div class="p-5 h-full flex flex-col">
-          <!-- 搜索框：保留 -->
-          <div class="relative mb-6">
-            <input 
-              type="text" 
-              placeholder="搜索好友..." 
-              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
-            >
-            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
-          </div>
-          
           <!-- 好友列表区域 -->
           <div class="flex-grow overflow-y-auto -mx-2 px-2">
             <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 mt-2">
@@ -60,6 +50,7 @@
                 v-for="friend in friendList"
                 :key="friend.id"
               >
+              <div class="relative">
                 <FriendItem 
                   :name="friend.name" 
                   :avatar="friend.avatar || 'https://picsum.photos/seed/default/100/100'" 
@@ -75,6 +66,15 @@
                     </button>
                   </template>
                 </FriendItem>
+                <!-- 未读消息标志 -->
+                <span
+                  v-if="unreadCounts[friend.id] > 0"
+                  class="absolute top-2 right-4 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse"
+                  :class="{ 'h-6 w-6': unreadCounts[friend.id] > 9 }" 
+                >
+                  {{ unreadCounts[friend.id] > 99 ? '99+' : unreadCounts[friend.id] }}
+                </span>
+              </div>
               </li>
               <li>
                 <button 
@@ -252,21 +252,6 @@
         
         <!-- 消息输入区域 -->
         <div v-if="currentFriend" class="bg-white border-t border-gray-200 p-3">
-          <div class="flex items-center mb-2">
-            <button class="text-gray-500 hover:text-emerald-600 p-2 transition-colors">
-              <i class="fas fa-smile" />
-            </button>
-            <button class="text-gray-500 hover:text-emerald-600 p-2 transition-colors">
-              <i class="fas fa-paperclip" />
-            </button>
-            <button class="text-gray-500 hover:text-emerald-600 p-2 transition-colors">
-              <i class="fas fa-image" />
-            </button>
-            <button class="text-gray-500 hover:text-emerald-600 p-2 transition-colors">
-              <i class="fas fa-microphone" />
-            </button>
-          </div>
-          
           <div class="flex items-center">
             <textarea 
               v-model="message"
@@ -468,7 +453,6 @@
 // 引入路由
 import { useRouter } from 'vue-router';
 import { onMounted, ref, watch, onBeforeUnmount } from 'vue';
-import { io } from 'socket.io-client';
 import { useUserStore } from '@/store/modules/user';
 import NavBar from '@/components/common/NavBar.vue';
 import ActionButtons from '@/components/common/ActionButtons.vue';
@@ -547,10 +531,8 @@ const navItems = [
   { label: 'AI伴学', onClick: gotoAiChat }
 ];
 
-// Socket.IO
-const socket = ref(null);
 
-// 发送消息（优先使用 Socket.IO，回退到 HTTP）
+// 发送消息（使用后端 HTTP 接口）
 const messageSending = ref(false);
 const sendMessage = async () => {
   const content = message.value.trim();
@@ -563,40 +545,32 @@ const sendMessage = async () => {
   try {
     messageSending.value = true;
 
-    // 可选：乐观添加（带临时标记），提高响应感知
+    // 乐观添加一条临时消息，提升体验
     const tempMsg = { id: `temp-${Date.now()}`, content, isMine: true, time: new Date().toISOString() };
     messageList.value.push(tempMsg);
     scrollToBottom();
 
-    // 优先使用 socket 发消息
-    if (socket.value && socket.value.connected) {
-      // 发送事件并让后端广播
-      socket.value.emit('send_message', { receiverId: currentFriend.value.id, content });
-      // 留下乐观消息（会由 server 返回的 message_sent/receive_message 补正）
+    // 使用 HTTP 接口发送消息
+    const res = await friendApi.sendMessage({ receiverId: currentFriend.value.id, content });
+
+    if (res && res.code === 200) {
+      const serverMsg = res.data || res;
+      const idx = messageList.value.findIndex(m => m.id && String(m.id).startsWith('temp-'));
+      if (idx !== -1) messageList.value.splice(idx, 1);
+
+      const formatted = {
+        id: serverMsg.messageId || serverMsg.message_id || serverMsg.id || Date.now(),
+        content: serverMsg.content || content,
+        isMine: true,
+        time: serverMsg.sentAt || serverMsg.sent_at || serverMsg.createTime || serverMsg.time || new Date().toISOString(),
+      };
+      messageList.value.push(formatted);
       message.value = '';
+      scrollToBottom();
     } else {
-      // 回退到 HTTP 接口
-      const res = await friendApi.sendMessage({ receiverId: currentFriend.value.id, content });
-
-      if (res && res.code === 200) {
-        const serverMsg = res.data || res;
-        const idx = messageList.value.findIndex(m => m.id && String(m.id).startsWith('temp-'));
-        if (idx !== -1) messageList.value.splice(idx, 1);
-
-        const formatted = {
-          id: serverMsg.messageId || serverMsg.message_id || serverMsg.id || Date.now(),
-          content: serverMsg.content || content,
-          isMine: true,
-          time: serverMsg.sentAt || serverMsg.sent_at || serverMsg.createTime || serverMsg.time || new Date().toISOString(),
-        };
-        messageList.value.push(formatted);
-        message.value = '';
-        scrollToBottom();
-      } else {
-        const idx = messageList.value.findIndex(m => m.id && String(m.id).startsWith('temp-'));
-        if (idx !== -1) messageList.value.splice(idx, 1);
-        alert(res?.message || '发送消息失败');
-      }
+      const idx = messageList.value.findIndex(m => m.id && String(m.id).startsWith('temp-'));
+      if (idx !== -1) messageList.value.splice(idx, 1);
+      alert(res?.message || '发送消息失败');
     }
   } catch (err) {
     console.error('发送消息异常：', err);
@@ -626,7 +600,15 @@ watch(message, () => {
 
 onMounted(async () => {
   await fetchFriendList(); // 加载好友列表
-  await fetchFriendRequests(); // 新增：加载好友请求列表
+  await fetchFriendRequests(); // 加载好友请求列表
+  await fetchUnreadCounts(); // 加载未读消息数
+
+  // 设置轮询获取未读消息数
+  if (!messagePollInterval.value) {
+    messagePollInterval.value = setInterval(() => {
+      fetchUnreadCounts().catch(err => console.warn('轮询未读数失败', err));
+    }, 3000); // 5秒轮询一次
+  }
   
   // 页面滚动时导航栏样式变化
   const header = document.querySelector('header');
@@ -641,59 +623,7 @@ onMounted(async () => {
   // 滚动到底部等逻辑
   scrollToBottom();
 
-  // 初始化 Socket.IO 连接（如果 token 可用）
-  try {
-    const token = localStorage.getItem('token');
-    if (token) {
-      socket.value = io(process.env.VUE_APP_SOCKET_URL || 'http://localhost:3000', {
-        auth: { token },
-      });
-
-      socket.value.on('connect', () => {
-        console.log('Socket connected:', socket.value.id);
-      });
-
-      const handleIncomingMessage = (msg) => {
-        // 兼容字段
-        const senderId = msg.senderId || msg.sender_id || msg.sender || msg.from;
-        const receiverId = msg.receiverId || msg.receiver_id || msg.to;
-        const id = msg.messageId || msg.message_id || msg.id || msg.message_id;
-        const time = msg.sentAt || msg.sent_at || msg.createTime || msg.time;
-
-        const formatted = {
-          id,
-          content: msg.content || msg.body || msg.message || '',
-          isMine: String(senderId) === String(currentUserId.value),
-          time: time || new Date().toISOString(),
-          senderId: senderId,
-          receiverId: receiverId,
-        };
-
-        // 去重：如果已存在则跳过
-        if (formatted.id && messageList.value.some(m => String(m.id) === String(formatted.id))) return;
-
-        // 只有当当前对话相关时才追加到 messageList
-        if (currentFriend.value && (String(formatted.senderId) === String(currentFriend.value.id) || String(formatted.receiverId) === String(currentFriend.value.id))) {
-          messageList.value.push(formatted);
-          scrollToBottom();
-        } else {
-          // 未选中该好友时增加本地未读计数
-          const key = String(formatted.senderId || formatted.receiverId || 'unknown');
-          unreadCounts.value[key] = (unreadCounts.value[key] || 0) + 1;
-          console.log('收到与当前会话无关的消息，未读计数：', key, unreadCounts.value[key]);
-        }
-      };
-
-      socket.value.on('receive_message', handleIncomingMessage);
-      socket.value.on('message_sent', handleIncomingMessage);
-
-      socket.value.on('disconnect', () => {
-        console.log('Socket disconnected');
-      });
-    }
-  } catch (e) {
-    console.warn('Socket init failed', e);
-  }
+  // (已移除 Socket.IO 实时逻辑，改为前端轮询以保证兼容性)
 });
 
 //好友列表显示部分
@@ -704,13 +634,15 @@ const fetchFriendList = async () => {
     const res = await friendApi.getFriendList(); // 调用后端接口
 
     if (res.code === 200) {
+      // 后端返回字段为 snake_case（user_id, user_name, user_status）
       friendList.value = res.data.map(friend => ({
-        id: friend.userId, // 后端userId → 前端id
-        name: friend.userName, // 后端userName → 前端name
-        avatar: friend.avatar, // 头像字段直接复用
-        status: friend.userStatus || 'offline', // 后端userStatus → 前端status，兜底默认值
-        signature: friend.signature // 保留个性签名字段
+        id: String(friend.user_id || friend.userId || friend.id), // 兼容多種命名情況並轉為字串
+        name: friend.user_name || friend.userName || friend.name,
+        avatar: friend.avatar || friend.user_avatar,
+        status: friend.user_status || friend.userStatus || 'offline',
+        signature: friend.signature || ''
       })); 
+      console.debug('[fetchFriendList] mapped friendList:', friendList.value);
     } else {
       // 处理接口返回成功但code非200的情况
       error.value = res.message || '获取好友列表失败';
@@ -753,12 +685,13 @@ watch(searchFriendValue, (val) => {
       
       if (res.code === 200) {
         // 格式化后端返回的用户数据
-        searchResults.value = res.data.map(user => ({
-          id: user.userId, 
-          name: user.userName, 
-          avatar: user.avatar || 'https://picsum.photos/seed/default/100/100', 
-          status: user.userStatus || 'offline'
-        }));
+        // 兼容後端 user_* 命名
+      searchResults.value = res.data.map(user => ({
+        id: String(user.user_id || user.userId || user.id),
+            name: user.user_name || user.userName || user.name,
+            avatar: user.avatar || 'https://picsum.photos/seed/default/100/100',
+            status: user.user_status || user.userStatus || 'offline'
+          }));
       } else {
         searchResults.value = [];
       }
@@ -823,13 +756,15 @@ const fetchFriendRequests = async () => {
     console.log('后端返回的好友请求原始数据：', res.data);
     if (res.code === 200) {
       // 格式化后端返回的请求数据（适配前端渲染）
+      // 后端返回字段為 request_id, sender_id, user_name, avatar, created_at
       friendRequests.value = res.data.map(request => ({
-        id: request.requestId, // 好友请求的唯一ID（后端主键）
-        requesterId: request.senderId, // 发送请求的用户ID
-        name: request.senderName, // 发送者昵称
-        avatar: request.senderAvatar || 'https://picsum.photos/seed/default/100/100', // 发送者头像
-        time: formatTime(request.createdAt), // 发送时间（格式化）
+        id: String(request.request_id || request.requestId),
+        requesterId: String(request.sender_id || request.senderId),
+        name: request.user_name || request.senderName || request.name,
+        avatar: request.avatar || 'https://picsum.photos/seed/default/100/100',
+        time: formatTime(request.created_at || request.createdAt)
       }));
+      console.debug('[fetchFriendRequests] mapped friendRequests:', friendRequests.value);
     } else {
       friendRequests.value = [];
       alert(res.message || '获取好友请求失败');
@@ -932,27 +867,27 @@ const messageList = ref([]);
 // 未读计数（简单本地实现）
 const unreadCounts = ref({});
 
+// 轮询定时器（提前声明，避免 onMounted 中使用未声明变量）
+const messagePollInterval = ref(null);
+
 // 加载指定好友的消息列表
 const fetchMessageList = async (friendId) => {
   if (!friendId) return;
   try {
-    messageLoading.value = true;
+    // messageLoading.value = true;
     // 调用后端接口，传入好友ID
     const res = await friendApi.getMessageList({ friendId });
     if (res.code === 200) {
-      // 格式化消息：兼容 snake_case / camelCase 字段，并正确判定 isMine
       const msgs = (res.data || []).map(msg => {
-        const senderId = msg.senderId || msg.sender_id || msg.from || msg.userId || msg.user_id;
-        const id = msg.messageId || msg.message_id || msg.id || undefined;
-        const time = msg.sentAt || msg.sent_at || msg.createTime || msg.create_time || msg.time || msg.updatedAt || msg.updated_at;
-
+        const senderId = msg.sender_id || msg.senderId;
         return {
-          id,
-          ...msg,
-          isMine: String(senderId) === String(currentUserId.value), // 字符串比較，避免型別不一致
-          content: msg.content || msg.body || msg.message || '',
-          time: time || '',
-          senderId: senderId
+          id: msg.message_id || msg.id,
+          content: msg.content,
+          isMine: String(senderId) === String(currentUserId.value), // 自己发送的消息
+          time: msg.sent_at || msg.sentAt, // 数据库的sent_at字段
+          ifRead: msg.if_read || msg.ifRead, // 数据库的if_read字段（0=未读，1=已读）
+          senderId,
+          receiverId: msg.receiver_id || msg.receiverId
         };
       });
 
@@ -979,39 +914,139 @@ const fetchMessageList = async (friendId) => {
 };
 
 // 轮询相关
-// const messagePollInterval = ref(null);
-
-// const clearMessagePoll = () => {
-//   if (messagePollInterval.value) {
-//     clearInterval(messagePollInterval.value);
-//     messagePollInterval.value = null;
-//   }
-// };
+const clearMessagePoll = () => {
+  if (messagePollInterval.value) {
+    clearInterval(messagePollInterval.value);
+    messagePollInterval.value = null;
+  }
+};
 
 const selectFriend = async (friend) => {
-  currentFriendId.value = friend.id; // 保留原有ID记录
-  currentFriend.value = friend; // 存储当前好友完整信息
-  error.value = ''; // 清空错误提示
+  currentFriendId.value = friend.id;
+  currentFriend.value = friend;
+  error.value = '';
 
-  // 立即加载历史消息
+  // 调用后端接口，标记该好友的所有消息为已读
+  try {
+    // 调用后端标记已读接口
+    const res = await friendApi.markMessagesAsRead({ friendId: friend.id });
+    if (res.code === 200) {
+      console.debug(`[selectFriend] 标记好友${friend.id}的消息为已读成功`);
+    } else {
+      console.warn(`[selectFriend] 标记已读失败：${res.message}`);
+    }
+  } catch (err) {
+    console.error('[selectFriend] 标记已读接口调用失败：', err);
+  }
+
+  // 加载该好友的消息列表
   await fetchMessageList(friend.id);
-  // 切换会话时清除该好友的未读计数
-  unreadCounts.value[friend.id] = 0;
+
+  // 刷新未读计数（此时该好友的未读数会变为0）
+  await fetchUnreadCounts();
+
+  // 重启轮询（获取最新消息+最新未读数）
+  clearMessagePoll();
+  messagePollInterval.value = setInterval(async () => {
+    await fetchMessageList(friend.id);
+    await fetchUnreadCounts(); // 轮询时也刷新未读数
+  }, 3000);
 };
 
 onBeforeUnmount(() => {
-  // 断开 socket 连接并清理
+  // 清理轮询
   try {
-    if (socket.value) {
-      socket.value.disconnect();
-      socket.value = null;
-    }
+    clearMessagePoll();
   } catch (e) {
-    console.warn('Socket disconnect error', e);
+    console.warn('清理消息轮询失败', e);
   }
 });
 
+// 工具函数：校验未读计数数据是否有效
+const validateUnreadCountData = (data) => {
+  // 数据是数组
+  if (Array.isArray(data)) {
+    return data.every(item => {
+      // 必须包含friendId（数字/字符串）和count（非负整数）
+      return (item.friendId !== undefined && (typeof item.friendId === 'number' || typeof item.friendId === 'string')) 
+          && (item.count !== undefined && Number.isInteger(item.count) && item.count >= 0);
+    });
+  }
+  // 数据是对象
+  else if (typeof data === 'object' && data !== null) {
+    return Object.entries(data).every(([friendId, count]) => {
+      // friendId是非空字符串/数字，count是非负整数
+      return (friendId && (typeof friendId === 'number' || typeof friendId === 'string'))
+          && (typeof count === 'number' && Number.isInteger(count) && count >= 0);
+    });
+  }
+  // 无效数据
+  return false;
+};
 
+// 从后端获取所有好友的未读消息数
+const fetchUnreadCounts = async () => {
+  try {
+    console.debug('[fetchUnreadCounts] 开始请求后端未读计数接口');
+    const res = await friendApi.getUnreadCount();
+    console.debug('[fetchUnreadCounts] 后端原始返回数据：', res); // 打印原始响应
+
+    if (res.code === 200) {
+      // 校验数据格式是否有效
+      const isDataValid = validateUnreadCountData(res.data);
+      if (!isDataValid) {
+        console.error('[fetchUnreadCounts] 后端返回的未读计数数据格式无效：', res.data);
+        unreadCounts.value = {};
+        return;
+      }
+
+      // 处理数据（数组转对象）
+      let newUnreadCounts = {};
+      if (Array.isArray(res.data)) {
+        console.debug('[fetchUnreadCounts] 后端返回数组格式，开始转换为对象');
+        res.data.forEach(item => {
+          // 验证item是否包含必要字段（兜底）
+          if (item.friendId && typeof item.count === 'number') {
+            newUnreadCounts[item.friendId] = item.count;
+          } else {
+            console.warn('[fetchUnreadCounts] 无效的未读计数项：', item);
+          }
+        });
+      } else if (typeof res.data === 'object' && res.data !== null) {
+        // 处理对象格式
+        console.debug('[fetchUnreadCounts] 后端返回对象格式，直接使用');
+        newUnreadCounts = res.data;
+        // 验证对象中的值是否为数字（兜底）
+        Object.entries(newUnreadCounts).forEach(([friendId, count]) => {
+          if (typeof count !== 'number' || count < 0) {
+            console.warn('[fetchUnreadCounts] 无效的未读计数：好友ID=', friendId, '，计数=', count);
+            // 修正无效数据
+            newUnreadCounts[friendId] = 0;
+          }
+        });
+      } else {
+        console.warn('[fetchUnreadCounts] 后端返回的data格式不支持：', res.data);
+        newUnreadCounts = {};
+      }
+
+      unreadCounts.value = newUnreadCounts;
+      console.debug('[fetchUnreadCounts] 处理后的未读计数：', unreadCounts.value);
+    } else {
+      console.warn('[fetchUnreadCounts] 后端返回非200状态：', res.code, res.message);
+      unreadCounts.value = {};
+    }
+  } catch (err) {
+    console.error('获取未读消息数失败：', err);
+    // 打印错误的详细信息（比如请求地址、响应状态）
+    if (err.response) {
+      console.error('请求地址：', err.config.url);
+      console.error('响应状态：', err.response.status);
+      console.error('响应数据：', err.response.data);
+    }
+    // 错误时重置未读计数，避免前端渲染异常
+    unreadCounts.value = {};
+  }
+};
 
 
 </script>

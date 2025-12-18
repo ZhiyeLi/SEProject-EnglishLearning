@@ -17,16 +17,6 @@
       <!-- 左侧好友列表：保留 -->
       <aside class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20">
         <div class="p-5 h-full flex flex-col">
-          <!-- 搜索框：保留 -->
-          <div class="relative mb-6">
-            <input 
-              type="text" 
-              placeholder="搜索好友..." 
-              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base"
-            >
-            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
-          </div>
-          
           <!-- 好友列表区域 -->
           <div class="flex-grow overflow-y-auto -mx-2 px-2">
             <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 mt-2">
@@ -56,16 +46,21 @@
                 暂无好友，快去添加吧！
               </li>
               <!-- 遍历真实好友列表 -->
-              <li
-                v-for="friend in friendList"
-                :key="friend.id"
-              >
+              <li v-for="friend in friendList" :key="friend.id">
                 <FriendItem 
                   :name="friend.name" 
-                  :avatar="friend.avatar || 'https://picsum.photos/seed/default/100/100'" 
-                  :status="friend.status || 'offline'" 
-                  :class="friend.id === currentFriendId ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''"
-                />
+                  :avatar="friend.avatar" 
+                  :status="friend.status"
+                >
+                  <!-- 未读信息小红点 -->
+                  <span
+                    v-if="unreadCounts[friend.id] > 0"
+                    class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse z-10"
+                    :class="{ 'h-6 w-6 px-0.5': unreadCounts[friend.id] > 9 }"    
+                  >
+                    {{ unreadCounts[friend.id] > 99 ? '99+' : unreadCounts[friend.id] }}
+                  </span>
+                </FriendItem>
               </li>
               <li>
                 <button 
@@ -788,7 +783,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, watch } from "vue";
+import { onMounted, ref, computed, watch, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { wordProgressManager } from "@/utils/wordData.js";
 import { planManager } from "@/utils/planData.js";
@@ -805,7 +800,6 @@ const searchLoading = ref(false); // 搜索用户的加载状态
 const loading = ref(false); // 加载状态
 const error = ref(''); // 错误提示
 const friendList = ref([]); // 后端返回的真实好友列表
-const currentFriendId = ref(''); // 当前选中好友ID
 
 // 添加好友弹窗相关响应式变量
 const showAddFriendModal = ref(false);
@@ -818,7 +812,15 @@ const showFriendRequestModal = ref(false);
 
 onMounted(async () => {
   await fetchFriendList(); // 加载好友列表
-  await fetchFriendRequests(); // 新增：加载好友请求列表
+  await fetchFriendRequests(); // 加载好友请求列表
+  await fetchUnreadCounts(); // 加载未读消息数
+
+  // 开始轮询未读消息数
+  if (!messagePollInterval.value) {
+    messagePollInterval.value = setInterval(() => {
+      fetchUnreadCounts().catch(err => console.warn('轮询未读数失败', err));
+    }, 3000);
+  }
 
   // 初始化单词打卡数据
   await wordProgressManager.init();
@@ -1167,6 +1169,99 @@ const rejectFriendRequest = async (index) => {
     alert(errMsg);
   }
 };
+// 未读计数存储（键：好友ID，值：未读数量）
+const unreadCounts = ref({});
+// 未读计数轮询定时器
+const messagePollInterval = ref(null);
+
+// 工具函数：校验未读计数数据是否有效
+const validateUnreadCountData = (data) => {
+  if (Array.isArray(data)) {
+    return data.every(item => {
+      return (item.friendId !== undefined && (typeof item.friendId === 'number' || typeof item.friendId === 'string')) 
+          && (item.count !== undefined && Number.isInteger(item.count) && item.count >= 0);
+    });
+  } else if (typeof data === 'object' && data !== null) {
+    return Object.entries(data).every(([friendId, count]) => {
+      return (friendId && (typeof friendId === 'number' || typeof friendId === 'string'))
+          && (typeof count === 'number' && Number.isInteger(count) && count >= 0);
+    });
+  }
+  return false;
+};
+
+// 从后端获取所有好友的未读消息数
+const fetchUnreadCounts = async () => {
+  try {
+    console.debug('[fetchUnreadCounts] 开始请求后端未读计数接口');
+    const res = await friendApi.getUnreadCount();
+    console.debug('[fetchUnreadCounts] 后端原始返回数据：', res);
+
+    if (res.code === 200) {
+      const isDataValid = validateUnreadCountData(res.data);
+      if (!isDataValid) {
+        console.error('[fetchUnreadCounts] 后端返回的未读计数数据格式无效：', res.data);
+        unreadCounts.value = {};
+        return;
+      }
+
+      let newUnreadCounts = {};
+      if (Array.isArray(res.data)) {
+        res.data.forEach(item => {
+          if (item.friendId && typeof item.count === 'number') {
+            // 转为字符串，匹配前端好友ID（避免类型不匹配）
+            const friendIdStr = String(item.friendId);
+            newUnreadCounts[friendIdStr] = item.count;
+          } else {
+            console.warn('[fetchUnreadCounts] 无效的未读计数项：', item);
+          }
+        });
+      } else if (typeof res.data === 'object' && res.data !== null) {
+        newUnreadCounts = res.data;
+        // 类型兼容处理
+        Object.entries(newUnreadCounts).forEach(([friendId, count]) => {
+          const friendIdStr = String(friendId);
+          if (typeof count !== 'number' || count < 0) {
+            console.warn('[fetchUnreadCounts] 无效的未读计数：好友ID=', friendId, '，计数=', count);
+            newUnreadCounts[friendIdStr] = 0;
+          } else {
+            newUnreadCounts[friendIdStr] = count;
+          }
+        });
+      } else {
+        console.warn('[fetchUnreadCounts] 后端返回的data格式不支持：', res.data);
+        newUnreadCounts = {};
+      }
+
+      unreadCounts.value = newUnreadCounts;
+      console.debug('[fetchUnreadCounts] 处理后的未读计数：', unreadCounts.value);
+    } else {
+      console.warn('[fetchUnreadCounts] 后端返回非200状态：', res.code, res.message);
+      unreadCounts.value = {};
+    }
+  } catch (err) {
+    console.error('获取未读消息数失败：', err);
+    if (err.response) {
+      console.error('请求地址：', err.config.url);
+      console.error('响应状态：', err.response.status);
+      console.error('响应数据：', err.response.data);
+    }
+    unreadCounts.value = {};
+  }
+};
+
+// 清理未读计数轮询定时器
+const clearMessagePoll = () => {
+  if (messagePollInterval.value) {
+    clearInterval(messagePollInterval.value);
+    messagePollInterval.value = null;
+  }
+};
+
+// 页面销毁时清理轮询
+onBeforeUnmount(() => {
+  clearMessagePoll();
+});
 
 // 学习建议弹窗部分
 const showSuggestionsModal = ref(false);
