@@ -964,7 +964,6 @@ const navItems = [
   { label: "时间表", onClick: gotoTimeTable },
   { label: "单词打卡", onClick: startWordCheckIn },
   { label: "AI伴学", onClick: gotoAiChat },
-  { label: "排行榜", onClick: gotoRank},
 ];
 
 //好友列表显示部分
