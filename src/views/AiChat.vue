@@ -13,13 +13,66 @@
     </NavBar>
 
     <!-- 主内容区 -->
-    <main class="flex-grow flex flex-col md:flex-row">
-      <!-- 左侧好友列表已移除：AI 伴学页面现在为纯 AI 聊天界面 -->
+    <main class="flex-grow flex flex-col md:flex-row gap-4 p-6">
+      <!-- 左侧：历史对话列表 -->
+      <div class="w-full md:w-64 bg-white rounded-lg shadow-sm overflow-hidden flex flex-col">
+        <!-- 历史列表头部 -->
+        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 flex items-center justify-between">
+          <h3 class="font-semibold text-white text-base flex items-center">
+            <i class="fas fa-history mr-2" /> 对话历史
+          </h3>
+          <button
+            class="text-white hover:bg-emerald-700 rounded p-1 transition-colors"
+            title="新建对话"
+            @click="createNewChat"
+          >
+            <i class="fas fa-plus" />
+          </button>
+        </div>
 
-      <!-- 中间内容区：AI聊天（居中矩形容器） -->
-      <div class="flex-grow flex justify-center items-start bg-transparent p-6">
+        <!-- 历史列表内容 -->
+        <div class="flex-grow overflow-y-auto">
+          <div
+            v-if="chatHistory.length === 0"
+            class="p-4 text-center text-gray-400 text-sm"
+          >
+            暂无对话历史
+          </div>
+          <div v-else class="divide-y divide-gray-200">
+            <div
+              v-for="(chat, index) in chatHistory"
+              :key="chat.sessionId"
+              class="p-3 cursor-pointer hover:bg-emerald-50 transition-colors border-l-4 transition-colors"
+              :class="currentChatId === chat.sessionId ? 'border-l-emerald-500 bg-emerald-50' : 'border-l-transparent'"
+              @click="switchChat(chat.sessionId)"
+            >
+              <p class="text-sm font-medium text-gray-800 truncate">
+                {{ chat.title || "新对话 " + (chatHistory.length - index) }}
+              </p>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ formatChatTime(chat.createdAt) }}
+              </p>
+              <div
+                v-if="chat.messageCount"
+                class="text-xs text-gray-400 mt-1"
+              >
+                {{ chat.messageCount }} 条消息
+              </div>
+              <button
+                class="text-xs text-red-500 hover:text-red-700 mt-2 opacity-0 hover:opacity-100 transition-opacity"
+                @click.stop="deleteChat(chat.sessionId)"
+              >
+                <i class="fas fa-trash mr-1" />删除
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧内容区：AI聊天（主对话框） -->
+      <div class="flex-grow flex justify-center items-start bg-transparent">
         <div
-          class="w-full max-w-5xl h-[600px] bg-white shadow-sm rounded-lg overflow-hidden flex flex-col"
+          class="w-full h-[600px] bg-white shadow-sm rounded-lg overflow-hidden flex flex-col"
         >
           <!-- 聊天头部 -->
           <div
@@ -247,8 +300,8 @@ import { ref, onMounted, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "@/components/common/NavBar.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
-// Friend list removed for AI 学习助手页面；组件在其他页面仍可用
 import EndBar from "@/components/common/EndBar.vue";
+import { aiChatApi } from "@/api/aiChat";
 
 const router = useRouter();
 
@@ -268,6 +321,152 @@ const messages = ref([
   },
 ]);
 const assistantTyping = ref(false);
+
+// ===== 历史对话管理（从后端加载）=====
+const chatHistory = ref([]);
+const currentChatId = ref(null);
+const isLoadingHistory = ref(false);
+const isLoadingMessages = ref(false);
+
+const initializeChatHistory = async () => {
+  isLoadingHistory.value = true;
+  try {
+    // 从后端获取所有对话会话
+    const response = await aiChatApi.getSessions();
+    if (response && response.code === 200 && response.data) {
+      chatHistory.value = response.data || [];
+      
+      // 如果没有历史，创建第一个对话
+      if (chatHistory.value.length === 0) {
+        await createNewChat();
+      } else {
+        // 加载最新的对话（异步非阻塞）
+        currentChatId.value = chatHistory.value[0].sessionId;
+        loadSessionMessages(chatHistory.value[0].sessionId);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to load chat history:", error);
+    // 如果加载失败，创建一个新对话
+    await createNewChat();
+  } finally {
+    isLoadingHistory.value = false;
+  }
+};
+
+const loadSessionMessages = async (sessionId) => {
+  isLoadingMessages.value = true;
+  try {
+    const response = await aiChatApi.getSessionMessages(sessionId);
+    if (response && response.code === 200 && response.data) {
+      const messagesData = response.data || [];
+      // 将后端消息转换为前端格式
+      messages.value = messagesData.map((msg) => ({
+        id: msg.messageId,
+        type: msg.role === "user" ? "user" : "assistant",
+        text: msg.content,
+        time: new Date(msg.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      }));
+      
+      if (messages.value.length === 0) {
+        messages.value = [
+          {
+            id: Date.now(),
+            type: "assistant",
+            text: "你好！我是 AI 学习助手，可以在这里和我聊天。",
+            time: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ];
+      }
+      await nextTick(() => scrollToBottom());
+    }
+  } catch (error) {
+    console.error("Failed to load session messages:", error);
+  } finally {
+    isLoadingMessages.value = false;
+  }
+};
+
+const createNewChat = async () => {
+  try {
+    const response = await aiChatApi.createSession();
+    if (response && response.code === 200 && response.data) {
+      const newSession = response.data;
+      chatHistory.value.unshift(newSession);
+      currentChatId.value = newSession.sessionId;
+      messages.value = [
+        {
+          id: Date.now(),
+          type: "assistant",
+          text: "你好！我是 AI 学习助手，可以在这里和我聊天。",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ];
+    }
+  } catch (error) {
+    console.error("Failed to create new chat:", error);
+  }
+};
+
+const switchChat = (sessionId) => {
+  currentChatId.value = sessionId;
+  // 异步加载消息，但不阻塞UI
+  loadSessionMessages(sessionId);
+};
+
+const deleteChat = async (sessionId) => {
+  if (chatHistory.value.length === 1) {
+    alert("至少需要保留一个对话");
+    return;
+  }
+  
+  try {
+    const response = await aiChatApi.deleteSession(sessionId);
+    if (response && response.code === 200) {
+      const index = chatHistory.value.findIndex((c) => c.sessionId === sessionId);
+      if (index > -1) {
+        chatHistory.value.splice(index, 1);
+        if (currentChatId.value === sessionId) {
+          currentChatId.value = chatHistory.value[0].sessionId;
+          // 异步加载消息，不阻塞
+          loadSessionMessages(chatHistory.value[0].sessionId);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Failed to delete chat:", error);
+    alert("删除对话失败");
+  }
+};
+
+const formatChatTime = (isoString) => {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diff = now - date;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (hours < 1) {
+    return "刚刚";
+  } else if (hours < 24) {
+    return `${hours}小时前`;
+  } else if (days < 7) {
+    return `${days}天前`;
+  } else {
+    return date.toLocaleDateString();
+  }
+};
+
+// ====================================================
 
 // ===== 在此处手动输入你的 API Key 和 Base URL =====
 const API_KEY = "sk-RhMyaUYgYl3SfJ5VBThIHPinG5uNd4HIfUR4PP5DS47SJjR0"; // 例如: "sk-xxxxxxxxxxxxx"
@@ -291,12 +490,13 @@ const scrollToBottom = async () => {
 
 const chatContainer = ref(null);
 
-onMounted(() => {
+onMounted(async () => {
+  await initializeChatHistory();
   scrollToBottom();
 });
 
 const appendUserMessage = (text) => {
-  messages.value.push({
+  const msg = {
     id: Date.now(),
     type: "user",
     text,
@@ -304,7 +504,16 @@ const appendUserMessage = (text) => {
       hour: "2-digit",
       minute: "2-digit",
     }),
-  });
+  };
+  messages.value.push(msg);
+  
+  // 异步保存用户消息到后端（不阻塞UI）
+  if (currentChatId.value) {
+    aiChatApi.saveMessage(currentChatId.value, "user", text).catch((error) => {
+      console.error("Failed to save user message:", error);
+    });
+  }
+  return msg;
 };
 
 const appendAssistantMessagePlaceholder = () => {
@@ -342,6 +551,32 @@ async function onSend() {
   } finally {
     assistantTyping.value = false;
     await scrollToBottom();
+    
+    // 保存助手消息到后端（不阻塞UI）
+    if (currentChatId.value && assistantMsg.text.trim()) {
+      const fullContent = assistantMsg.text.trim();
+      aiChatApi.saveMessage(currentChatId.value, "assistant", fullContent).catch((error) => {
+        console.error("Failed to save assistant message:", error);
+      });
+    }
+    
+    // 自动生成标题（如果还没有标题的话）
+    const currentSession = chatHistory.value.find((c) => c.sessionId === currentChatId.value);
+    if (currentSession && !currentSession.title) {
+      const firstUserMsg = messages.value.find((m) => m.type === "user");
+      if (firstUserMsg) {
+        const title = firstUserMsg.text.substring(0, 30);
+        aiChatApi.updateSessionTitle(currentChatId.value, title).catch((error) => {
+          console.error("Failed to update chat title:", error);
+        });
+        currentSession.title = title;
+      }
+    }
+    
+    // 更新会话消息计数
+    if (currentSession) {
+      currentSession.messageCount = messages.value.length;
+    }
   }
 }
 
