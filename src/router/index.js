@@ -57,6 +57,11 @@ const routes = [
     name: "QuestionBank",
     component: () => import("@/views/QuestionBank.vue"),
   },
+  {
+    path: '/rank',
+    name: 'Rank', 
+    component: () => import("@/views/FriendRanking.vue"),
+  }
 ];
 
 const router = createRouter({

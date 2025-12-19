@@ -121,7 +121,7 @@
                 'flex flex-col items-center py-1 transition-colors',
                 activeTab === 'rank' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
               ]"
-              @click="activeTab = 'rank'"
+              @click="gotoRank"
             >
               <i class="fas fa-trophy text-xl mb-1" />
               <span class="text-sm">排行榜</span>
@@ -933,6 +933,9 @@ function gotoTimeTable() {
 function gotoCourse() {
   router.push({ name: "Course" }).catch(() => {});
 }
+function gotoRank(){
+  router.push({ name: "Rank" }).catch(() => {});
+}
 async function startWordCheckIn() {
   // 检查用户是否已选择过词汇类型
   const selectedType = await wordProgressManager.getSelectedType();
@@ -961,6 +964,7 @@ const navItems = [
   { label: "时间表", onClick: gotoTimeTable },
   { label: "单词打卡", onClick: startWordCheckIn },
   { label: "AI伴学", onClick: gotoAiChat },
+  { label: "排行榜", onClick: gotoRank},
 ];
 
 //好友列表显示部分
