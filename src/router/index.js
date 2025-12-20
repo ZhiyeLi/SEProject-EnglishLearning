@@ -70,24 +70,28 @@ const router = createRouter({
 });
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from, next) => 
+{
   const token = localStorage.getItem("token");
   // 如果去往登录页
-  if (to.path === "/login") {
+  if (to.path === "/login") 
+  {
     if (token) {
       // 已登录则跳转首页
       next("/");
     } else {
       next();
     }
-  } else {
+  }
+  else if(token)
+  {
     // 去往其他页面
-    if (token) {
       next();
-    } else {
+  }
+  else 
+  {
       // 未登录跳转登录页
       next("/login");
-    }
   }
 });
 

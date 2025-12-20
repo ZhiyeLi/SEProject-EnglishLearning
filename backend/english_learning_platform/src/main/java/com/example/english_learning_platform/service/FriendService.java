@@ -8,7 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+import com.example.english_learning_platform.dto.FriendRankingDTO;
+import com.example.english_learning_platform.repository.UserWordProgressRepository;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.List;
 @Service
 public class FriendService {
     
@@ -16,15 +21,19 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final MessageRepository messageRepository;
-    
+
+    private final UserWordProgressRepository userWordProgressRepository;
+
     public FriendService(UserRepository userRepository,
                         FriendRepository friendRepository,
                         FriendRequestRepository friendRequestRepository,
-                        MessageRepository messageRepository) {
+                        MessageRepository messageRepository,
+                         UserWordProgressRepository userWordProgressRepository) {
         this.userRepository = userRepository;
         this.friendRepository = friendRepository;
         this.friendRequestRepository = friendRequestRepository;
         this.messageRepository = messageRepository;
+        this.userWordProgressRepository = userWordProgressRepository;
     }
 
 //    public List<User> searchFriends(String keyword, Long currentUserId) {
@@ -205,5 +214,53 @@ public class FriendService {
     public void markMessagesAsRead(Long receiverId, Long senderId) {
         // 更新该用户（接收者）收到的、来自某个好友（发送者）的所有未读消息为已读
         messageRepository.updateIfReadByReceiverIdAndSenderId(receiverId, senderId, true);
+    }
+
+    // 新增：获取好友周学习单词排行榜
+    public List<FriendRankingDTO> getFriendWeeklyRanking(Long currentUserId) {
+        // 1. 计算本周时间范围：周一00:00 至 周日23:59:59
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime monday = now.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
+                .withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime sunday = now.with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY))
+                .withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+
+        // 2. 获取当前用户的所有好友（适配你现有的Friend表结构，无status则直接查userId）
+        List<Friend> friendList = friendRepository.findByUserId(currentUserId);
+        if (friendList.isEmpty()) {
+            return new ArrayList<>(); // 无好友返回空列表
+        }
+
+        // 3. 遍历好友，统计每个好友的本周去重单词数
+        List<FriendRankingDTO> rankingList = new ArrayList<>();
+        for (Friend friend : friendList) {
+            Long friendId = friend.getFriendId();
+            // 3.1 获取好友基础信息
+            User friendUser = userRepository.findById(friendId).orElse(null);
+            if (friendUser == null) {
+                continue; // 好友不存在则跳过
+            }
+            // 3.2 调用UserWordProgressRepository统计单词数
+            Integer totalWords = userWordProgressRepository.countDistinctWordsByUserIdAndTimeRange(
+                    friendId, monday, sunday
+            );
+            // 3.3 封装DTO（适配你的User实体字段：userName）
+            FriendRankingDTO dto = new FriendRankingDTO();
+            dto.setUserId(friendId);
+            dto.setAvatar(friendUser.getAvatar());
+            dto.setUsername(friendUser.getUserName()); // 你的User实体中是userName
+            dto.setTotalWords(totalWords == null ? 0 : totalWords);
+            rankingList.add(dto);
+        }
+
+        // 4. 排序：按单词数降序，数量相同则按用户名升序
+        rankingList.sort((a, b) -> {
+            if (b.getTotalWords().equals(a.getTotalWords())) {
+                return a.getUsername().compareTo(b.getUsername());
+            }
+            return b.getTotalWords().compareTo(a.getTotalWords());
+        });
+
+        return rankingList;
     }
 }

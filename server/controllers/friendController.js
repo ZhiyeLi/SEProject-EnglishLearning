@@ -295,6 +295,82 @@ const getUnreadCount = async (req, res) => {
   }
 };
 
+// 获取好友周排行榜
+exports.getFriendWeeklyRanking = async (req, res) => {
+  try {
+    // 1. 从JWT中间件获取当前用户ID（req.user.id 是authMiddleware解析后的值）
+    const currentUserId = req.user.id;
+
+    // 2. 计算本周时间范围（周一00:00 至 周日23:59:59）
+    const { monday, sunday } = getWeekTimeRange();
+
+    // 3. 查询当前用户的已通过好友ID列表（status=1）
+    const [friends] = await db.query(`
+      SELECT friend_id FROM friends 
+      WHERE user_id = ?
+    `, [currentUserId]);
+
+    if (friends.length === 0) {
+      return res.json({
+        code: 200,
+        message: 'success',
+        data: []
+      });
+    }
+
+    // 4. 遍历好友，统计每个好友本周学习的去重单词数
+    const rankingList = [];
+    for (const friend of friends) {
+      const friendId = friend.friend_id;
+
+      // 4.1 查询好友基础信息
+      const [user] = await db.query(`
+        SELECT userid, user_name, avatar FROM users WHERE user_id = ?
+      `, [friendId]);
+      if (user.length === 0) continue;
+      const friendUser = user[0];
+
+      // 4.2 统计本周去重单词数
+      const [wordCount] = await db.query(`
+        SELECT COUNT(DISTINCT word_id) as total FROM user_word_progress 
+        WHERE user_id = ? AND last_review_time BETWEEN ? AND ?
+      `, [friendId, monday, sunday]);
+      const totalWords = wordCount[0].total || 0;
+
+      // 4.3 封装数据
+      rankingList.push({
+        userId: friendUser.id,
+        avatar: friendUser.avatar || 'https://picsum.photos/seed/default/100/100', // 前端默认值对齐
+        username: friendUser.username,
+        totalWords: totalWords
+      });
+    }
+
+    // 5. 按单词数降序排序（总数相同按用户名升序）
+    rankingList.sort((a, b) => {
+      if (b.totalWords === a.totalWords) {
+        return a.username.localeCompare(b.username);
+      }
+      return b.totalWords - a.totalWords;
+    });
+
+    // 6. 返回结果
+    res.json({
+      code: 200,
+      message: 'success',
+      data: rankingList
+    });
+
+  } catch (error) {
+    console.error('获取好友排行榜失败：', error);
+    res.status(500).json({
+      code: 500,
+      message: '服务器内部错误',
+      data: []
+    });
+  }
+};
+
 module.exports = {
   searchFriend,
   sendFriendRequest,

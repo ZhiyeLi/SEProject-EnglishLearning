@@ -58,6 +58,7 @@ E:\English_web\SEProject-EnglishLearning\backend\english_learning_platform\src\m
 E:\English_web\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\service\FriendService.java
 E:\English_web\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\FriendRepository.java
 E:\English_web\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\entity\Course.java
+E:\English_web\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\dto\FriendRankingDTO.java
 E:\English_web\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\repository\CourseRepository.java
 E:\English_web\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\controller\OptionsController.java
 E:\English_web\SEProject-EnglishLearning\backend\english_learning_platform\src\main\java\com\example\english_learning_platform\dto\UnreadCountDTO.java

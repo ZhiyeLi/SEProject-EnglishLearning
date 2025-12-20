@@ -8,9 +8,9 @@ import com.example.english_learning_platform.entity.User;
 import com.example.english_learning_platform.service.FriendService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
-
-import javax.xml.transform.Result;
+import com.example.english_learning_platform.dto.FriendRankingDTO;
 import java.util.List;
+import javax.xml.transform.Result;
 import java.util.Map;
 
 @RestController
@@ -36,6 +36,24 @@ public class FriendController {
 //            return ApiResponse.error(e.getMessage());
 //        }
 //    }
+
+    // 新增：好友周学习单词排行榜接口
+    @GetMapping("/ranking/weekly")
+    public ApiResponse<List<FriendRankingDTO>> getFriendWeeklyRanking(HttpServletRequest request) {
+        try {
+            // 1. 获取当前登录用户ID（复用项目现有逻辑：从request.getAttribute获取）
+            Long currentUserId = (Long) request.getAttribute("userId");
+
+            // 2. 调用Service层获取排行榜数据
+            List<FriendRankingDTO> rankingList = friendService.getFriendWeeklyRanking(currentUserId);
+
+            // 3. 按现有格式返回成功响应
+            return ApiResponse.success(rankingList);
+        } catch (Exception e) {
+            // 统一异常处理，和现有接口保持一致
+            return ApiResponse.error(e.getMessage());
+        }
+    }
 
     // 搜索添加好友用户接口
     @GetMapping("/search")

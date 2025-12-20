@@ -39,6 +39,7 @@ com\example\english_learning_platform\repository\DailyStudyRecordRepository.clas
 com\example\english_learning_platform\repository\FriendRequestRepository.class
 com\example\english_learning_platform\controller\AuthController.class
 com\example\english_learning_platform\repository\QuestionRepository.class
+com\example\english_learning_platform\dto\FriendRankingDTO.class
 com\example\english_learning_platform\entity\UserVocabulary.class
 com\example\english_learning_platform\repository\AiChatMessageRepository.class
 com\example\english_learning_platform\repository\UserQuestionRecordRepository.class
