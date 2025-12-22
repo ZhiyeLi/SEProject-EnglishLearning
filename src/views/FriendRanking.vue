@@ -113,7 +113,12 @@
           <!-- 排行榜头部 -->
           <div class="px-6 py-4 border-b flex justify-between items-center flex-shrink-0">
             <h3 class="font-bold text-lg text-gray-800">好友周学习排行榜</h3>
-            <span class="text-xs text-gray-500">统计周期：{{ weekRange }}</span>
+            <div class="flex items-center space-x-4">
+              <span class="text-xs text-gray-500">统计周期：{{ weekRange }}</span>
+              <template v-if="myRanking">
+                <span class="text-sm text-emerald-600 font-medium">我的排名：第{{ myRanking.rank }}名 · {{ myRanking.totalWords }} 个</span>
+              </template>
+            </div>
           </div>
 
           <!-- 加载状态（占满剩余高度） -->
@@ -135,7 +140,7 @@
             <div 
               v-for="(item, index) in rankingList" 
               :key="item.userId"
-              class="flex items-center px-6 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+              :class="['flex items-center px-6 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0', item.userId === myRanking?.userId ? 'bg-emerald-50' : '']"
             >
               <!-- 排名 & 奖牌 -->
               <div class="w-8 text-center mr-4 relative">
@@ -199,6 +204,7 @@ const router = useRouter();
 // ========== 排行榜核心逻辑（保留） ==========
 const loading = ref(false);
 const rankingList = ref([]);
+const myRanking = ref(null);
 
 // ========== 新增：左侧好友列表逻辑（对齐Chat.vue） ==========
 const friendLoading = ref(false);
@@ -291,10 +297,15 @@ const fetchRanking = async () => {
   loading.value = true;
   try {
     const res = await friendApi.getFriendWeeklyRanking();
-    rankingList.value = res.data || [];
+    if (res.data && res.data.rankingList) {
+      rankingList.value = res.data.rankingList;
+      myRanking.value = res.data.my || null;
+    } else {
+      rankingList.value = res.data || [];
+      myRanking.value = null;
+    }
   } catch (error) {
     console.error('获取排行榜失败：', error);
-    // 仅控制台报错，不弹框（避免干扰体验）
   } finally {
     loading.value = false;
   }

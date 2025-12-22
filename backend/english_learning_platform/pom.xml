@@ -23,8 +23,10 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- 明确 Lombok 版本，避免编译时因版本与 JDK 不兼容导致的 javac TypeTag 错误 -->
+        <lombok.version>1.18.30</lombok.version>
     </properties>
-    
+
     <dependencies>
         <!-- Spring Boot Web -->
         <dependency>
@@ -80,6 +82,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
@@ -110,13 +113,14 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <!-- 使用 release 明确目标 JDK，避免编译器 API 版本差异 -->
+                    <release>${java.version}</release>
                     <annotationProcessorPaths>
                         <!-- 显式告诉 Maven 使用 Lombok 进行注解处理 -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <!-- 如果你在 dependencies 没写版本，这里通常会自动继承，或者手动写上版本 -->
-                            <version>1.18.30</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

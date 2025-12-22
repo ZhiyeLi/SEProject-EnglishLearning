@@ -22,8 +22,18 @@ public interface UserWordProgressRepository extends JpaRepository<UserWordProgre
     @Query("SELECT COUNT(DISTINCT w.wordId) FROM UserWordProgress w " +
             "WHERE w.userId = :userId " +
             "AND w.lastReviewTime BETWEEN :startTime AND :endTime")
-    Integer countDistinctWordsByUserIdAndTimeRange(
+    Long countDistinctWordsByUserIdAndTimeRange(
             @Param("userId") Long userId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime
+    );
+
+    @Query("SELECT w.userId, COUNT(DISTINCT w.wordId) FROM UserWordProgress w " +
+            "WHERE w.userId IN :userIds " +
+            "AND w.lastReviewTime BETWEEN :startTime AND :endTime " +
+            "GROUP BY w.userId")
+    List<Object[]> countDistinctWordsByUserIdsAndTimeRange(
+            @Param("userIds") List<Long> userIds,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime
     );

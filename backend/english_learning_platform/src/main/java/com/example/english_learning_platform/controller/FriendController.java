@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 import com.example.english_learning_platform.dto.FriendRankingDTO;
 import java.util.List;
-import javax.xml.transform.Result;
 import java.util.Map;
 
 @RestController
@@ -43,6 +42,9 @@ public class FriendController {
         try {
             // 1. 获取当前登录用户ID（复用项目现有逻辑：从request.getAttribute获取）
             Long currentUserId = (Long) request.getAttribute("userId");
+            if (currentUserId == null) {
+                return ApiResponse.error(401, "未登录或会话失效");
+            }
 
             // 2. 调用Service层获取排行榜数据
             List<FriendRankingDTO> rankingList = friendService.getFriendWeeklyRanking(currentUserId);
