@@ -2,6 +2,27 @@ const { dbRun, dbGet, dbAll } = require("../config/database");
 const ResponseUtil = require("../utils/response");
 
 /**
+ * 计算本周时间范围
+ */
+const getWeekTimeRange = () => {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  
+  // 计算周一（0 = 周日，所以周一是 1）
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  
+  // 计算周日
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  
+  return { monday, sunday };
+};
+
+/**
  * 搜索好友
  */
 const searchFriend = async (req, res) => {
@@ -298,24 +319,20 @@ const getUnreadCount = async (req, res) => {
 // 获取好友周排行榜
 exports.getFriendWeeklyRanking = async (req, res) => {
   try {
-    // 1. 从JWT中间件获取当前用户ID（req.user.id 是authMiddleware解析后的值）
-    const currentUserId = req.user.id;
+    // 1. 从authMiddleware获取当前用户ID（authMiddleware注入的是 req.userId）
+    const currentUserId = req.userId;
 
     // 2. 计算本周时间范围（周一00:00 至 周日23:59:59）
     const { monday, sunday } = getWeekTimeRange();
 
-    // 3. 查询当前用户的已通过好友ID列表（status=1）
-    const [friends] = await db.query(`
-      SELECT friend_id FROM friends 
-      WHERE user_id = ?
-    `, [currentUserId]);
+    // 3. 查询当前用户的好友ID列表
+    const friends = await dbAll(
+      `SELECT friend_id FROM friends WHERE user_id = ?`,
+      [currentUserId]
+    );
 
     if (friends.length === 0) {
-      return res.json({
-        code: 200,
-        message: 'success',
-        data: []
-      });
+      return ResponseUtil.success(res, []);
     }
 
     // 4. 遍历好友，统计每个好友本周学习的去重单词数
@@ -324,24 +341,25 @@ exports.getFriendWeeklyRanking = async (req, res) => {
       const friendId = friend.friend_id;
 
       // 4.1 查询好友基础信息
-      const [user] = await db.query(`
-        SELECT userid, user_name, avatar FROM users WHERE user_id = ?
-      `, [friendId]);
-      if (user.length === 0) continue;
-      const friendUser = user[0];
+      const friendUser = await dbGet(
+        `SELECT user_id, user_name, avatar FROM users WHERE user_id = ?`,
+        [friendId]
+      );
+      if (!friendUser) continue;
 
       // 4.2 统计本周去重单词数
-      const [wordCount] = await db.query(`
-        SELECT COUNT(DISTINCT word_id) as total FROM user_word_progress 
-        WHERE user_id = ? AND last_review_time BETWEEN ? AND ?
-      `, [friendId, monday, sunday]);
-      const totalWords = wordCount[0].total || 0;
+      const wordCountResult = await dbGet(
+        `SELECT COUNT(DISTINCT word_id) as total FROM user_word_progress 
+         WHERE user_id = ? AND last_review_time BETWEEN ? AND ?`,
+        [friendId, monday, sunday]
+      );
+      const totalWords = wordCountResult?.total || 0;
 
       // 4.3 封装数据
       rankingList.push({
-        userId: friendUser.id,
-        avatar: friendUser.avatar || 'https://picsum.photos/seed/default/100/100', // 前端默认值对齐
-        username: friendUser.username,
+        userId: friendUser.user_id,
+        avatar: friendUser.avatar || 'https://picsum.photos/seed/default/100/100',
+        username: friendUser.user_name,
         totalWords: totalWords
       });
     }
@@ -355,19 +373,11 @@ exports.getFriendWeeklyRanking = async (req, res) => {
     });
 
     // 6. 返回结果
-    res.json({
-      code: 200,
-      message: 'success',
-      data: rankingList
-    });
+    return ResponseUtil.success(res, rankingList);
 
   } catch (error) {
     console.error('获取好友排行榜失败：', error);
-    res.status(500).json({
-      code: 500,
-      message: '服务器内部错误',
-      data: []
-    });
+    return ResponseUtil.error(res, '获取好友排行榜失败', 500);
   }
 };
 

@@ -54,8 +54,8 @@ export const friendApi = {
     return request.post("/api/friends/mark-as-read", data);
   },
 
-  //获取好友周排行榜（周一至周日）
+  // 获取好友周排行榜（周一至周日）
   getFriendWeeklyRanking() {
-    return request.get("/api/friend/ranking/weekly", { params });
+    return request.get("/api/friends/ranking/weekly");
   }
 };
