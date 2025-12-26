@@ -218,7 +218,7 @@
               <!-- 自己头像 -->
               <img 
                 v-if="msg.isMine"
-                src="https://picsum.photos/seed/me/100/100" 
+                :src="userStore.userInfo.avatar"
                 alt="我" 
                 class="w-8 h-8 rounded-full object-cover ml-2 mt-1 flex-shrink-0"
               >   

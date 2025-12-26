@@ -61,7 +61,12 @@ const routes = [
     path: '/rank',
     name: 'Rank', 
     component: () => import("@/views/FriendRanking.vue"),
-  }
+  },
+  {
+    path: '/article/:articleId',
+    name: 'ArticleDetail',
+    component: () => import("@/views/ArticleDetail.vue"),
+  },
 ];
 
 const router = createRouter({
