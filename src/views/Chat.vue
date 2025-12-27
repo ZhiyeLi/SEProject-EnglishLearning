@@ -25,19 +25,31 @@
             
             <ul class="space-y-2">
               <!-- 加载状态 -->
-              <li v-if="loading" class="p-3 text-center text-gray-500">
+              <li
+                v-if="loading"
+                class="p-3 text-center text-gray-500"
+              >
                 <i class="fas fa-spinner fa-spin mr-2" />加载中...
               </li>
               <!-- 错误提示 -->
-              <li v-else-if="error" class="p-3 text-center text-red-500">
+              <li
+                v-else-if="error"
+                class="p-3 text-center text-red-500"
+              >
                 {{ error }}
               </li>
               <!-- 无好友提示 -->
-              <li v-else-if="friendList.length === 0" class="p-3 text-center text-gray-500">
+              <li
+                v-else-if="friendList.length === 0"
+                class="p-3 text-center text-gray-500"
+              >
                 暂无好友，快去添加吧！
               </li>
               <!-- 好友列表 -->
-              <li v-for="friend in friendList" :key="friend.id">
+              <li
+                v-for="friend in friendList"
+                :key="friend.id"
+              >
                 <div class="relative">
                   <FriendItem 
                     :name="friend.name" 
@@ -135,23 +147,26 @@
       <!-- 右侧聊天视图（移除排行榜视图，仅保留聊天） -->
       <div class="flex-grow bg-gray-100 overflow-hidden p-4">
         <div class="w-full h-full flex flex-col bg-white rounded-xl shadow-lg overflow-hidden">
-        <!-- 聊天头部 -->
-        <div v-if="currentFriend" class="border-b border-gray-200 p-4 flex items-center shadow-sm">
-          <!-- 添加 ?. 保护：currentFriend?.avatar -->
-          <img 
-            :src="currentFriend?.avatar || 'https://picsum.photos/seed/default/100/100'" 
-            :alt="currentFriend?.name || '好友'" 
-            class="w-8 h-8 rounded-full object-cover mr-2"
+          <!-- 聊天头部 -->
+          <div
+            v-if="currentFriend"
+            class="border-b border-gray-200 p-4 flex items-center shadow-sm"
           >
-          <h3 class="font-semibold text-gray-800">
-            {{ currentFriend?.name || '选择好友' }}
-          </h3>
-          <span 
-            v-if="currentFriend?.status === 'online'"
-            class="ml-2 w-2 h-2 bg-green-500 rounded-full"
-            title="在线"
-          ></span>
-        </div>
+            <!-- 添加 ?. 保护：currentFriend?.avatar -->
+            <img 
+              :src="currentFriend?.avatar || 'https://picsum.photos/seed/default/100/100'" 
+              :alt="currentFriend?.name || '好友'" 
+              class="w-8 h-8 rounded-full object-cover mr-2"
+            >
+            <h3 class="font-semibold text-gray-800">
+              {{ currentFriend?.name || '选择好友' }}
+            </h3>
+            <span 
+              v-if="currentFriend?.status === 'online'"
+              class="ml-2 w-2 h-2 bg-green-500 rounded-full"
+              title="在线"
+            />
+          </div>
           
           <!-- 聊天消息区域 -->
           <div
@@ -160,23 +175,36 @@
             style="max-height: calc(100vh - 220px);"
           >
             <!-- 消息加载状态 -->
-            <div v-if="messageLoading" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500">
+            <div
+              v-if="messageLoading"
+              class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500"
+            >
               <i class="fas fa-spinner fa-spin mr-2" />加载消息中...
             </div>
 
             <!-- 未选择好友提示 -->
-            <div v-else-if="!currentFriend" class="h-full flex items-center justify-center text-gray-500">
+            <div
+              v-else-if="!currentFriend"
+              class="h-full flex items-center justify-center text-gray-500"
+            >
               <div class="flex flex-col items-center">
-                <i class="fas fa-comment-dots text-4xl text-gray-300 block"></i>
-                <p class="mt-3">请选择一个好友开始聊天</p>
+                <i class="fas fa-comment-dots text-4xl text-gray-300 block" />
+                <p class="mt-3">
+                  请选择一个好友开始聊天
+                </p>
               </div>
             </div>
 
             <!-- 无消息提示 -->
-            <div v-else-if="messageList.length === 0" class="h-full flex items-center justify-center text-gray-500">
+            <div
+              v-else-if="messageList.length === 0"
+              class="h-full flex items-center justify-center text-gray-500"
+            >
               <div class="flex flex-col items-center"> 
-                <i class="fas fa-paper-plane text-4xl mb-2 text-gray-300 block"></i> 
-                <p class="mt-3">暂无消息，开始聊天吧！</p> 
+                <i class="fas fa-paper-plane text-4xl mb-2 text-gray-300 block" /> 
+                <p class="mt-3">
+                  暂无消息，开始聊天吧！
+                </p> 
               </div>
             </div>
 
@@ -226,7 +254,10 @@
           </div>
           
           <!-- 消息输入区域 -->
-          <div v-if="currentFriend" class="border-t border-gray-200 p-3">
+          <div
+            v-if="currentFriend"
+            class="border-t border-gray-200 p-3"
+          >
             <div class="flex items-center">
               <textarea 
                 v-model="message"
@@ -260,7 +291,9 @@
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
           <!-- 弹窗头部 -->
           <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-gray-800">添加好友</h3>
+            <h3 class="text-lg font-semibold text-gray-800">
+              添加好友
+            </h3>
             <button 
               class="text-gray-400 hover:text-gray-600 transition-colors"
               @click="showAddFriendModal = false"
@@ -287,11 +320,20 @@
               </div>
               
               <!-- 搜索结果 -->
-              <div v-if="searchFriendValue" class="max-h-40 overflow-y-auto border rounded-lg">
-                <div v-if="searchResults.length === 0" class="p-4 text-center text-gray-500">
+              <div
+                v-if="searchFriendValue"
+                class="max-h-40 overflow-y-auto border rounded-lg"
+              >
+                <div
+                  v-if="searchResults.length === 0"
+                  class="p-4 text-center text-gray-500"
+                >
                   未找到相关好友
                 </div>
-                <div v-else class="divide-y">
+                <div
+                  v-else
+                  class="divide-y"
+                >
                   <div 
                     v-for="(friend, index) in searchResults" 
                     :key="index"
@@ -303,8 +345,12 @@
                       class="w-10 h-10 rounded-full object-cover mr-3"
                     >
                     <div class="flex-grow">
-                      <p class="font-medium text-gray-800">{{ friend.name }}</p>
-                      <p class="text-xs text-gray-500">ID: {{ friend.id }}</p>
+                      <p class="font-medium text-gray-800">
+                        {{ friend.name }}
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        ID: {{ friend.id }}
+                      </p>
                     </div>
                     <button 
                       class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
@@ -330,7 +376,9 @@
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
           <!-- 弹窗头部 -->
           <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-gray-800">好友请求</h3>
+            <h3 class="text-lg font-semibold text-gray-800">
+              好友请求
+            </h3>
             <button 
               class="text-gray-400 hover:text-gray-600 transition-colors"
               @click="showFriendRequestModal = false"
@@ -342,17 +390,26 @@
           <!-- 弹窗内容 -->
           <div class="px-6 py-4 max-h-80 overflow-y-auto">
             <!-- 加载状态 -->
-            <div v-if="friendRequestLoading" class="p-8 text-center text-gray-500">
+            <div
+              v-if="friendRequestLoading"
+              class="p-8 text-center text-gray-500"
+            >
               <i class="fas fa-spinner fa-spin text-4xl mb-2 text-gray-300" />
               <p>加载中...</p>
             </div>
             <!-- 无请求 -->
-            <div v-else-if="friendRequests.length === 0" class="p-8 text-center text-gray-500">
+            <div
+              v-else-if="friendRequests.length === 0"
+              class="p-8 text-center text-gray-500"
+            >
               <i class="fas fa-inbox text-4xl mb-2 text-gray-300" />
               <p>暂无未处理的好友请求</p>
             </div>
             <!-- 请求列表 -->
-            <div v-else class="space-y-3 divide-y">
+            <div
+              v-else
+              class="space-y-3 divide-y"
+            >
               <div 
                 v-for="(request, index) in friendRequests" 
                 :key="index"
@@ -365,9 +422,15 @@
                     class="w-12 h-12 rounded-full object-cover mr-3"
                   >
                   <div>
-                    <p class="font-medium text-gray-800">{{ request.name }}</p>
-                    <p class="text-xs text-gray-500">ID: {{ request.requesterId }}</p>
-                    <p class="text-xs text-gray-400 mt-1">{{ request.time }}</p>
+                    <p class="font-medium text-gray-800">
+                      {{ request.name }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      ID: {{ request.requesterId }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">
+                      {{ request.time }}
+                    </p>
                   </div>
                 </div>
                 <div class="flex space-x-2">

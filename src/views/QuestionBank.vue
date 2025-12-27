@@ -1,152 +1,194 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
+  <div class="min-h-screen bg-gray-50">
     <!-- 导航栏 -->
     <NavBar :nav-items="navItems">
       <template #actions>
         <ActionButtons
-          @suggestions="() => {}"
-          @settings="gotoSettings"
+          @suggestions="handleSuggestions"
+          @settings="goToSettings"
           @home="goHome"
-          @notifications="() => {}"
+          @notifications="handleNotifications"
         />
       </template>
     </NavBar>
 
     <!-- 主内容区 -->
-    <main class="flex-grow flex">
-      <!-- 左侧筛选侧边栏 -->
-      <aside
-        class="w-72 bg-white border-r border-gray-200 flex-shrink-0 overflow-y-auto hidden lg:block"
-      >
-        <div class="p-5">
-          <!-- 侧边栏标题 -->
-          <h2 class="text-lg font-bold text-gray-800 mb-5 flex items-center">
+    <div class="container mx-auto px-4 py-6">
+      <!-- 顶部统计栏 -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- 搜索栏 -->
+          <div class="md:col-span-1">
+            <div class="relative">
+              <input
+                v-model="searchKeyword"
+                type="text"
+                placeholder="搜索标题、题型名称、题型类型..."
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                @input="handleSearch"
+              >
+              <i class="fas fa-search absolute left-3 top-3 text-gray-400" />
+            </div>
+          </div>
+
+          <!-- 今日做题统计 -->
+          <div
+            class="flex items-center justify-center bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4"
+          >
+            <div class="text-center">
+              <div class="text-2xl font-bold text-blue-600">
+                {{ todayStats.count }}
+              </div>
+              <div class="text-sm text-gray-600">
+                今日做题
+              </div>
+            </div>
+          </div>
+
+          <!-- 正确率统计 -->
+          <div
+            class="flex items-center justify-center bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-lg p-4"
+          >
+            <div class="text-center">
+              <div class="text-2xl font-bold text-emerald-600">
+                {{ todayStats.accuracy }}%
+              </div>
+              <div class="text-sm text-gray-600">
+                今日正确率
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 模式切换和错题入口 -->
+      <div class="flex justify-between items-center mb-6">
+        <!-- 模式切换按钮 -->
+        <div class="bg-white rounded-lg shadow-sm p-1 inline-flex">
+          <button
+            :class="[
+              'px-6 py-2 rounded-md text-sm font-medium transition-all',
+              currentMode === 'exam'
+                ? 'bg-emerald-500 text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-800',
+            ]"
+            @click="switchMode('exam')"
+          >
+            <i class="fas fa-file-alt mr-2" />
+            考试模式
+          </button>
+          <button
+            :class="[
+              'px-6 py-2 rounded-md text-sm font-medium transition-all',
+              currentMode === 'single'
+                ? 'bg-emerald-500 text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-800',
+            ]"
+            @click="switchMode('single')"
+          >
+            <i class="fas fa-list mr-2" />
+            单题模式
+          </button>
+        </div>
+
+        <!-- 错题本入口 -->
+        <button
+          class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg shadow-sm transition-colors"
+          @click="showWrongQuestions"
+        >
+          <i class="fas fa-exclamation-circle mr-2" />
+          错题本
+        </button>
+      </div>
+
+      <!-- 主要内容区域 -->
+      <div class="flex gap-6">
+        <!-- 左侧筛选栏 -->
+        <aside class="w-64 bg-white rounded-lg shadow-sm p-6 flex-shrink-0">
+          <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
             <i class="fas fa-filter text-emerald-500 mr-2" />
             筛选条件
-          </h2>
+          </h3>
 
-          <!-- 关联筛选 -->
+          <!-- 考试类型筛选 -->
           <div class="mb-6">
-            <h3
-              class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider"
-            >
-              关联筛选
-            </h3>
-            <div class="space-y-3">
-              <label class="flex items-center cursor-pointer group">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">
+              考试类型
+            </h4>
+            <div class="space-y-2">
+              <label
+                v-for="cat in categories"
+                :key="cat.value"
+                class="flex items-center cursor-pointer group"
+              >
                 <input
-                  v-model="filters.currentCourseOnly"
-                  type="checkbox"
-                  class="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
+                  v-model="filters.category"
+                  type="radio"
+                  :value="cat.value"
+                  class="w-4 h-4 text-emerald-500 focus:ring-emerald-500"
                 >
                 <span
-                  class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600 transition-colors"
+                  class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600"
                 >
-                  只看当前课程相关
-                </span>
-              </label>
-              <label class="flex items-center cursor-pointer group">
-                <input
-                  v-model="filters.includeVocabulary"
-                  type="checkbox"
-                  class="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
-                >
-                <span
-                  class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600 transition-colors"
-                >
-                  包含我的生词
+                  {{ cat.label }}
                 </span>
               </label>
             </div>
           </div>
 
-          <!-- 当前课程选择 -->
+          <!-- 题型筛选 (仅单题模式显示) -->
           <div
-            v-if="filters.currentCourseOnly"
+            v-if="currentMode === 'single'"
             class="mb-6"
           >
-            <h3
-              class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider"
-            >
-              选择课程
-            </h3>
-            <select
-              v-model="filters.currentCourseId"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="">
-                请选择课程
-              </option>
-              <option
-                v-for="course in courses"
-                :key="course.id"
-                :value="course.id"
-              >
-                {{ course.name }}
-              </option>
-            </select>
-          </div>
-
-          <!-- 题型筛选 -->
-          <div class="mb-6">
-            <h3
-              class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider"
-            >
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">
               题型
-            </h3>
+            </h4>
             <div class="space-y-2">
               <label
-                v-for="type in questionTypes"
-                :key="type.id"
+                v-for="type in sectionTypes"
+                :key="type.value"
                 class="flex items-center cursor-pointer group"
               >
                 <input
-                  v-model="filters.types"
-                  type="checkbox"
-                  :value="type.id"
-                  class="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
+                  v-model="filters.sectionType"
+                  type="radio"
+                  :value="type.value"
+                  class="w-4 h-4 text-emerald-500 focus:ring-emerald-500"
                 >
                 <span
-                  class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600 transition-colors flex items-center"
+                  class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600"
                 >
-                  <i :class="['fas', type.icon, 'mr-2 w-4 text-gray-400']" />
-                  {{ type.name }}
+                  {{ type.label }}
                 </span>
               </label>
             </div>
           </div>
 
-          <!-- 难度筛选 -->
-          <div class="mb-6">
-            <h3
-              class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider"
-            >
-              考试/难度
-            </h3>
+          <!-- 题型筛选 (考试模式 - 包含该题型) -->
+          <div
+            v-if="currentMode === 'exam'"
+            class="mb-6"
+          >
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">
+              包含题型
+            </h4>
             <div class="space-y-2">
               <label
-                v-for="diff in difficultyLevels"
-                :key="diff.id"
+                v-for="type in sectionTypes"
+                :key="type.value"
                 class="flex items-center cursor-pointer group"
               >
                 <input
-                  v-model="filters.difficulties"
+                  v-model="filters.containsSectionType"
                   type="checkbox"
-                  :value="diff.id"
-                  class="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
+                  :value="type.value"
+                  class="w-4 h-4 text-emerald-500 focus:ring-emerald-500"
                 >
                 <span
-                  class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600 transition-colors flex items-center"
+                  class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600"
                 >
-                  {{ diff.name }}
-                  <span class="ml-2 flex">
-                    <template
-                      v-for="i in diff.stars"
-                      :key="i"
-                    >
-                      <i class="fas fa-star text-xs text-yellow-400" />
-                    </template>
-                  </span>
+                  {{ type.label }}
                 </span>
               </label>
             </div>
@@ -154,793 +196,604 @@
 
           <!-- 状态筛选 -->
           <div class="mb-6">
-            <h3
-              class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider"
-            >
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">
               状态
-            </h3>
+            </h4>
             <div class="space-y-2">
               <label
-                v-for="status in statusOptions"
+                v-for="status in statuses"
                 :key="status.value"
                 class="flex items-center cursor-pointer group"
               >
                 <input
                   v-model="filters.status"
                   type="radio"
-                  name="status"
                   :value="status.value"
-                  class="w-4 h-4 text-emerald-500 border-gray-300 focus:ring-emerald-500"
+                  class="w-4 h-4 text-emerald-500 focus:ring-emerald-500"
                 >
                 <span
-                  class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600 transition-colors flex items-center"
+                  class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600"
                 >
-                  <i :class="['mr-2', status.icon, status.iconClass]" />
                   {{ status.label }}
                 </span>
               </label>
             </div>
           </div>
 
-          <!-- 重置筛选 -->
+          <!-- 重置按钮 -->
           <button
-            class="w-full py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+            class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg transition-colors"
             @click="resetFilters"
           >
-            <i class="fas fa-undo mr-1.5" />
+            <i class="fas fa-redo mr-2" />
             重置筛选
           </button>
-        </div>
-      </aside>
+        </aside>
 
-      <!-- 主内容区 -->
-      <div class="flex-grow flex flex-col">
-        <!-- 顶部搜索与统计栏 -->
-        <div
-          class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10"
-        >
+        <!-- 右侧列表区域 -->
+        <main class="flex-1">
+          <!-- 排序控制 -->
           <div
-            class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+            class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center"
           >
-            <!-- 全局搜索框 -->
-            <div class="relative flex-grow max-w-xl">
-              <input
-                v-model="filters.keyword"
-                type="text"
-                placeholder="搜索题目（关键词、语法点、课程名称...）"
-                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
-                @input="debouncedSearch"
-              >
-              <i
-                class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              />
-              <button
-                v-if="filters.keyword"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                @click="filters.keyword = ''"
-              >
-                <i class="fas fa-times" />
-              </button>
+            <div class="text-sm text-gray-600">
+              共
+              <span class="font-semibold text-gray-800">{{ total }}</span>
+              条结果
             </div>
-
-            <!-- 统计信息 -->
-            <div class="flex items-center gap-6 text-sm">
-              <div
-                class="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-lg"
-              >
-                <i class="fas fa-edit text-emerald-500" />
-                <span class="text-gray-600">今日做题：</span>
-                <span class="font-semibold text-emerald-600">{{
-                  statistics.todayDone || 0
-                }}</span>
-              </div>
-              <div
-                class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg"
-              >
-                <i class="fas fa-percentage text-blue-500" />
-                <span class="text-gray-600">正确率：</span>
-                <span class="font-semibold text-blue-600">{{ statistics.accuracy }}%</span>
-              </div>
-              <div
-                class="flex items-center gap-2 px-3 py-1.5 bg-purple-50 rounded-lg"
-              >
-                <i class="fas fa-book text-purple-500" />
-                <span class="text-gray-600">掌握单词：</span>
-                <span class="font-semibold text-purple-600">{{
-                  statistics.masteredWords
-                }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 当前筛选标签 -->
-          <div
-            v-if="hasActiveFilters"
-            class="mt-3 flex items-center gap-2 flex-wrap"
-          >
-            <span class="text-sm text-gray-500">当前筛选：</span>
-            <span
-              v-for="tag in activeFilterTags"
-              :key="tag.key"
-              class="inline-flex items-center px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full"
-            >
-              {{ tag.label }}
-              <button
-                class="ml-1 hover:text-emerald-900"
-                @click="removeFilter(tag.key)"
-              >
-                <i class="fas fa-times" />
-              </button>
-            </span>
-            <button
-              class="text-xs text-gray-500 hover:text-emerald-600 underline"
-              @click="resetFilters"
-            >
-              清除全部
-            </button>
-          </div>
-        </div>
-
-        <!-- 题目列表区域 -->
-        <div class="flex-grow p-6 overflow-y-auto">
-          <!-- 结果统计 -->
-          <div class="mb-4 flex items-center justify-between">
-            <p class="text-sm text-gray-600">
-              共找到
-              <span class="font-semibold text-emerald-600">{{
-                filteredQuestions.length
-              }}</span>
-              道题目
-            </p>
-            <!-- 排序选项 -->
             <div class="flex items-center gap-2">
-              <span class="text-sm text-gray-500">排序：</span>
+              <span class="text-sm text-gray-600">排序:</span>
               <select
                 v-model="sortBy"
-                class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                class="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-emerald-500"
+                @change="handleSort"
               >
-                <option value="newest">
-                  最新添加
+                <option value="year_desc">
+                  年份 (新到旧)
                 </option>
-                <option value="difficulty">
-                  按难度
+                <option value="year_asc">
+                  年份 (旧到新)
                 </option>
-                <option value="type">
-                  按题型
+                <option value="created_desc">
+                  创建时间 (新到旧)
+                </option>
+                <option value="created_asc">
+                  创建时间 (旧到新)
                 </option>
               </select>
             </div>
           </div>
 
-          <!-- 题目卡片列表 -->
+          <!-- 列表内容 -->
           <div
-            v-if="filteredQuestions.length > 0"
-            class="grid grid-cols-1 xl:grid-cols-2 gap-4"
+            v-if="loading"
+            class="bg-white rounded-lg shadow-sm p-12 text-center"
           >
-            <QuestionCard
-              v-for="question in paginatedQuestions"
-              :key="question.id"
-              :question="question"
-              @start-practice="startPractice"
-              @add-to-plan="addToPlan"
-              @toggle-favorite="toggleFavorite"
-            />
-          </div>
-
-          <!-- 分页组件 -->
-          <div
-            v-if="filteredQuestions.length > 0 && totalPages > 1"
-            class="mt-8 flex items-center justify-center gap-2"
-          >
-            <!-- 上一页按钮 -->
-            <button
-              class="px-3 py-2 rounded-lg border transition-colors flex items-center gap-1"
-              :class="
-                currentPage === 1
-                  ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'border-gray-300 text-gray-600 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600'
-              "
-              :disabled="currentPage === 1"
-              @click="prevPage"
-            >
-              <i class="fas fa-chevron-left text-sm" />
-              <span class="hidden sm:inline">上一页</span>
-            </button>
-
-            <!-- 页码按钮 -->
-            <div class="flex items-center gap-1">
-              <template
-                v-for="page in pageNumbers"
-                :key="page"
-              >
-                <button
-                  v-if="page !== '...'"
-                  class="w-10 h-10 rounded-lg border font-medium transition-colors"
-                  :class="
-                    currentPage === page
-                      ? 'bg-emerald-500 border-emerald-500 text-white'
-                      : 'border-gray-300 text-gray-600 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600'
-                  "
-                  @click="goToPage(page)"
-                >
-                  {{ page }}
-                </button>
-                <span
-                  v-else
-                  class="w-10 h-10 flex items-center justify-center text-gray-400"
-                >
-                  ...
-                </span>
-              </template>
+            <i class="fas fa-spinner fa-spin text-4xl text-emerald-500 mb-4" />
+            <div class="text-gray-600">
+              加载中...
             </div>
-
-            <!-- 下一页按钮 -->
-            <button
-              class="px-3 py-2 rounded-lg border transition-colors flex items-center gap-1"
-              :class="
-                currentPage === totalPages
-                  ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'border-gray-300 text-gray-600 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600'
-              "
-              :disabled="currentPage === totalPages"
-              @click="nextPage"
-            >
-              <span class="hidden sm:inline">下一页</span>
-              <i class="fas fa-chevron-right text-sm" />
-            </button>
-
-            <!-- 页码信息 -->
-            <span class="ml-4 text-sm text-gray-500 hidden md:inline">
-              第 {{ currentPage }} / {{ totalPages }} 页，共
-              {{ filteredQuestions.length }} 条
-            </span>
           </div>
 
-          <!-- 空状态 -->
           <div
-            v-if="filteredQuestions.length === 0"
-            class="text-center py-16"
+            v-else-if="items.length === 0"
+            class="bg-white rounded-lg shadow-sm p-12 text-center"
           >
-            <i class="fas fa-search text-gray-300 text-6xl mb-4" />
-            <p class="text-gray-500 text-lg mb-2">
-              没有找到符合条件的题目
-            </p>
-            <p class="text-gray-400 text-sm">
-              尝试调整筛选条件或搜索关键词
-            </p>
-            <button
-              class="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-              @click="resetFilters"
-            >
-              重置筛选条件
-            </button>
+            <i class="fas fa-inbox text-6xl text-gray-300 mb-4" />
+            <div class="text-gray-600">
+              暂无数据
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- 错题本浮动按钮 -->
-      <button
-        class="fixed right-6 bottom-24 w-14 h-14 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 hover:shadow-xl transition-all flex items-center justify-center group z-40"
-        @click="showWrongQuestions = true"
-      >
-        <i class="fas fa-times-circle text-2xl" />
-        <span
-          v-if="wrongQuestionsCount > 0"
-          class="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 text-gray-800 text-xs font-bold rounded-full flex items-center justify-center"
-        >
-          {{ wrongQuestionsCount > 99 ? "99+" : wrongQuestionsCount }}
-        </span>
-        <span
-          class="absolute right-full mr-3 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-        >
-          错题本
-        </span>
-      </button>
-    </main>
-
-    <!-- 练习详情模态框 -->
-    <QuestionPractice
-      :visible="showPractice"
-      :question="currentPracticeQuestion"
-      @close="showPractice = false"
-      @complete="handlePracticeComplete"
-      @add-vocabulary="handleAddVocabulary"
-    />
-
-    <!-- 错题本面板 -->
-    <WrongQuestions
-      :visible="showWrongQuestions"
-      :wrong-questions="wrongQuestions"
-      @close="showWrongQuestions = false"
-      @go-to-question="goToQuestion"
-      @retry="retryQuestion"
-      @review-all="reviewAllWrong"
-    />
-
-    <!-- 加入计划模态框 -->
-    <div
-      v-if="showPlanModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      @click.self="showPlanModal = false"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn"
-      >
-        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-          <i class="fas fa-calendar-plus text-emerald-500 mr-2" />
-          加入学习计划
-        </h2>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">选择日期</label>
-          <input
-            v-model="planDate"
-            type="date"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          <div
+            v-else
+            class="space-y-4"
           >
-        </div>
+            <!-- 考试模式 - 试卷列表 -->
+            <template v-if="currentMode === 'exam'">
+              <div
+                v-for="paper in items"
+                :key="paper.id"
+                class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 cursor-pointer relative group"
+                @click="startExam(paper.id)"
+              >
+                <!-- 收藏按钮 -->
+                <button
+                  class="absolute top-4 right-4 text-2xl transition-colors"
+                  :class="
+                    paper.isFavorited
+                      ? 'text-yellow-400'
+                      : 'text-gray-300 group-hover:text-gray-400'
+                  "
+                  @click.stop="
+                    toggleFavorite('paper', paper.id, paper.isFavorited)
+                  "
+                >
+                  <i
+                    :class="paper.isFavorited ? 'fas fa-star' : 'far fa-star'"
+                  />
+                </button>
 
-        <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 mb-2">备注（可选）</label>
-          <input
-            v-model="planNote"
-            type="text"
-            placeholder="添加备注..."
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
-        </div>
+                <div class="flex items-start gap-4">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">
+                      {{ paper.name }}
+                    </h3>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                      <span
+                        class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
+                      >
+                        {{ getCategoryLabel(paper.category) }}
+                      </span>
+                      <span
+                        v-if="paper.status === 'done'"
+                        class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full"
+                      >
+                        已完成
+                      </span>
+                      <span
+                        v-else-if="paper.status === 'ongoing'"
+                        class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full"
+                      >
+                        进行中
+                      </span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                      难度: {{ paper.difficulty }}/5
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
 
-        <div class="flex gap-3">
-          <button
-            class="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            @click="showPlanModal = false"
+            <!-- 单题模式 - 题目列表 -->
+            <template v-if="currentMode === 'single'">
+              <div
+                v-for="question in items"
+                :key="question.id"
+                class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 cursor-pointer relative group"
+                @click="startQuestion(question.id)"
+              >
+                <!-- 收藏按钮 -->
+                <button
+                  class="absolute top-4 right-4 text-2xl transition-colors"
+                  :class="
+                    question.isFavorited
+                      ? 'text-yellow-400'
+                      : 'text-gray-300 group-hover:text-gray-400'
+                  "
+                  @click.stop="
+                    toggleFavorite(
+                      'question',
+                      question.id,
+                      question.isFavorited
+                    )
+                  "
+                >
+                  <i
+                    :class="
+                      question.isFavorited ? 'fas fa-star' : 'far fa-star'
+                    "
+                  />
+                </button>
+
+                <div class="flex items-start gap-4">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">
+                      {{ question.sectionName }}
+                    </h3>
+                    <p
+                      v-if="question.title"
+                      class="text-sm text-gray-600 mb-3 line-clamp-2"
+                    >
+                      {{ question.title }}
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                      <span
+                        class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
+                      >
+                        {{ getCategoryLabel(question.paperCategory) }}
+                      </span>
+                      <span
+                        class="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-full"
+                      >
+                        {{ getSectionTypeLabel(question.sectionType) }}
+                      </span>
+                      <span
+                        v-if="question.status === 'done'"
+                        class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full"
+                      >
+                        已完成
+                      </span>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      来自: {{ question.paperName }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- 分页 -->
+          <div
+            v-if="total > pageSize"
+            class="bg-white rounded-lg shadow-sm p-4 mt-4 flex justify-center"
           >
-            取消
-          </button>
-          <button
-            class="flex-1 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-            @click="confirmAddToPlan"
-          >
-            确认添加
-          </button>
-        </div>
+            <div class="flex items-center gap-2">
+              <button
+                :disabled="currentPage === 1"
+                class="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                @click="changePage(currentPage - 1)"
+              >
+                <i class="fas fa-chevron-left" />
+              </button>
+              <span class="px-4 py-2 text-sm text-gray-600">
+                第 {{ currentPage }} / {{ totalPages }} 页
+              </span>
+              <button
+                :disabled="currentPage === totalPages"
+                class="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                @click="changePage(currentPage + 1)"
+              >
+                <i class="fas fa-chevron-right" />
+              </button>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
 
-    <!-- 底部导航栏 -->
-    <EndBar />
+    <!-- 错题窗口 Modal -->
+    <WrongQuestionsModal
+      v-if="showWrongModal"
+      @close="showWrongModal = false"
+      @go-to-question="handleGoToQuestion"
+    />
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, reactive } from "vue";
-import { useRouter } from "vue-router";
+<script>
 import NavBar from "@/components/common/NavBar.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
-import EndBar from "@/components/common/EndBar.vue";
-import QuestionCard from "@/components/business/QuestionCard.vue";
-import QuestionPractice from "@/components/business/QuestionPractice.vue";
-import WrongQuestions from "@/components/business/WrongQuestions.vue";
-import {
-  QUESTION_TYPES,
-  DIFFICULTY_LEVELS,
-  COURSES,
-  questionBankManager,
-} from "@/utils/questionData.js";
+import WrongQuestionsModal from "@/components/business/WrongQuestionsModal.vue";
+import { ref, reactive, computed, onMounted, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import questionApi from "@/api/question";
 
-const router = useRouter();
-
-// 导航项
-const navItems = ref([
-  { label: "首页", onClick: () => goHome(), isActive: false },
-  { label: "课程", onClick: () => gotoCourse() },
-  { label: "题库", path: "#", isActive: true },
-  { label: "时间表", onClick: () => gotoTimeTable() },
-  { label: "单词打卡", onClick: () => gotoWordCheckIn() },
-  { label: "AI伴学", onClick: () => gotoAiChat() },
-]);
-
-// 数据
-const questionTypes = Object.values(QUESTION_TYPES);
-const difficultyLevels = Object.values(DIFFICULTY_LEVELS);
-const courses = COURSES;
-
-// 状态选项
-const statusOptions = [
-  {
-    label: "全部",
-    value: "all",
-    icon: "fas fa-list",
-    iconClass: "text-gray-400",
+export default {
+  name: "QuestionBank",
+  components: {
+    NavBar,
+    ActionButtons,
+    WrongQuestionsModal,
   },
-  {
-    label: "未做",
-    value: "not-done",
-    icon: "far fa-circle",
-    iconClass: "text-gray-400",
+  setup() {
+    const router = useRouter();
+    const route = useRoute();
+
+    // 页面跳转函数
+    const goHome = () => {
+      router.push("/");
+    };
+
+    const gotoCourse = () => {
+      router.push({ name: "Course" }).catch(() => {});
+    };
+
+    const gotoTimeTable = () => {
+      router.push({ name: "TimeTable" }).catch(() => {});
+    };
+
+    const gotoWordCheckIn = () => {
+      router.push({ name: "WordCheckIn" }).catch(() => {});
+    };
+
+    const gotoAiChat = () => {
+      router.push({ name: "AiChat" }).catch(() => {});
+    };
+
+    const goToSettings = () => {
+      router.push("/settings");
+    };
+
+    // 导航项 - 与其他页面保持一致
+    const navItems = ref([
+      { label: "首页", onClick: () => goHome(), isActive: false },
+      { label: "课程", onClick: () => gotoCourse() },
+      { label: "题库", onClick: () => {}, isActive: true },
+      { label: "时间表", onClick: () => gotoTimeTable() },
+      { label: "单词打卡", onClick: () => gotoWordCheckIn() },
+      { label: "AI伴学", onClick: () => gotoAiChat() },
+    ]);
+
+    // 当前模式
+    const currentMode = ref("exam"); // 'exam' 或 'single'
+
+    // 搜索关键字
+    const searchKeyword = ref("");
+
+    // 今日统计
+    const todayStats = reactive({
+      count: 0,
+      accuracy: 0,
+    });
+
+    // 筛选条件
+    const filters = reactive({
+      category: "all", // 考试类型
+      sectionType: "all", // 题型(单题模式)
+      containsSectionType: [], // 包含的题型(考试模式)
+      status: "all", // 状态
+    });
+
+    // 排序
+    const sortBy = ref("year_desc");
+
+    // 分页
+    const currentPage = ref(1);
+    const pageSize = ref(10);
+    const total = ref(0);
+
+    // 数据
+    const items = ref([]);
+    const loading = ref(false);
+
+    // 错题窗口
+    const showWrongModal = ref(false);
+
+    // 筛选选项
+    const categories = [
+      { label: "全部", value: "all" },
+      { label: "四级", value: "CET4" },
+      { label: "六级", value: "CET6" },
+      { label: "考研", value: "KY" },
+      { label: "雅思", value: "IELTS" },
+      { label: "托福", value: "TOEFL" },
+    ];
+
+    const sectionTypes = [
+      { label: "全部", value: "all" },
+      { label: "听力", value: "listening" },
+      { label: "阅读", value: "reading" },
+      { label: "写作", value: "writing" },
+      { label: "口语", value: "speaking" },
+    ];
+
+    const statuses = [
+      { label: "全部", value: "all" },
+      { label: "未做", value: "not_done" },
+      { label: "已做", value: "done" },
+      { label: "已收藏", value: "favorited" },
+    ];
+
+    // 计算总页数
+    const totalPages = computed(() => {
+      return Math.ceil(total.value / pageSize.value);
+    });
+
+    // 切换模式
+    const switchMode = (mode) => {
+      if (currentMode.value === mode) return;
+      currentMode.value = mode;
+      // 重置筛选条件
+      filters.sectionType = "all";
+      filters.containsSectionType = [];
+      currentPage.value = 1;
+      fetchData();
+    };
+
+    // 重置筛选
+    const resetFilters = () => {
+      filters.category = "all";
+      filters.sectionType = "all";
+      filters.containsSectionType = [];
+      filters.status = "all";
+      searchKeyword.value = "";
+      currentPage.value = 1;
+      fetchData();
+    };
+
+    // 搜索
+    const handleSearch = () => {
+      currentPage.value = 1;
+      fetchData();
+    };
+
+    // 排序
+    const handleSort = () => {
+      currentPage.value = 1;
+      fetchData();
+    };
+
+    // 分页
+    const changePage = (page) => {
+      currentPage.value = page;
+      fetchData();
+    };
+
+    // 获取数据
+    const fetchData = async () => {
+      loading.value = true;
+      try {
+        const params = {
+          mode: currentMode.value,
+          page: currentPage.value,
+          pageSize: pageSize.value,
+          sortBy: sortBy.value,
+          keyword: searchKeyword.value,
+          ...filters,
+        };
+
+        const response = await questionApi.getList(params);
+        items.value = response.data.items;
+        total.value = response.data.total;
+      } catch (error) {
+        console.error("获取数据失败:", error);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    // 获取今日统计
+    const fetchTodayStats = async () => {
+      try {
+        const response = await questionApi.getTodayStats();
+        todayStats.count = response.data.count;
+        todayStats.accuracy = response.data.accuracy;
+      } catch (error) {
+        console.error("获取今日统计失败:", error);
+      }
+    };
+
+    // 开始考试
+    const startExam = (paperId) => {
+      router.push({
+        name: "ExamPractice",
+        query: { paperId, mode: "exam" },
+      });
+    };
+
+    // 开始单题
+    const startQuestion = (questionId) => {
+      router.push({
+        name: "ExamPractice",
+        query: { questionId, mode: "single" },
+      });
+    };
+
+    // 切换收藏
+    const toggleFavorite = async (type, id, currentStatus) => {
+      try {
+        if (currentStatus) {
+          await questionApi.removeFavorite(type, id);
+        } else {
+          await questionApi.addFavorite(type, id);
+        }
+        // 更新列表
+        const item = items.value.find((i) => i.id === id);
+        if (item) {
+          item.isFavorited = !currentStatus;
+        }
+      } catch (error) {
+        console.error("收藏操作失败:", error);
+      }
+    };
+
+    // 显示错题本
+    const showWrongQuestions = () => {
+      showWrongModal.value = true;
+    };
+
+    // 跳转到题目
+    const handleGoToQuestion = (questionId) => {
+      showWrongModal.value = false;
+      startQuestion(questionId);
+    };
+
+    // 获取类别标签
+    const getCategoryLabel = (value) => {
+      const cat = categories.find((c) => c.value === value);
+      return cat ? cat.label : value;
+    };
+
+    // 获取题型标签
+    const getSectionTypeLabel = (value) => {
+      const type = sectionTypes.find((t) => t.value === value);
+      return type ? type.label : value;
+    };
+
+    // 获取题型图标
+    const getSectionIcon = (type) => {
+      const icons = {
+        listening: "fa-headphones",
+        reading: "fa-book-open",
+        writing: "fa-pen",
+        speaking: "fa-microphone",
+      };
+      return icons[type] || "fa-question";
+    };
+
+    const handleSuggestions = () => {
+      // TODO: 实现学习建议功能
+      console.log("学习建议功能待实现");
+    };
+
+    const handleNotifications = () => {
+      // TODO: 实现通知功能
+      console.log("通知功能待实现");
+    };
+
+    // 监听筛选条件变化
+    watch(
+      () => [filters.category, filters.sectionType, filters.status],
+      () => {
+        currentPage.value = 1;
+        fetchData();
+      }
+    );
+
+    watch(
+      () => filters.containsSectionType,
+      () => {
+        currentPage.value = 1;
+        fetchData();
+      },
+      { deep: true }
+    );
+
+    // 初始化
+    onMounted(() => {
+      // 检查是否有tab参数，如果有则切换到对应的模式
+      if (route.query.tab === "exam" || route.query.tab === "single") {
+        currentMode.value = route.query.tab;
+      }
+      fetchData();
+      fetchTodayStats();
+    });
+
+    return {
+      navItems,
+      currentMode,
+      searchKeyword,
+      todayStats,
+      filters,
+      sortBy,
+      currentPage,
+      pageSize,
+      total,
+      totalPages,
+      items,
+      loading,
+      showWrongModal,
+      categories,
+      sectionTypes,
+      statuses,
+      switchMode,
+      resetFilters,
+      handleSearch,
+      handleSort,
+      changePage,
+      startExam,
+      startQuestion,
+      toggleFavorite,
+      showWrongQuestions,
+      handleGoToQuestion,
+      getCategoryLabel,
+      getSectionTypeLabel,
+      getSectionIcon,
+      goHome,
+      goToSettings,
+      handleSuggestions,
+      handleNotifications,
+    };
   },
-  {
-    label: "已做",
-    value: "done",
-    icon: "fas fa-check-circle",
-    iconClass: "text-emerald-500",
-  },
-  {
-    label: "已收藏",
-    value: "favorited",
-    icon: "fas fa-heart",
-    iconClass: "text-red-500",
-  },
-];
-
-// 筛选条件
-const filters = reactive({
-  keyword: "",
-  types: [],
-  difficulties: [],
-  status: "all",
-  currentCourseOnly: false,
-  currentCourseId: "",
-  includeVocabulary: false,
-});
-
-// 排序
-const sortBy = ref("newest");
-
-// 分页
-const currentPage = ref(1);
-const pageSize = ref(6); // 每页显示6个题目
-
-// 状态
-const showPractice = ref(false);
-const currentPracticeQuestion = ref({});
-const showWrongQuestions = ref(false);
-const showPlanModal = ref(false);
-const planDate = ref("");
-const planNote = ref("");
-const currentPlanQuestion = ref(null);
-
-// 统计数据 - 使用 computed 实现响应式更新
-const statistics = computed(() => {
-  return questionBankManager.getStatistics();
-});
-
-// 计算属性
-const filteredQuestions = computed(() => {
-  return questionBankManager.getFilteredQuestions(filters);
-});
-
-const sortedQuestions = computed(() => {
-  const questions = [...filteredQuestions.value];
-  const diffOrder = {
-    beginner: 1,
-    "cet4-6": 2,
-    postgraduate: 3,
-    "toefl-ielts": 4,
-    professional: 5,
-  };
-
-  switch (sortBy.value) {
-    case "difficulty":
-      return questions.sort(
-        (a, b) => diffOrder[a.difficulty] - diffOrder[b.difficulty]
-      );
-    case "type":
-      return questions.sort((a, b) => a.type.localeCompare(b.type));
-    case "newest":
-    default:
-      return questions.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-  }
-});
-
-// 分页后的题目
-const paginatedQuestions = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return sortedQuestions.value.slice(start, end);
-});
-
-// 总页数
-const totalPages = computed(() => {
-  return Math.ceil(sortedQuestions.value.length / pageSize.value);
-});
-
-// 页码数组（显示最多5个页码）
-const pageNumbers = computed(() => {
-  const pages = [];
-  const total = totalPages.value;
-  const current = currentPage.value;
-
-  if (total <= 5) {
-    for (let i = 1; i <= total; i++) {
-      pages.push(i);
-    }
-  } else {
-    if (current <= 3) {
-      pages.push(1, 2, 3, 4, "...", total);
-    } else if (current >= total - 2) {
-      pages.push(1, "...", total - 3, total - 2, total - 1, total);
-    } else {
-      pages.push(1, "...", current - 1, current, current + 1, "...", total);
-    }
-  }
-  return pages;
-});
-
-const wrongQuestions = computed(() => {
-  return questionBankManager.getWrongQuestions();
-});
-
-const wrongQuestionsCount = computed(() => {
-  return wrongQuestions.value.length;
-});
-
-const hasActiveFilters = computed(() => {
-  return (
-    filters.keyword ||
-    filters.types.length > 0 ||
-    filters.difficulties.length > 0 ||
-    filters.status !== "all" ||
-    filters.currentCourseOnly ||
-    filters.includeVocabulary
-  );
-});
-
-const activeFilterTags = computed(() => {
-  const tags = [];
-
-  if (filters.keyword) {
-    tags.push({ key: "keyword", label: `关键词: ${filters.keyword}` });
-  }
-
-  filters.types.forEach((type) => {
-    const typeObj = questionTypes.find((t) => t.id === type);
-    if (typeObj) {
-      tags.push({ key: `type-${type}`, label: typeObj.name });
-    }
-  });
-
-  filters.difficulties.forEach((diff) => {
-    const diffObj = difficultyLevels.find((d) => d.id === diff);
-    if (diffObj) {
-      tags.push({ key: `diff-${diff}`, label: diffObj.name });
-    }
-  });
-
-  if (filters.status !== "all") {
-    const statusObj = statusOptions.find((s) => s.value === filters.status);
-    if (statusObj) {
-      tags.push({ key: "status", label: statusObj.label });
-    }
-  }
-
-  if (filters.currentCourseOnly) {
-    tags.push({ key: "courseOnly", label: "当前课程相关" });
-  }
-
-  if (filters.includeVocabulary) {
-    tags.push({ key: "vocabulary", label: "包含生词" });
-  }
-
-  return tags;
-});
-
-// 初始化
-onMounted(() => {
-  // 设置默认日期为今天
-  const today = new Date();
-  planDate.value = today.toISOString().split("T")[0];
-});
-
-// 防抖搜索
-let searchTimeout = null;
-function debouncedSearch() {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    // 搜索逻辑已在计算属性中处理
-    // 重置到第一页
-    currentPage.value = 1;
-  }, 300);
-}
-
-// 重置筛选
-function resetFilters() {
-  filters.keyword = "";
-  filters.types = [];
-  filters.difficulties = [];
-  filters.status = "all";
-  filters.currentCourseOnly = false;
-  filters.currentCourseId = "";
-  filters.includeVocabulary = false;
-  currentPage.value = 1; // 重置页码
-}
-
-// 移除单个筛选
-function removeFilter(key) {
-  if (key === "keyword") {
-    filters.keyword = "";
-  } else if (key.startsWith("type-")) {
-    const type = key.replace("type-", "");
-    filters.types = filters.types.filter((t) => t !== type);
-  } else if (key.startsWith("diff-")) {
-    const diff = key.replace("diff-", "");
-    filters.difficulties = filters.difficulties.filter((d) => d !== diff);
-  } else if (key === "status") {
-    filters.status = "all";
-  } else if (key === "courseOnly") {
-    filters.currentCourseOnly = false;
-  } else if (key === "vocabulary") {
-    filters.includeVocabulary = false;
-  }
-  currentPage.value = 1; // 筛选变化时重置页码
-}
-
-// 开始练习
-function startPractice(question) {
-  currentPracticeQuestion.value = question;
-  showPractice.value = true;
-}
-
-// 处理练习完成
-function handlePracticeComplete(result) {
-  const status = result.isAllCorrect ? "correct" : "wrong";
-  questionBankManager.updateQuestionStatus(result.questionId, "done", status);
-  showPractice.value = false;
-  // 统计数据会通过 computed 自动更新
-
-  // 显示结果提示
-  const message = result.isAllCorrect
-    ? `太棒了！全部正确 (${result.correctCount}/${result.totalCount})`
-    : `完成练习！正确 ${result.correctCount}/${result.totalCount} 题`;
-  alert(message);
-}
-
-// 添加生词
-function handleAddVocabulary(word) {
-  // 这里可以调用生词本的API
-  console.log("添加生词:", word);
-}
-
-// 添加到计划
-function addToPlan(question) {
-  currentPlanQuestion.value = question;
-  showPlanModal.value = true;
-}
-
-// 确认添加到计划
-function confirmAddToPlan() {
-  if (!planDate.value) {
-    alert("请选择日期");
-    return;
-  }
-
-  // 这里可以调用计划管理的API
-  console.log("添加计划:", {
-    question: currentPlanQuestion.value,
-    date: planDate.value,
-    note: planNote.value,
-  });
-
-  alert(`已将题目加入 ${planDate.value} 的学习计划`);
-  showPlanModal.value = false;
-  planNote.value = "";
-}
-
-// 切换收藏
-function toggleFavorite(questionId) {
-  const isFavorited = questionBankManager.toggleFavorite(questionId);
-  alert(isFavorited ? "已添加到收藏" : "已取消收藏");
-}
-
-// 跳转到题目（从错题本）
-function goToQuestion(question) {
-  showWrongQuestions.value = false;
-  startPractice(question);
-}
-
-// 重试题目
-function retryQuestion(question) {
-  showWrongQuestions.value = false;
-  startPractice(question);
-}
-
-// 全部重做错题
-function reviewAllWrong(questions) {
-  if (questions.length > 0) {
-    showWrongQuestions.value = false;
-    startPractice(questions[0]);
-  }
-}
-
-// 导航方法
-function goHome() {
-  router.push({ name: "Home" }).catch(() => {});
-}
-
-function gotoCourse() {
-  router.push({ name: "Course" }).catch(() => {});
-}
-
-function gotoTimeTable() {
-  router.push({ name: "TimeTable" }).catch(() => {});
-}
-
-function gotoWordCheckIn() {
-  router.push({ name: "WordCheckIn" }).catch(() => {});
-}
-
-function gotoAiChat() {
-  router.push({ name: "AiChat" }).catch(() => {});
-}
-
-// 分页方法
-function goToPage(page) {
-  if (page === "..." || page < 1 || page > totalPages.value) return;
-  currentPage.value = page;
-  // 滚动到题目列表顶部
-  document
-    .querySelector(".flex-grow.p-6")
-    ?.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function prevPage() {
-  if (currentPage.value > 1) {
-    currentPage.value--;
-  }
-}
-
-function nextPage() {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++;
-  }
-}
+};
 </script>
 
 <style scoped>
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.2s ease-out;
-}
-
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
-}
-
-/* 复选框样式 */
-input[type="checkbox"]:checked {
-  background-color: #10b981;
-  border-color: #10b981;
-}
-
-input[type="radio"]:checked {
-  border-color: #10b981;
+/* 添加一些过渡动画 */
+.group:hover .group-hover\:text-emerald-600 {
+  transition: color 0.2s;
 }
 </style>
