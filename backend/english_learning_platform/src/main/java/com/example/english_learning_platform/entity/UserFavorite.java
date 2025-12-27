@@ -26,8 +26,11 @@ public class UserFavorite {
     @Column(name = "user_id", nullable = false)
     private Long userId;
     
-    @Column(name = "question_id", nullable = false)
+    @Column(name = "question_id")
     private Long questionId;
+
+    @Column(name = "paper_id")
+    private Long paperId;
     
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

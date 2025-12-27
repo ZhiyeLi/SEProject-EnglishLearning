@@ -26,7 +26,7 @@
                 placeholder="搜索标题、题型名称、题型类型..."
                 class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 @input="handleSearch"
-              >
+              />
               <i class="fas fa-search absolute left-3 top-3 text-gray-400" />
             </div>
           </div>
@@ -39,23 +39,19 @@
               <div class="text-2xl font-bold text-blue-600">
                 {{ todayStats.count }}
               </div>
-              <div class="text-sm text-gray-600">
-                今日做题
-              </div>
+              <div class="text-sm text-gray-600">今日做题</div>
             </div>
           </div>
 
-          <!-- 正确率统计 -->
+          <!-- 今日错题统计 -->
           <div
-            class="flex items-center justify-center bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-lg p-4"
+            class="flex items-center justify-center bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-4"
           >
             <div class="text-center">
-              <div class="text-2xl font-bold text-emerald-600">
-                {{ todayStats.accuracy }}%
+              <div class="text-2xl font-bold text-red-600">
+                {{ todayStats.wrongCount }}
               </div>
-              <div class="text-sm text-gray-600">
-                今日正确率
-              </div>
+              <div class="text-sm text-gray-600">今日错题</div>
             </div>
           </div>
         </div>
@@ -112,9 +108,7 @@
 
           <!-- 考试类型筛选 -->
           <div class="mb-6">
-            <h4 class="text-sm font-semibold text-gray-700 mb-3">
-              考试类型
-            </h4>
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">考试类型</h4>
             <div class="space-y-2">
               <label
                 v-for="cat in categories"
@@ -126,7 +120,7 @@
                   type="radio"
                   :value="cat.value"
                   class="w-4 h-4 text-emerald-500 focus:ring-emerald-500"
-                >
+                />
                 <span
                   class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600"
                 >
@@ -137,13 +131,8 @@
           </div>
 
           <!-- 题型筛选 (仅单题模式显示) -->
-          <div
-            v-if="currentMode === 'single'"
-            class="mb-6"
-          >
-            <h4 class="text-sm font-semibold text-gray-700 mb-3">
-              题型
-            </h4>
+          <div v-if="currentMode === 'single'" class="mb-6">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">题型</h4>
             <div class="space-y-2">
               <label
                 v-for="type in sectionTypes"
@@ -155,36 +144,7 @@
                   type="radio"
                   :value="type.value"
                   class="w-4 h-4 text-emerald-500 focus:ring-emerald-500"
-                >
-                <span
-                  class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600"
-                >
-                  {{ type.label }}
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <!-- 题型筛选 (考试模式 - 包含该题型) -->
-          <div
-            v-if="currentMode === 'exam'"
-            class="mb-6"
-          >
-            <h4 class="text-sm font-semibold text-gray-700 mb-3">
-              包含题型
-            </h4>
-            <div class="space-y-2">
-              <label
-                v-for="type in sectionTypes"
-                :key="type.value"
-                class="flex items-center cursor-pointer group"
-              >
-                <input
-                  v-model="filters.containsSectionType"
-                  type="checkbox"
-                  :value="type.value"
-                  class="w-4 h-4 text-emerald-500 focus:ring-emerald-500"
-                >
+                />
                 <span
                   class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600"
                 >
@@ -196,9 +156,7 @@
 
           <!-- 状态筛选 -->
           <div class="mb-6">
-            <h4 class="text-sm font-semibold text-gray-700 mb-3">
-              状态
-            </h4>
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">状态</h4>
             <div class="space-y-2">
               <label
                 v-for="status in statuses"
@@ -210,7 +168,7 @@
                   type="radio"
                   :value="status.value"
                   class="w-4 h-4 text-emerald-500 focus:ring-emerald-500"
-                >
+                />
                 <span
                   class="ml-3 text-sm text-gray-700 group-hover:text-emerald-600"
                 >
@@ -248,18 +206,10 @@
                 class="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-emerald-500"
                 @change="handleSort"
               >
-                <option value="year_desc">
-                  年份 (新到旧)
-                </option>
-                <option value="year_asc">
-                  年份 (旧到新)
-                </option>
-                <option value="created_desc">
-                  创建时间 (新到旧)
-                </option>
-                <option value="created_asc">
-                  创建时间 (旧到新)
-                </option>
+                <option value="year_desc">年份 (新到旧)</option>
+                <option value="year_asc">年份 (旧到新)</option>
+                <option value="created_desc">创建时间 (新到旧)</option>
+                <option value="created_asc">创建时间 (旧到新)</option>
               </select>
             </div>
           </div>
@@ -270,9 +220,7 @@
             class="bg-white rounded-lg shadow-sm p-12 text-center"
           >
             <i class="fas fa-spinner fa-spin text-4xl text-emerald-500 mb-4" />
-            <div class="text-gray-600">
-              加载中...
-            </div>
+            <div class="text-gray-600">加载中...</div>
           </div>
 
           <div
@@ -280,15 +228,10 @@
             class="bg-white rounded-lg shadow-sm p-12 text-center"
           >
             <i class="fas fa-inbox text-6xl text-gray-300 mb-4" />
-            <div class="text-gray-600">
-              暂无数据
-            </div>
+            <div class="text-gray-600">暂无数据</div>
           </div>
 
-          <div
-            v-else
-            class="space-y-4"
-          >
+          <div v-else class="space-y-4">
             <!-- 考试模式 - 试卷列表 -->
             <template v-if="currentMode === 'exam'">
               <div
@@ -516,7 +459,7 @@ export default {
     // 今日统计
     const todayStats = reactive({
       count: 0,
-      accuracy: 0,
+      wrongCount: 0,
     });
 
     // 筛选条件
@@ -557,7 +500,6 @@ export default {
       { label: "听力", value: "listening" },
       { label: "阅读", value: "reading" },
       { label: "写作", value: "writing" },
-      { label: "口语", value: "speaking" },
     ];
 
     const statuses = [
@@ -640,7 +582,7 @@ export default {
       try {
         const response = await questionApi.getTodayStats();
         todayStats.count = response.data.count;
-        todayStats.accuracy = response.data.accuracy;
+        todayStats.wrongCount = response.data.wrongCount;
       } catch (error) {
         console.error("获取今日统计失败:", error);
       }

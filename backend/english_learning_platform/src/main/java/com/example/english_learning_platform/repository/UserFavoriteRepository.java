@@ -17,11 +17,24 @@ public interface UserFavoriteRepository extends JpaRepository<UserFavorite, Long
     
     // 检查用户是否收藏了某个题目
     boolean existsByUserIdAndQuestionId(Long userId, Long questionId);
+
+    // 查找用户对某个试卷的收藏
+    Optional<UserFavorite> findByUserIdAndPaperId(Long userId, Long paperId);
+
+    // 检查用户是否收藏了某个试卷
+    boolean existsByUserIdAndPaperId(Long userId, Long paperId);
     
     // 查询用户收藏的所有题目ID
-    @Query("SELECT uf.questionId FROM UserFavorite uf WHERE uf.userId = :userId")
+    @Query("SELECT uf.questionId FROM UserFavorite uf WHERE uf.userId = :userId AND uf.questionId IS NOT NULL")
     List<Long> findQuestionIdsByUserId(@Param("userId") Long userId);
+
+    // 查询用户收藏的所有试卷ID
+    @Query("SELECT uf.paperId FROM UserFavorite uf WHERE uf.userId = :userId AND uf.paperId IS NOT NULL")
+    List<Long> findPaperIdsByUserId(@Param("userId") Long userId);
     
     // 删除用户收藏
     void deleteByUserIdAndQuestionId(Long userId, Long questionId);
+
+    // 删除用户对试卷的收藏
+    void deleteByUserIdAndPaperId(Long userId, Long paperId);
 }

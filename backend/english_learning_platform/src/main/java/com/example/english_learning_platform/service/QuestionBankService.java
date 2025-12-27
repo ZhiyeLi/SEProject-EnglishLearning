@@ -53,49 +53,151 @@ public class QuestionBankService {
         Sort sort = buildSort(request.getSortBy());
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getPageSize(), sort);
         
+        // 获取用户的完成状态和收藏状态
+        List<Long> completedPaperIds = userExamRecordRepository.findCompletedPaperIdsByUserId(userId);
+        List<Long> favoritedPaperIds = userFavoriteRepository.findPaperIdsByUserId(userId);
+        
         // 查询试卷
         Page<ExamPaper> paperPage;
         String category = request.getCategory();
         String keyword = request.getKeyword();
+        String status = request.getStatus();
         
-        // 如果有包含题型筛选
+        // 将 containsSectionType 转换为枚举列表
+        List<QuestionBank.SectionType> sectionTypes = null;
         if (request.getContainsSectionType() != null && !request.getContainsSectionType().isEmpty()) {
-            if ("all".equals(category)) {
-                paperPage = examPaperRepository.findByContainingSectionTypes(
-                    request.getContainsSectionType(), pageable);
-            } else {
-                paperPage = examPaperRepository.findByCategoryAndContainingSectionTypes(
-                    category, request.getContainsSectionType(), pageable);
+            sectionTypes = request.getContainsSectionType().stream()
+                .map(type -> {
+                    try {
+                        return QuestionBank.SectionType.valueOf(type.toLowerCase());
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+                
+            if (sectionTypes.isEmpty()) {
+                return QuestionBankListResponse.<ExamPaperItemDTO>builder()
+                    .items(Collections.emptyList())
+                    .total(0L)
+                    .page(request.getPage())
+                    .pageSize(request.getPageSize())
+                    .build();
             }
-        } else {
-            // 普通查询
-            if ("all".equals(category)) {
-                if (keyword != null && !keyword.isEmpty()) {
-                    paperPage = examPaperRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        }
+        
+        // 根据状态和其他条件选择不同的查询方法
+        if ("done".equals(status)) {
+            // 筛选已完成的试卷
+            if (completedPaperIds.isEmpty()) {
+                paperPage = Page.empty(pageable);
+            } else if (sectionTypes != null) {
+                // 有题型筛选
+                if ("all".equals(category)) {
+                    paperPage = examPaperRepository.findByContainingSectionTypesAndCompleted(
+                        sectionTypes, completedPaperIds, pageable);
                 } else {
-                    paperPage = examPaperRepository.findAll(pageable);
+                    paperPage = examPaperRepository.findByCategoryAndContainingSectionTypesAndCompleted(
+                        category, sectionTypes, completedPaperIds, pageable);
                 }
             } else {
-                if (keyword != null && !keyword.isEmpty()) {
-                    paperPage = examPaperRepository.findByCategoryAndNameContainingIgnoreCase(
-                        category, keyword, pageable);
+                // 无题型筛选
+                if ("all".equals(category)) {
+                    paperPage = examPaperRepository.findByIdIn(completedPaperIds, pageable);
                 } else {
-                    paperPage = examPaperRepository.findByCategory(category, pageable);
+                    paperPage = examPaperRepository.findByCategoryAndIdIn(category, completedPaperIds, pageable);
+                }
+            }
+        } else if ("not_done".equals(status)) {
+            // 筛选未完成的试卷
+            if (sectionTypes != null) {
+                // 有题型筛选
+                if ("all".equals(category)) {
+                    paperPage = examPaperRepository.findByContainingSectionTypesAndNotCompleted(
+                        sectionTypes, completedPaperIds.isEmpty() ? null : completedPaperIds, pageable);
+                } else {
+                    paperPage = examPaperRepository.findByCategoryAndContainingSectionTypesAndNotCompleted(
+                        category, sectionTypes, completedPaperIds.isEmpty() ? null : completedPaperIds, pageable);
+                }
+            } else {
+                // 无题型筛选
+                if (completedPaperIds.isEmpty()) {
+                    // 没有已完成的，所有都是未完成
+                    if ("all".equals(category)) {
+                        if (keyword != null && !keyword.isEmpty()) {
+                            paperPage = examPaperRepository.findByNameContainingIgnoreCase(keyword, pageable);
+                        } else {
+                            paperPage = examPaperRepository.findAll(pageable);
+                        }
+                    } else {
+                        if (keyword != null && !keyword.isEmpty()) {
+                            paperPage = examPaperRepository.findByCategoryAndNameContainingIgnoreCase(
+                                category, keyword, pageable);
+                        } else {
+                            paperPage = examPaperRepository.findByCategory(category, pageable);
+                        }
+                    }
+                } else {
+                    if ("all".equals(category)) {
+                        paperPage = examPaperRepository.findByIdNotIn(completedPaperIds, pageable);
+                    } else {
+                        paperPage = examPaperRepository.findByCategoryAndIdNotIn(category, completedPaperIds, pageable);
+                    }
+                }
+            }
+        } else if ("favorited".equals(status)) {
+            // 筛选收藏的试卷
+            if (favoritedPaperIds.isEmpty()) {
+                paperPage = Page.empty(pageable);
+            } else if (sectionTypes != null) {
+                // 有题型筛选
+                if ("all".equals(category)) {
+                    paperPage = examPaperRepository.findByContainingSectionTypesAndFavorited(
+                        sectionTypes, favoritedPaperIds, pageable);
+                } else {
+                    paperPage = examPaperRepository.findByCategoryAndContainingSectionTypesAndFavorited(
+                        category, sectionTypes, favoritedPaperIds, pageable);
+                }
+            } else {
+                // 无题型筛选
+                if ("all".equals(category)) {
+                    paperPage = examPaperRepository.findByIdIn(favoritedPaperIds, pageable);
+                } else {
+                    paperPage = examPaperRepository.findByCategoryAndIdIn(category, favoritedPaperIds, pageable);
+                }
+            }
+        } else {
+            // 默认查询所有
+            if (sectionTypes != null) {
+                if ("all".equals(category)) {
+                    paperPage = examPaperRepository.findByContainingSectionTypes(sectionTypes, pageable);
+                } else {
+                    paperPage = examPaperRepository.findByCategoryAndContainingSectionTypes(
+                        category, sectionTypes, pageable);
+                }
+            } else {
+                if ("all".equals(category)) {
+                    if (keyword != null && !keyword.isEmpty()) {
+                        paperPage = examPaperRepository.findByNameContainingIgnoreCase(keyword, pageable);
+                    } else {
+                        paperPage = examPaperRepository.findAll(pageable);
+                    }
+                } else {
+                    if (keyword != null && !keyword.isEmpty()) {
+                        paperPage = examPaperRepository.findByCategoryAndNameContainingIgnoreCase(
+                            category, keyword, pageable);
+                    } else {
+                        paperPage = examPaperRepository.findByCategory(category, pageable);
+                    }
                 }
             }
         }
         
-        // 获取用户的完成状态和收藏状态
-        List<Long> completedPaperIds = userExamRecordRepository.findCompletedPaperIdsByUserId(userId);
-        List<Long> favoritedQuestionIds = userFavoriteRepository.findQuestionIdsByUserId(userId);
-        
         // 转换为 DTO
         List<ExamPaperItemDTO> items = paperPage.getContent().stream()
             .map(paper -> {
-                String status = "not_done";
-                if (completedPaperIds.contains(paper.getId())) {
-                    status = "done";
-                }
+                String paperStatus = completedPaperIds.contains(paper.getId()) ? "done" : "not_done";
                 
                 return ExamPaperItemDTO.builder()
                     .id(paper.getId())
@@ -103,15 +205,12 @@ public class QuestionBankService {
                     .category(paper.getCategory())
                     .year(paper.getYear())
                     .difficulty(paper.getDifficulty())
-                    .status(status)
-                    .isFavorited(false) // 试卷不支持收藏，这里固定为false
+                    .status(paperStatus)
+                    .isFavorited(favoritedPaperIds.contains(paper.getId()))
                     .createdAt(paper.getCreatedAt())
                     .build();
             })
             .collect(Collectors.toList());
-        
-        // 状态筛选
-        items = filterByStatus(items, request.getStatus(), completedPaperIds, favoritedQuestionIds);
         
         return QuestionBankListResponse.<ExamPaperItemDTO>builder()
             .items(items)
@@ -129,31 +228,76 @@ public class QuestionBankService {
         Sort sort = buildSortForQuestion(request.getSortBy());
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getPageSize(), sort);
         
-        // 查询题目
-        Page<QuestionBank> questionPage = questionBankRepository.findByFilters(
-            request.getCategory(),
-            request.getSectionType(),
-            request.getKeyword(),
-            pageable
-        );
+        // 获取用户的完成状态和收藏状态（提前获取，用于数据库层面筛选）
+        List<Long> completedQuestionIds = userExamRecordRepository.findCompletedQuestionIdsByUserId(userId);
+        List<Long> favoritedQuestionIds = userFavoriteRepository.findQuestionIdsByUserId(userId);
+        
+        // 根据状态筛选条件选择不同的查询方法
+        Page<QuestionBank> questionPage;
+        String status = request.getStatus();
+        
+        if ("done".equals(status)) {
+            // 筛选已完成的题目
+            if (completedQuestionIds.isEmpty()) {
+                // 如果没有已完成的题目，返回空结果
+                questionPage = Page.empty(pageable);
+            } else {
+                questionPage = questionBankRepository.findByFiltersAndCompleted(
+                    request.getCategory(),
+                    request.getSectionType(),
+                    request.getKeyword(),
+                    completedQuestionIds,
+                    pageable
+                );
+            }
+        } else if ("not_done".equals(status)) {
+            // 筛选未完成的题目
+            questionPage = questionBankRepository.findByFiltersAndNotCompleted(
+                request.getCategory(),
+                request.getSectionType(),
+                request.getKeyword(),
+                completedQuestionIds.isEmpty() ? null : completedQuestionIds,
+                pageable
+            );
+        } else if ("favorited".equals(status)) {
+            // 筛选收藏的题目
+            if (favoritedQuestionIds.isEmpty()) {
+                // 如果没有收藏的题目，返回空结果
+                questionPage = Page.empty(pageable);
+            } else {
+                questionPage = questionBankRepository.findByFiltersAndFavorited(
+                    request.getCategory(),
+                    request.getSectionType(),
+                    request.getKeyword(),
+                    favoritedQuestionIds,
+                    pageable
+                );
+            }
+        } else {
+            // 默认查询所有题目
+            questionPage = questionBankRepository.findByFilters(
+                request.getCategory(),
+                request.getSectionType(),
+                request.getKeyword(),
+                pageable
+            );
+        }
         
         // 获取所有 paper_id 并查询对应的 ExamPaper
         List<Long> paperIds = questionPage.getContent().stream()
             .map(QuestionBank::getPaperId)
             .distinct()
             .collect(Collectors.toList());
-        Map<Long, ExamPaper> paperMap = examPaperRepository.findAllById(paperIds).stream()
-            .collect(Collectors.toMap(ExamPaper::getId, p -> p));
-        
-        // 获取用户的完成状态和收藏状态
-        List<Long> completedQuestionIds = userExamRecordRepository.findCompletedQuestionIdsByUserId(userId);
-        List<Long> favoritedQuestionIds = userFavoriteRepository.findQuestionIdsByUserId(userId);
+        Map<Long, ExamPaper> paperMap = paperIds.isEmpty() ? 
+            Collections.emptyMap() : 
+            examPaperRepository.findAllById(paperIds).stream()
+                .collect(Collectors.toMap(ExamPaper::getId, p -> p));
         
         // 转换为 DTO
         List<QuestionItemDTO> items = questionPage.getContent().stream()
             .map(question -> {
                 ExamPaper paper = paperMap.get(question.getPaperId());
-                String status = completedQuestionIds.contains(question.getId()) ? "done" : "not_done";
+                String questionStatus = completedQuestionIds.contains(question.getId()) ? "done" : "not_done";
                 
                 return QuestionItemDTO.builder()
                     .id(question.getId())
@@ -163,15 +307,12 @@ public class QuestionBankService {
                     .paperId(question.getPaperId())
                     .paperName(paper != null ? paper.getName() : "")
                     .paperCategory(paper != null ? paper.getCategory() : "")
-                    .status(status)
+                    .status(questionStatus)
                     .isFavorited(favoritedQuestionIds.contains(question.getId()))
                     .createdAt(question.getCreatedAt())
                     .build();
             })
             .collect(Collectors.toList());
-        
-        // 状态筛选
-        items = filterByStatus(items, request.getStatus(), completedQuestionIds, favoritedQuestionIds);
         
         return QuestionBankListResponse.<QuestionItemDTO>builder()
             .items(items)
@@ -243,16 +384,11 @@ public class QuestionBankService {
      */
     public TodayStatsDTO getTodayStats(Long userId) {
         Long count = userAnswerDetailRepository.countTodayAnswers(userId);
-        Double accuracyDouble = userAnswerDetailRepository.calculateTodayAccuracy(userId);
-        
-        Integer accuracy = 0;
-        if (accuracyDouble != null) {
-            accuracy = (int) Math.round(accuracyDouble * 100);
-        }
+        Long wrongCount = userAnswerDetailRepository.countTodayWrongAnswers(userId);
         
         return TodayStatsDTO.builder()
             .count(count != null ? count : 0L)
-            .accuracy(accuracy)
+            .wrongCount(wrongCount != null ? wrongCount : 0L)
             .build();
     }
     
@@ -261,21 +397,17 @@ public class QuestionBankService {
      */
     @Transactional
     public void addFavorite(Long userId, FavoriteRequest request) {
-        Long questionId;
-        
         if ("paper".equals(request.getType())) {
-            // 试卷收藏：收藏该试卷的所有题目
-            List<QuestionBank> questions = questionBankRepository.findByPaperIdOrderBySortOrder(request.getId());
-            for (QuestionBank question : questions) {
-                if (!userFavoriteRepository.existsByUserIdAndQuestionId(userId, question.getId())) {
-                    UserFavorite favorite = new UserFavorite();
-                    favorite.setUserId(userId);
-                    favorite.setQuestionId(question.getId());
-                    userFavoriteRepository.save(favorite);
-                }
+            // 试卷收藏
+            Long paperId = request.getId();
+            if (!userFavoriteRepository.existsByUserIdAndPaperId(userId, paperId)) {
+                UserFavorite favorite = new UserFavorite();
+                favorite.setUserId(userId);
+                favorite.setPaperId(paperId);
+                userFavoriteRepository.save(favorite);
             }
         } else if ("question".equals(request.getType())) {
-            questionId = request.getId();
+            Long questionId = request.getId();
             if (!userFavoriteRepository.existsByUserIdAndQuestionId(userId, questionId)) {
                 UserFavorite favorite = new UserFavorite();
                 favorite.setUserId(userId);
@@ -293,11 +425,8 @@ public class QuestionBankService {
     @Transactional
     public void removeFavorite(Long userId, FavoriteRequest request) {
         if ("paper".equals(request.getType())) {
-            // 取消试卷收藏：取消该试卷的所有题目收藏
-            List<QuestionBank> questions = questionBankRepository.findByPaperIdOrderBySortOrder(request.getId());
-            for (QuestionBank question : questions) {
-                userFavoriteRepository.deleteByUserIdAndQuestionId(userId, question.getId());
-            }
+            // 取消试卷收藏
+            userFavoriteRepository.deleteByUserIdAndPaperId(userId, request.getId());
         } else if ("question".equals(request.getType())) {
             userFavoriteRepository.deleteByUserIdAndQuestionId(userId, request.getId());
         } else {
@@ -449,24 +578,42 @@ public class QuestionBankService {
             .stream()
             .collect(Collectors.toMap(QuestionSubItem::getId, s -> s));
         
+        // 批量获取父题目信息（用于显示材料原文）
+        Set<Long> parentQuestionIds = subItemMap.values().stream()
+            .map(QuestionSubItem::getParentQuestionId)
+            .collect(Collectors.toSet());
+        Map<Long, QuestionBank> parentQuestionMap = questionBankRepository.findAllById(parentQuestionIds)
+            .stream()
+            .collect(Collectors.toMap(QuestionBank::getId, q -> q));
+        
         // 批量处理答案
         List<SubmitAnswerResponse.AnswerDetail> details = new ArrayList<>();
         BigDecimal totalScore = BigDecimal.ZERO;
         int correctCount = 0;
+        int objectiveCount = 0; // 客观题计数
         
         for (SubmitAnswerRequest.AnswerItem answerItem : request.getAnswers()) {
             QuestionSubItem subItem = subItemMap.get(answerItem.getSubItemId());
             if (subItem == null) continue;
             
+            String itemType = subItem.getItemType();
+            // 判断是否为客观题（可自动判分）
+            boolean isObjective = isObjectiveQuestion(itemType);
+            
             // 解析正确答案
             List<String> correctAnswer = parseAnswer(subItem.getAnswer());
             
-            // 校验答案
-            boolean isCorrect = checkAnswer(answerItem.getAnswer(), correctAnswer, subItem.getItemType());
-            BigDecimal scoreObtained = isCorrect ? subItem.getScoreValue() : BigDecimal.ZERO;
+            // 校验答案（仅对客观题判断对错）
+            Boolean isCorrect = null;
+            BigDecimal scoreObtained = BigDecimal.ZERO;
             
-            if (isCorrect) {
-                correctCount++;
+            if (isObjective) {
+                objectiveCount++;
+                isCorrect = checkAnswer(answerItem.getAnswer(), correctAnswer, itemType);
+                if (isCorrect) {
+                    correctCount++;
+                    scoreObtained = subItem.getScoreValue();
+                }
             }
             totalScore = totalScore.add(scoreObtained);
             
@@ -476,18 +623,46 @@ public class QuestionBankService {
             detail.setSubItemId(subItem.getId());
             detail.setUserId(userId);
             detail.setUserContent(convertAnswerToJson(answerItem.getAnswer()));
-            detail.setIsCorrect(isCorrect ? 1 : 0);
+            detail.setIsCorrect(isObjective ? (isCorrect ? 1 : 0) : -1); // -1 表示主观题
             detail.setScoreObtained(scoreObtained);
             userAnswerDetailRepository.save(detail);
+            
+            // 解析选项
+            List<SubmitAnswerResponse.OptionItem> optionItems = null;
+            if (subItem.getOptions() != null && !subItem.getOptions().isEmpty()) {
+                try {
+                    optionItems = parseOptionsForResponse(subItem.getOptions());
+                } catch (Exception e) {
+                    // 忽略解析错误
+                }
+            }
+            
+            // 获取父题目信息
+            QuestionBank parentQuestion = parentQuestionMap.get(subItem.getParentQuestionId());
+            String materialText = parentQuestion != null ? parentQuestion.getMaterialText() : null;
+            String materialImage = parentQuestion != null ? parentQuestion.getMaterialImage() : null;
+            String audioUrl = parentQuestion != null ? parentQuestion.getAudioUrl() : null;
+            Integer audioStartSec = parentQuestion != null ? parentQuestion.getAudioStartSec() : null;
+            Integer audioEndSec = parentQuestion != null ? parentQuestion.getAudioEndSec() : null;
             
             // 构建详情 DTO
             details.add(SubmitAnswerResponse.AnswerDetail.builder()
                 .subItemId(subItem.getId())
+                .parentQuestionId(subItem.getParentQuestionId())
+                .materialText(materialText)
+                .materialImage(materialImage)
+                .audioUrl(audioUrl)
+                .audioStartSec(audioStartSec)
+                .audioEndSec(audioEndSec)
+                .itemType(itemType)
+                .content(subItem.getContent())
                 .userAnswer(answerItem.getAnswer())
                 .correctAnswer(correctAnswer)
                 .isCorrect(isCorrect)
+                .isObjective(isObjective)
                 .scoreObtained(scoreObtained)
                 .explanation(subItem.getExplanation())
+                .options(optionItems)
                 .build());
         }
         
@@ -497,9 +672,15 @@ public class QuestionBankService {
         record.setCompletedAt(LocalDateTime.now());
         userExamRecordRepository.save(record);
         
-        // 计算正确率
-        int accuracy = request.getAnswers().isEmpty() ? 0 : 
-            (int) Math.round((double) correctCount / request.getAnswers().size() * 100);
+        // 计算正确率（仅针对客观题）
+        int accuracy = objectiveCount == 0 ? 0 : 
+            (int) Math.round((double) correctCount / objectiveCount * 100);
+        
+        // 计算用时（秒）
+        long duration = 0;
+        if (record.getStartedAt() != null && record.getCompletedAt() != null) {
+            duration = java.time.Duration.between(record.getStartedAt(), record.getCompletedAt()).getSeconds();
+        }
         
         return SubmitAnswerResponse.builder()
             .recordId(record.getId())
@@ -507,8 +688,42 @@ public class QuestionBankService {
             .accuracy(accuracy)
             .totalQuestions(request.getAnswers().size())
             .correctCount(correctCount)
+            .objectiveCount(objectiveCount)
+            .duration(duration)
             .details(details)
             .build();
+    }
+    
+    /**
+     * 判断是否为客观题（可自动判分）
+     */
+    private boolean isObjectiveQuestion(String itemType) {
+        if (itemType == null) return false;
+        return switch (itemType.toLowerCase()) {
+            case "choice", "multi_choice", "multiple", "insert", "blank", "fill", "gap_fill" -> true;
+            default -> false; // essay, writing, speaking 等为主观题
+        };
+    }
+    
+    /**
+     * 解析选项为响应格式
+     */
+    @SuppressWarnings("unchecked")
+    private List<SubmitAnswerResponse.OptionItem> parseOptionsForResponse(String optionsJson) {
+        if (optionsJson == null || optionsJson.isEmpty() || "[]".equals(optionsJson)) {
+            return null;
+        }
+        try {
+            List<Map<String, String>> optionsList = objectMapper.readValue(optionsJson, List.class);
+            return optionsList.stream()
+                .map(opt -> SubmitAnswerResponse.OptionItem.builder()
+                    .key((String) opt.get("key"))
+                    .value((String) opt.get("value"))
+                    .build())
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            return null;
+        }
     }
     
     /**

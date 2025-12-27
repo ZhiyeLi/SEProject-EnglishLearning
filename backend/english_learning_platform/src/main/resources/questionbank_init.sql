@@ -88,11 +88,14 @@ CREATE TABLE `question_sub_items` (
 CREATE TABLE `user_favorites` (
   `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   `user_id` BIGINT UNSIGNED NOT NULL,
-  `question_id` BIGINT UNSIGNED NOT NULL COMMENT '收藏通常是针对大题(篇章)',
+  `question_id` BIGINT UNSIGNED NULL COMMENT '收藏题目ID',
+  `paper_id` BIGINT UNSIGNED NULL COMMENT '收藏试卷ID',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   
-  UNIQUE KEY `uk_user_question` (`user_id`, `question_id`), -- 防止重复收藏
-  FOREIGN KEY (`question_id`) REFERENCES `questions`(`id`) ON DELETE CASCADE
+  UNIQUE KEY `uk_user_question` (`user_id`, `question_id`), -- 防止重复收藏题目
+  UNIQUE KEY `uk_user_paper` (`user_id`, `paper_id`),       -- 防止重复收藏试卷
+  FOREIGN KEY (`question_id`) REFERENCES `questions`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`paper_id`) REFERENCES `exam_papers`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------

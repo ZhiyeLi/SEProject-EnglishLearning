@@ -476,19 +476,29 @@
             <i class="fas fa-check text-3xl text-emerald-500" />
           </div>
           <h3 class="text-2xl font-bold text-gray-800 mb-2">提交成功！</h3>
-          <p class="text-gray-600 mb-4">
-            得分:
-            <span class="text-2xl font-bold text-emerald-600">{{
-              resultScore
-            }}</span>
-            分
-          </p>
-          <p class="text-gray-600 mb-6">
-            正确率:
-            <span class="text-lg font-bold text-emerald-600"
-              >{{ resultAccuracy }}%</span
-            >
-          </p>
+
+          <!-- 统计信息 -->
+          <div class="grid grid-cols-2 gap-4 my-6">
+            <div class="bg-emerald-50 rounded-lg p-3">
+              <div class="text-2xl font-bold text-emerald-600">
+                {{ resultScore }}
+              </div>
+              <div class="text-sm text-gray-600">得分</div>
+            </div>
+            <div class="bg-blue-50 rounded-lg p-3">
+              <div class="text-2xl font-bold text-blue-600">
+                {{ resultAccuracy }}%
+              </div>
+              <div class="text-sm text-gray-600">正确率</div>
+            </div>
+            <div class="bg-green-50 rounded-lg p-3">
+              <div class="text-2xl font-bold text-green-600">
+                {{ resultCorrectCount }}/{{ resultObjectiveCount }}
+              </div>
+              <div class="text-sm text-gray-600">客观题正确</div>
+            </div>
+          </div>
+
           <div class="flex flex-col gap-3">
             <button
               class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
@@ -511,104 +521,397 @@
       </div>
     </div>
 
-    <!-- 详情 Modal -->
+    <!-- 详情 Modal - 重新设计 -->
     <div
       v-if="showDetailModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      @click.self="showDetailModal = false"
+      class="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-hidden"
     >
-      <div
-        class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
-      >
-        <div class="p-6 border-b border-gray-200">
-          <div class="flex justify-between items-center">
-            <h3 class="text-2xl font-bold text-gray-800">答题详情</h3>
-            <button
-              class="text-gray-400 hover:text-gray-600 text-2xl"
-              @click="showDetailModal = false"
-            >
-              <i class="fas fa-times" />
-            </button>
-          </div>
-        </div>
-        <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 180px)">
-          <div class="space-y-6">
-            <div
-              v-for="(detail, index) in resultDetails"
-              :key="detail.subItemId"
-              class="p-4 rounded-lg border"
-              :class="
-                detail.isCorrect
-                  ? 'bg-green-50 border-green-200'
-                  : 'bg-red-50 border-red-200'
-              "
-            >
-              <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center gap-2">
-                  <span class="text-lg font-bold text-gray-700"
-                    >第 {{ index + 1 }} 题</span
-                  >
-                  <span
-                    class="px-2 py-1 rounded text-sm font-medium"
-                    :class="
-                      detail.isCorrect
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
-                    "
-                  >
-                    <i
-                      :class="
-                        detail.isCorrect ? 'fas fa-check' : 'fas fa-times'
-                      "
-                    />
-                    {{ detail.isCorrect ? "正确" : "错误" }}
-                  </span>
-                </div>
+      <div class="h-full flex flex-col bg-gray-50">
+        <!-- 顶部栏 -->
+        <div class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
+          <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                  <i class="fas fa-clipboard-check mr-2 text-emerald-500" />
+                  答题详情
+                </h3>
               </div>
-              <div class="space-y-2 text-sm">
-                <div class="flex items-start gap-2">
-                  <span class="font-medium text-gray-600 min-w-20"
-                    >题目内容:</span
-                  >
-                  <span class="text-gray-800" v-html="detail.content" />
+
+              <!-- 统计仪表板 -->
+              <div class="flex items-center gap-6">
+                <div class="text-center">
+                  <div class="text-lg font-bold text-emerald-600">
+                    {{ resultScore }}分
+                  </div>
+                  <div class="text-xs text-gray-500">总分</div>
                 </div>
-                <div class="flex items-start gap-2">
-                  <span class="font-medium text-gray-600 min-w-20"
-                    >你的答案:</span
-                  >
-                  <span
-                    class="font-medium"
-                    :class="
-                      detail.isCorrect ? 'text-green-700' : 'text-red-700'
-                    "
-                  >
-                    {{ detail.userAnswer || "未作答" }}
+                <div class="text-center">
+                  <div class="text-lg font-bold text-blue-600">
+                    {{ resultAccuracy }}%
+                  </div>
+                  <div class="text-xs text-gray-500">正确率</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-lg font-bold text-green-600">
+                    {{ resultCorrectCount }}/{{ resultObjectiveCount }}
+                  </div>
+                  <div class="text-xs text-gray-500">客观题</div>
+                </div>
+
+                <!-- 图例 -->
+                <div class="flex items-center gap-3 ml-4 pl-4 border-l">
+                  <span class="flex items-center gap-1 text-sm">
+                    <span class="w-3 h-3 bg-green-500 rounded-full" />
+                    正确
                   </span>
-                </div>
-                <div class="flex items-start gap-2">
-                  <span class="font-medium text-gray-600 min-w-20"
-                    >正确答案:</span
-                  >
-                  <span class="font-medium text-green-700">
-                    {{ detail.correctAnswer }}
+                  <span class="flex items-center gap-1 text-sm">
+                    <span class="w-3 h-3 bg-red-500 rounded-full" />
+                    错误
                   </span>
-                </div>
-                <div
-                  v-if="detail.explanation"
-                  class="flex items-start gap-2 mt-3 pt-3 border-t border-gray-200"
-                >
-                  <span class="font-medium text-gray-600 min-w-20"
-                    >答案解析:</span
-                  >
-                  <span class="text-gray-700">{{ detail.explanation }}</span>
+                  <span class="flex items-center gap-1 text-sm">
+                    <span class="w-3 h-3 bg-blue-500 rounded-full" />
+                    主观题
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="p-6 border-t border-gray-200 bg-gray-50">
+
+        <!-- 主内容区 -->
+        <div class="flex-1 flex overflow-hidden">
+          <!-- 左侧：题号导航 -->
+          <div
+            class="w-64 bg-white border-r border-gray-200 overflow-y-auto flex-shrink-0 p-4"
+          >
+            <div class="text-sm font-bold text-gray-700 mb-4">
+              <i class="fas fa-list-ol mr-2 text-emerald-500" />
+              题目列表
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="(detail, index) in resultDetails"
+                :key="detail.subItemId"
+                class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors"
+                :class="getDetailItemClass(detail)"
+                :title="getDetailItemTitle(detail)"
+                @click="scrollToDetail(detail.subItemId)"
+              >
+                {{ index + 1 }}
+              </button>
+            </div>
+
+            <!-- 统计汇总 -->
+            <div class="mt-6 pt-4 border-t border-gray-200">
+              <div class="text-sm text-gray-600 space-y-2">
+                <div class="flex justify-between">
+                  <span>总题数</span>
+                  <span class="font-medium">{{ resultDetails.length }}</span>
+                </div>
+                <div class="flex justify-between text-green-600">
+                  <span>正确</span>
+                  <span class="font-medium">{{ resultCorrectCount }}</span>
+                </div>
+                <div class="flex justify-between text-red-600">
+                  <span>错误</span>
+                  <span class="font-medium">{{
+                    resultObjectiveCount - resultCorrectCount
+                  }}</span>
+                </div>
+                <div class="flex justify-between text-blue-600">
+                  <span>主观题</span>
+                  <span class="font-medium">{{
+                    resultDetails.length - resultObjectiveCount
+                  }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右侧：详情内容 -->
+          <div class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-4xl mx-auto space-y-6">
+              <div
+                v-for="(detail, index) in resultDetails"
+                :id="`detail-${detail.subItemId}`"
+                :key="detail.subItemId"
+                class="bg-white rounded-lg shadow-sm border-2 p-6"
+                :class="getDetailCardClass(detail)"
+              >
+                <!-- 题目头部 -->
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                      :class="getDetailBadgeClass(detail)"
+                    >
+                      {{ index + 1 }}
+                    </span>
+                    <div>
+                      <span class="text-sm text-gray-500">{{
+                        getItemTypeLabel(detail.itemType)
+                      }}</span>
+                      <span
+                        class="ml-2 px-2 py-0.5 rounded text-xs font-medium"
+                        :class="getStatusBadgeClass(detail)"
+                      >
+                        {{ getStatusLabel(detail) }}
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    v-if="detail.scoreObtained !== undefined"
+                    class="text-right"
+                  >
+                    <span
+                      class="text-lg font-bold"
+                      :class="getScoreClass(detail)"
+                    >
+                      +{{ detail.scoreObtained }}
+                    </span>
+                    <span class="text-sm text-gray-500">分</span>
+                  </div>
+                </div>
+
+                <!-- 材料原文区域（可折叠） -->
+                <div
+                  v-if="
+                    detail.materialText ||
+                    detail.materialImage ||
+                    detail.audioUrl
+                  "
+                  class="mb-4"
+                >
+                  <details class="bg-gray-50 rounded-lg border border-gray-200">
+                    <summary
+                      class="px-4 py-3 cursor-pointer text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg flex items-center gap-2"
+                    >
+                      <i class="fas fa-file-alt text-blue-500" />
+                      查看题目原文
+                      <span
+                        v-if="detail.audioUrl"
+                        class="text-orange-500 text-xs ml-2"
+                      >
+                        <i class="fas fa-headphones" /> 含音频
+                      </span>
+                      <span class="text-gray-400 text-xs ml-auto"
+                        >点击展开/收起</span
+                      >
+                    </summary>
+                    <div class="px-4 pb-4">
+                      <!-- 听力音频播放器 - 支持片段播放 -->
+                      <div
+                        v-if="detail.audioUrl"
+                        class="mb-4 p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-200"
+                      >
+                        <div class="flex items-center justify-between mb-3">
+                          <div class="flex items-center gap-2 text-orange-700">
+                            <i class="fas fa-headphones text-xl" />
+                            <span class="font-medium">听力材料</span>
+                          </div>
+                          <div class="text-sm text-orange-600">
+                            {{ formatDetailAudioTime(detail) }}
+                          </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                          <button
+                            class="w-10 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
+                            @click="toggleDetailAudio(detail)"
+                          >
+                            <i
+                              :class="
+                                isDetailAudioPlaying(detail)
+                                  ? 'fas fa-pause'
+                                  : 'fas fa-play'
+                              "
+                            />
+                          </button>
+
+                          <div
+                            class="flex-1 h-2 bg-orange-200 rounded-full overflow-hidden cursor-pointer"
+                            @click="seekDetailAudio($event, detail)"
+                          >
+                            <div
+                              class="h-full bg-orange-500 transition-all"
+                              :style="{
+                                width: getDetailAudioProgress(detail) + '%',
+                              }"
+                            />
+                          </div>
+
+                          <button
+                            class="text-orange-600 hover:text-orange-700"
+                            @click="resetDetailAudio(detail)"
+                          >
+                            <i class="fas fa-redo" />
+                          </button>
+                        </div>
+
+                        <audio
+                          :ref="(el) => setDetailAudioRef(detail.subItemId, el)"
+                          :src="getResourceUrl(detail.audioUrl)"
+                          @timeupdate="handleDetailAudioTimeUpdate(detail)"
+                          @loadedmetadata="handleDetailAudioLoaded(detail)"
+                          @ended="handleDetailAudioEnded(detail)"
+                        />
+                      </div>
+                      <!-- 材料图片 -->
+                      <div v-if="detail.materialImage" class="mb-4">
+                        <img
+                          :src="getResourceUrl(detail.materialImage)"
+                          alt="题目图片"
+                          class="max-w-full rounded-lg shadow-sm"
+                          @error="handleImageError"
+                        />
+                      </div>
+                      <!-- 材料文本 -->
+                      <div
+                        v-if="detail.materialText"
+                        class="prose max-w-none text-gray-700 text-sm leading-relaxed"
+                        v-html="formatMaterialText(detail.materialText)"
+                      />
+                    </div>
+                  </details>
+                </div>
+
+                <!-- 题目内容 -->
+                <div class="mb-4 text-gray-800" v-html="detail.content" />
+
+                <!-- 选择题展示 -->
+                <div
+                  v-if="isChoiceType(detail.itemType)"
+                  class="space-y-2 mb-4"
+                >
+                  <div
+                    v-for="option in detail.options || []"
+                    :key="option.key"
+                    class="p-3 rounded-lg border-2 flex items-start gap-3"
+                    :class="getOptionClass(detail, option.key)"
+                  >
+                    <span
+                      class="w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0"
+                      :class="getOptionBadgeClass(detail, option.key)"
+                    >
+                      {{ option.key }}
+                    </span>
+                    <span class="flex-1">{{ option.value }}</span>
+                    <span
+                      v-if="isUserSelected(detail, option.key)"
+                      class="text-sm"
+                    >
+                      <i
+                        v-if="isCorrectOption(detail, option.key)"
+                        class="fas fa-check text-green-600"
+                      />
+                      <i v-else class="fas fa-times text-red-600" />
+                      你的选择
+                    </span>
+                    <span
+                      v-else-if="isCorrectOption(detail, option.key)"
+                      class="text-sm text-green-600"
+                    >
+                      <i class="fas fa-check" />
+                      正确答案
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 填空题/插入题展示 -->
+                <div
+                  v-else-if="isBlankType(detail.itemType)"
+                  class="mb-4 p-4 bg-gray-50 rounded-lg"
+                >
+                  <div class="flex items-start gap-4">
+                    <div class="flex-1">
+                      <div class="text-sm text-gray-500 mb-1">你的答案</div>
+                      <div
+                        class="font-medium"
+                        :class="
+                          detail.isCorrect ? 'text-green-700' : 'text-red-700'
+                        "
+                      >
+                        <span
+                          v-if="!detail.isCorrect"
+                          class="line-through mr-2"
+                        >
+                          {{ formatUserAnswer(detail.userAnswer) || "未作答" }}
+                        </span>
+                        <span v-else>
+                          {{ formatUserAnswer(detail.userAnswer) }}
+                        </span>
+                      </div>
+                    </div>
+                    <div v-if="!detail.isCorrect" class="flex-1">
+                      <div class="text-sm text-gray-500 mb-1">正确答案</div>
+                      <div class="font-medium text-green-700">
+                        {{ formatCorrectAnswer(detail.correctAnswer) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 主观题展示（写作/口语） -->
+                <div v-else class="mb-4">
+                  <!-- 用户答案 -->
+                  <div
+                    class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+                  >
+                    <div class="text-sm font-medium text-blue-700 mb-2">
+                      <i class="fas fa-pen mr-1" />
+                      我的答案
+                    </div>
+                    <div class="text-gray-800 whitespace-pre-wrap">
+                      {{ formatUserAnswer(detail.userAnswer) || "未作答" }}
+                    </div>
+                  </div>
+
+                  <!-- 参考答案 -->
+                  <div
+                    v-if="
+                      detail.correctAnswer && detail.correctAnswer.length > 0
+                    "
+                    class="p-4 bg-amber-50 border border-amber-200 rounded-lg"
+                  >
+                    <div class="text-sm font-medium text-amber-700 mb-2">
+                      <i class="fas fa-book mr-1" />
+                      参考答案
+                    </div>
+                    <div class="text-gray-800 whitespace-pre-wrap">
+                      {{ formatCorrectAnswer(detail.correctAnswer) }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 解析区域 -->
+                <div
+                  v-if="detail.explanation"
+                  class="mt-4 p-4 bg-gray-100 rounded-lg"
+                >
+                  <div class="text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-lightbulb text-yellow-500 mr-1" />
+                    解析
+                  </div>
+                  <div class="text-gray-700">{{ detail.explanation }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部操作栏 -->
+        <div
+          class="bg-white border-t border-gray-200 p-4 flex justify-center gap-4 flex-shrink-0"
+        >
           <button
-            class="w-full px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+            class="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            @click="showDetailModal = false"
+          >
+            关闭
+          </button>
+          <button
+            class="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
             @click="goBack"
           >
             返回题库
@@ -672,6 +975,12 @@ export default {
     const resultScore = ref(0);
     const resultAccuracy = ref(0);
     const resultDetails = ref([]);
+    const resultCorrectCount = ref(0);
+    const resultObjectiveCount = ref(0);
+
+    // 详情页音频控制
+    const detailAudioRefs = reactive({}); // { subItemId: audioElement }
+    const detailAudioStates = reactive({}); // { subItemId: { playing, currentTime, duration } }
 
     // 当前题目
     const currentQuestion = computed(() => {
@@ -1016,8 +1325,70 @@ export default {
       }
     };
 
+    // 检查答案是否完整
+    const checkAnswersComplete = () => {
+      const unansweredItems = [];
+
+      if (mode.value === "exam") {
+        // 考试模式：检查所有小题
+        subItems.value.forEach((item, idx) => {
+          const answer = userAnswers[item.id];
+          const isEmpty =
+            answer === undefined ||
+            answer === null ||
+            answer === "" ||
+            (Array.isArray(answer) && answer.length === 0);
+          if (isEmpty) {
+            unansweredItems.push({
+              questionIndex: questions.value.findIndex(
+                (q) => q.id === item.parentQuestionId
+              ),
+              itemIndex: idx,
+              itemId: item.id,
+            });
+          }
+        });
+      } else {
+        // 单题模式：检查当前题目的小题
+        currentSubItems.value.forEach((item, idx) => {
+          const answer = userAnswers[item.id];
+          const isEmpty =
+            answer === undefined ||
+            answer === null ||
+            answer === "" ||
+            (Array.isArray(answer) && answer.length === 0);
+          if (isEmpty) {
+            unansweredItems.push({
+              questionIndex: currentQuestionIndex.value,
+              itemIndex: idx,
+              itemId: item.id,
+            });
+          }
+        });
+      }
+
+      return unansweredItems;
+    };
+
     // 提交答案
     const submitAnswers = () => {
+      const unanswered = checkAnswersComplete();
+
+      if (unanswered.length > 0) {
+        const count = unanswered.length;
+        const confirmMsg =
+          mode.value === "exam"
+            ? `还有 ${count} 道小题未作答，请完成所有题目后再提交！`
+            : `还有 ${count} 道小题未作答，请完成后再提交！`;
+        alert(confirmMsg);
+
+        // 跳转到第一道未答题的位置
+        if (unanswered[0]) {
+          currentQuestionIndex.value = unanswered[0].questionIndex;
+        }
+        return;
+      }
+
       showSubmitModal.value = true;
     };
 
@@ -1040,6 +1411,8 @@ export default {
         resultScore.value = response.data.score;
         resultAccuracy.value = response.data.accuracy;
         resultDetails.value = response.data.details || [];
+        resultCorrectCount.value = response.data.correctCount || 0;
+        resultObjectiveCount.value = response.data.objectiveCount || 0;
         showResultModal.value = true;
       } catch (error) {
         console.error("提交失败:", error);
@@ -1079,6 +1452,336 @@ export default {
         speaking: "口语",
       };
       return labels[value] || value;
+    };
+
+    // ====== 答题详情相关方法 ======
+
+    // 获取题目类型标签
+    const getItemTypeLabel = (itemType) => {
+      const labels = {
+        choice: "单选题",
+        multi_choice: "多选题",
+        multiple: "多选题",
+        insert: "插入题",
+        blank: "填空题",
+        fill: "填空题",
+        essay: "写作题",
+        writing: "写作题",
+        speaking: "口语题",
+        text: "简答题",
+      };
+      return labels[itemType] || "其他";
+    };
+
+    // 判断是否为选择题类型
+    const isChoiceType = (itemType) => {
+      return ["choice", "multi_choice", "multiple"].includes(itemType);
+    };
+
+    // 判断是否为填空/插入题类型
+    const isBlankType = (itemType) => {
+      return ["blank", "fill", "insert"].includes(itemType);
+    };
+
+    // 获取详情项的样式类（题号导航用）
+    const getDetailItemClass = (detail) => {
+      if (detail.isObjective === false) {
+        return "bg-blue-100 text-blue-700 hover:bg-blue-200";
+      }
+      if (detail.isCorrect === true) {
+        return "bg-green-100 text-green-700 hover:bg-green-200";
+      }
+      if (detail.isCorrect === false) {
+        return "bg-red-100 text-red-700 hover:bg-red-200";
+      }
+      return "bg-gray-100 text-gray-600 hover:bg-gray-200";
+    };
+
+    // 获取详情项标题（tooltip）
+    const getDetailItemTitle = (detail) => {
+      if (detail.isObjective === false) return "主观题";
+      if (detail.isCorrect === true) return "回答正确";
+      if (detail.isCorrect === false) return "回答错误";
+      return "";
+    };
+
+    // 获取详情卡片样式
+    const getDetailCardClass = (detail) => {
+      if (detail.isObjective === false) {
+        return "border-blue-300 bg-blue-50/30";
+      }
+      if (detail.isCorrect === true) {
+        return "border-green-300 bg-green-50/30";
+      }
+      if (detail.isCorrect === false) {
+        return "border-red-300 bg-red-50/30";
+      }
+      return "border-gray-200";
+    };
+
+    // 获取题号徽章样式
+    const getDetailBadgeClass = (detail) => {
+      if (detail.isObjective === false) return "bg-blue-500";
+      if (detail.isCorrect === true) return "bg-green-500";
+      if (detail.isCorrect === false) return "bg-red-500";
+      return "bg-gray-500";
+    };
+
+    // 获取状态徽章样式
+    const getStatusBadgeClass = (detail) => {
+      if (detail.isObjective === false) {
+        return "bg-blue-100 text-blue-700";
+      }
+      if (detail.isCorrect === true) {
+        return "bg-green-100 text-green-700";
+      }
+      if (detail.isCorrect === false) {
+        return "bg-red-100 text-red-700";
+      }
+      return "bg-gray-100 text-gray-600";
+    };
+
+    // 获取状态标签文字
+    const getStatusLabel = (detail) => {
+      if (detail.isObjective === false) return "已作答";
+      if (detail.isCorrect === true) return "正确";
+      if (detail.isCorrect === false) return "错误";
+      return "未知";
+    };
+
+    // 获取得分样式
+    const getScoreClass = (detail) => {
+      if (detail.isObjective === false) return "text-blue-600";
+      if (detail.isCorrect === true) return "text-green-600";
+      return "text-gray-400";
+    };
+
+    // 获取选项样式
+    const getOptionClass = (detail, optionKey) => {
+      const isSelected = isUserSelected(detail, optionKey);
+      const isCorrect = isCorrectOption(detail, optionKey);
+
+      if (isSelected && isCorrect) {
+        return "border-green-500 bg-green-50";
+      }
+      if (isSelected && !isCorrect) {
+        return "border-red-500 bg-red-50";
+      }
+      if (!isSelected && isCorrect) {
+        return "border-green-500 bg-green-50";
+      }
+      return "border-gray-200 bg-white";
+    };
+
+    // 获取选项徽章样式
+    const getOptionBadgeClass = (detail, optionKey) => {
+      const isSelected = isUserSelected(detail, optionKey);
+      const isCorrect = isCorrectOption(detail, optionKey);
+
+      if (isSelected && isCorrect) {
+        return "bg-green-500 text-white";
+      }
+      if (isSelected && !isCorrect) {
+        return "bg-red-500 text-white";
+      }
+      if (!isSelected && isCorrect) {
+        return "bg-green-500 text-white";
+      }
+      return "bg-gray-200 text-gray-600";
+    };
+
+    // 判断用户是否选择了某选项
+    const isUserSelected = (detail, optionKey) => {
+      const userAnswer = detail.userAnswer;
+      if (Array.isArray(userAnswer)) {
+        return userAnswer.includes(optionKey);
+      }
+      return userAnswer === optionKey;
+    };
+
+    // 判断是否为正确选项
+    const isCorrectOption = (detail, optionKey) => {
+      const correctAnswer = detail.correctAnswer;
+      if (Array.isArray(correctAnswer)) {
+        return correctAnswer.includes(optionKey);
+      }
+      return correctAnswer === optionKey;
+    };
+
+    // 格式化用户答案
+    const formatUserAnswer = (answer) => {
+      if (Array.isArray(answer)) {
+        return answer.join(", ");
+      }
+      return answer;
+    };
+
+    // 格式化正确答案
+    const formatCorrectAnswer = (answer) => {
+      if (Array.isArray(answer)) {
+        return answer.join(", ");
+      }
+      return answer;
+    };
+
+    // 滚动到指定详情
+    const scrollToDetail = (subItemId) => {
+      const element = document.getElementById(`detail-${subItemId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+
+    // ====== 详情页音频控制方法 ======
+
+    // 设置音频元素引用
+    const setDetailAudioRef = (subItemId, el) => {
+      if (el) {
+        detailAudioRefs[subItemId] = el;
+      }
+    };
+
+    // 获取音频状态
+    const getDetailAudioState = (detail) => {
+      if (!detailAudioStates[detail.subItemId]) {
+        detailAudioStates[detail.subItemId] = {
+          playing: false,
+          currentTime: detail.audioStartSec || 0,
+          duration: 0,
+        };
+      }
+      return detailAudioStates[detail.subItemId];
+    };
+
+    // 是否正在播放
+    const isDetailAudioPlaying = (detail) => {
+      const state = getDetailAudioState(detail);
+      return state.playing;
+    };
+
+    // 切换播放/暂停
+    const toggleDetailAudio = (detail) => {
+      const audioEl = detailAudioRefs[detail.subItemId];
+      if (!audioEl) return;
+
+      const state = getDetailAudioState(detail);
+
+      if (state.playing) {
+        audioEl.pause();
+        state.playing = false;
+      } else {
+        // 停止其他音频
+        Object.keys(detailAudioRefs).forEach((id) => {
+          if (id !== String(detail.subItemId) && detailAudioRefs[id]) {
+            detailAudioRefs[id].pause();
+            if (detailAudioStates[id]) {
+              detailAudioStates[id].playing = false;
+            }
+          }
+        });
+
+        // 如果设置了音频片段，跳转到开始位置
+        const startSec = detail.audioStartSec || 0;
+        if (
+          audioEl.currentTime < startSec ||
+          audioEl.currentTime >= (detail.audioEndSec || audioEl.duration)
+        ) {
+          audioEl.currentTime = startSec;
+        }
+        audioEl.play();
+        state.playing = true;
+      }
+    };
+
+    // 重置音频
+    const resetDetailAudio = (detail) => {
+      const audioEl = detailAudioRefs[detail.subItemId];
+      if (!audioEl) return;
+
+      const startSec = detail.audioStartSec || 0;
+      audioEl.currentTime = startSec;
+      const state = getDetailAudioState(detail);
+      state.currentTime = startSec;
+    };
+
+    // 拖拽进度条
+    const seekDetailAudio = (event, detail) => {
+      const audioEl = detailAudioRefs[detail.subItemId];
+      if (!audioEl) return;
+
+      const state = getDetailAudioState(detail);
+      const startSec = detail.audioStartSec || 0;
+      const endSec = detail.audioEndSec || state.duration;
+      const segmentDuration = endSec - startSec;
+
+      const rect = event.currentTarget.getBoundingClientRect();
+      const percent = (event.clientX - rect.left) / rect.width;
+      const newTime = startSec + segmentDuration * percent;
+
+      audioEl.currentTime = Math.max(startSec, Math.min(endSec, newTime));
+    };
+
+    // 音频时间更新
+    const handleDetailAudioTimeUpdate = (detail) => {
+      const audioEl = detailAudioRefs[detail.subItemId];
+      if (!audioEl) return;
+
+      const state = getDetailAudioState(detail);
+      state.currentTime = audioEl.currentTime;
+
+      // 如果设置了结束时间，到达时暂停
+      const endSec = detail.audioEndSec;
+      if (endSec > 0 && audioEl.currentTime >= endSec) {
+        audioEl.pause();
+        state.playing = false;
+      }
+    };
+
+    // 音频加载完成
+    const handleDetailAudioLoaded = (detail) => {
+      const audioEl = detailAudioRefs[detail.subItemId];
+      if (!audioEl) return;
+
+      const state = getDetailAudioState(detail);
+      state.duration = audioEl.duration;
+
+      // 设置初始播放位置为片段开始时间
+      const startSec = detail.audioStartSec || 0;
+      if (startSec > 0) {
+        audioEl.currentTime = startSec;
+        state.currentTime = startSec;
+      }
+    };
+
+    // 音频播放结束
+    const handleDetailAudioEnded = (detail) => {
+      const state = getDetailAudioState(detail);
+      state.playing = false;
+    };
+
+    // 获取音频进度百分比
+    const getDetailAudioProgress = (detail) => {
+      const state = getDetailAudioState(detail);
+      const startSec = detail.audioStartSec || 0;
+      const endSec = detail.audioEndSec || state.duration;
+      const segmentDuration = endSec - startSec;
+
+      if (segmentDuration === 0) return 0;
+
+      const currentInSegment = Math.max(0, state.currentTime - startSec);
+      return Math.min(100, (currentInSegment / segmentDuration) * 100);
+    };
+
+    // 格式化详情页音频时间显示
+    const formatDetailAudioTime = (detail) => {
+      const state = getDetailAudioState(detail);
+      const startSec = detail.audioStartSec || 0;
+      const endSec = detail.audioEndSec || state.duration;
+
+      const currentInSegment = Math.max(0, state.currentTime - startSec);
+      const segmentDuration = endSec - startSec;
+
+      return `${formatTime(currentInSegment)} / ${formatTime(segmentDuration)}`;
     };
 
     // 监听题目切换，重置音频
@@ -1133,6 +1836,8 @@ export default {
       resultScore,
       resultAccuracy,
       resultDetails,
+      resultCorrectCount,
+      resultObjectiveCount,
       switchQuestion,
       prevQuestion,
       nextQuestion,
@@ -1157,10 +1862,42 @@ export default {
       toggleFullscreen,
       toggleFavorite,
       submitAnswers,
+      checkAnswersComplete,
       confirmSubmit,
       goBack,
       getCategoryLabel,
       getSectionTypeLabel,
+      // 答题详情相关
+      getItemTypeLabel,
+      isChoiceType,
+      isBlankType,
+      getDetailItemClass,
+      getDetailItemTitle,
+      getDetailCardClass,
+      getDetailBadgeClass,
+      getStatusBadgeClass,
+      getStatusLabel,
+      getScoreClass,
+      getOptionClass,
+      getOptionBadgeClass,
+      isUserSelected,
+      isCorrectOption,
+      formatUserAnswer,
+      formatCorrectAnswer,
+      scrollToDetail,
+      // 详情页音频控制
+      detailAudioRefs,
+      detailAudioStates,
+      setDetailAudioRef,
+      isDetailAudioPlaying,
+      toggleDetailAudio,
+      resetDetailAudio,
+      seekDetailAudio,
+      handleDetailAudioTimeUpdate,
+      handleDetailAudioLoaded,
+      handleDetailAudioEnded,
+      getDetailAudioProgress,
+      formatDetailAudioTime,
     };
   },
 };

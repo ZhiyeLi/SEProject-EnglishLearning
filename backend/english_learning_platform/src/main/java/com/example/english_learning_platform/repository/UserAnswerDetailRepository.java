@@ -21,6 +21,13 @@ public interface UserAnswerDetailRepository extends JpaRepository<UserAnswerDeta
            "AND DATE(uad.createdAt) = CURRENT_DATE")
     Long countTodayAnswers(@Param("userId") Long userId);
     
+    // 查询用户今日错题数量
+    @Query("SELECT COUNT(uad) FROM UserAnswerDetail uad " +
+           "WHERE uad.userId = :userId " +
+           "AND uad.isCorrect = 0 " +
+           "AND DATE(uad.createdAt) = CURRENT_DATE")
+    Long countTodayWrongAnswers(@Param("userId") Long userId);
+    
     // 查询用户今日正确率
     @Query("SELECT AVG(uad.isCorrect) FROM UserAnswerDetail uad " +
            "WHERE uad.userId = :userId " +

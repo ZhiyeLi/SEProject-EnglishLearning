@@ -14,5 +14,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TodayStatsDTO {
     private Long count; // 今日做题数
-    private Integer accuracy; // 今日正确率（百分比）
+    private Long wrongCount; // 今日错题数
 }

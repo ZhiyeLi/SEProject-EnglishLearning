@@ -21,7 +21,7 @@ public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long
     @Query("SELECT q FROM QuestionBank q " +
            "JOIN ExamPaper ep ON q.paperId = ep.id " +
            "WHERE (:category = 'all' OR ep.category = :category) " +
-           "AND (:sectionType = 'all' OR CAST(q.sectionType AS string) = :sectionType) " +
+           "AND (:sectionType = 'all' OR LOWER(CAST(q.sectionType AS string)) = LOWER(:sectionType)) " +
            "AND (:keyword IS NULL OR :keyword = '' OR " +
            "     LOWER(q.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "     LOWER(q.sectionName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
@@ -30,6 +30,60 @@ public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long
         @Param("category") String category,
         @Param("sectionType") String sectionType,
         @Param("keyword") String keyword,
+        Pageable pageable
+    );
+    
+    // 单题模式查询 - 筛选已完成的题目
+    @Query("SELECT q FROM QuestionBank q " +
+           "JOIN ExamPaper ep ON q.paperId = ep.id " +
+           "WHERE (:category = 'all' OR ep.category = :category) " +
+           "AND (:sectionType = 'all' OR LOWER(CAST(q.sectionType AS string)) = LOWER(:sectionType)) " +
+           "AND (:keyword IS NULL OR :keyword = '' OR " +
+           "     LOWER(q.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "     LOWER(q.sectionName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "     LOWER(CAST(q.sectionType AS string)) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND q.id IN :completedIds")
+    Page<QuestionBank> findByFiltersAndCompleted(
+        @Param("category") String category,
+        @Param("sectionType") String sectionType,
+        @Param("keyword") String keyword,
+        @Param("completedIds") List<Long> completedIds,
+        Pageable pageable
+    );
+    
+    // 单题模式查询 - 筛选未完成的题目
+    @Query("SELECT q FROM QuestionBank q " +
+           "JOIN ExamPaper ep ON q.paperId = ep.id " +
+           "WHERE (:category = 'all' OR ep.category = :category) " +
+           "AND (:sectionType = 'all' OR LOWER(CAST(q.sectionType AS string)) = LOWER(:sectionType)) " +
+           "AND (:keyword IS NULL OR :keyword = '' OR " +
+           "     LOWER(q.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "     LOWER(q.sectionName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "     LOWER(CAST(q.sectionType AS string)) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND ((:completedIds) IS NULL OR q.id NOT IN :completedIds)")
+    Page<QuestionBank> findByFiltersAndNotCompleted(
+        @Param("category") String category,
+        @Param("sectionType") String sectionType,
+        @Param("keyword") String keyword,
+        @Param("completedIds") List<Long> completedIds,
+        Pageable pageable
+    );
+    
+    // 单题模式查询 - 筛选收藏的题目
+    @Query("SELECT q FROM QuestionBank q " +
+           "JOIN ExamPaper ep ON q.paperId = ep.id " +
+           "WHERE (:category = 'all' OR ep.category = :category) " +
+           "AND (:sectionType = 'all' OR LOWER(CAST(q.sectionType AS string)) = LOWER(:sectionType)) " +
+           "AND (:keyword IS NULL OR :keyword = '' OR " +
+           "     LOWER(q.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "     LOWER(q.sectionName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "     LOWER(CAST(q.sectionType AS string)) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND q.id IN :favoritedIds")
+    Page<QuestionBank> findByFiltersAndFavorited(
+        @Param("category") String category,
+        @Param("sectionType") String sectionType,
+        @Param("keyword") String keyword,
+        @Param("favoritedIds") List<Long> favoritedIds,
         Pageable pageable
     );
     
