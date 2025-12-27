@@ -300,6 +300,7 @@
               <!-- 文章1 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
+                @click="gotoArticleDetail('article1')"
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
@@ -334,7 +335,8 @@
               <!-- 文章2 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
-              >
+                @click="gotoArticleDetail('article2')"              
+                >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
                 >
@@ -368,6 +370,7 @@
               <!-- 文章3 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
+                @click="gotoArticleDetail('article3')"
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
@@ -792,8 +795,19 @@ import ActionButtons from "@/components/common/ActionButtons.vue";
 import FriendItem from "@/components/business/FriendItem.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import CustomButton from "@/components/common/CustomButton.vue";
-
 import { friendApi } from '@/api/friend'; // 后端好友接口
+// 引入文章数据方法
+// eslint-disable-next-line no-unused-vars
+import { articleList } from "@/data/articleData.js";
+
+// 文章详情页跳转函数
+const gotoArticleDetail = (articleId) => {
+  router.push({ 
+    name: "ArticleDetail", 
+    params: { articleId: articleId } 
+  }).catch(() => {});
+};
+
 
 const searchLoading = ref(false); // 搜索用户的加载状态
 
