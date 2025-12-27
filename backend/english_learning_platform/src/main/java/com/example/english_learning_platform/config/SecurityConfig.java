@@ -36,6 +36,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/test/**", "/api/health").permitAll()
+                .requestMatchers("/api/files/**").permitAll() // 允许访问静态资源（音频、图片）
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -46,7 +46,10 @@
                 暂无好友，快去添加吧！
               </li>
               <!-- 遍历真实好友列表 -->
-              <li v-for="friend in friendList" :key="friend.id">
+              <li
+                v-for="friend in friendList"
+                :key="friend.id"
+              >
                 <FriendItem 
                   :name="friend.name" 
                   :avatar="friend.avatar" 
@@ -336,7 +339,7 @@
               <div
                 class="group flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
                 @click="gotoArticleDetail('article2')"              
-                >
+              >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
                 >

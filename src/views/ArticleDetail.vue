@@ -15,7 +15,10 @@
     <!-- 主内容区：复用布局，替换为文章详情 -->
     <main class="flex-grow flex flex-col md:flex-row">
       <!-- 左侧好友列表：保留（和主界面一致） -->
-      <aside class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20" aria-label="好友列表侧边栏">
+      <aside
+        class="w-full md:w-96 bg-white border-r border-gray-200 shadow-sm md:h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto flex-shrink-0 z-20"
+        aria-label="好友列表侧边栏"
+      >
         <!-- 复制主界面左侧列表代码（好友列表、底部tab等） -->
         <div class="p-5 h-full flex flex-col">
           <div class="flex-grow overflow-y-auto -mx-2 px-2">
@@ -45,7 +48,10 @@
                 暂无好友，快去添加吧！
               </li>
               <!-- 遍历真实好友列表 -->
-              <li v-for="friend in friendList" :key="friend.id">
+              <li
+                v-for="friend in friendList"
+                :key="friend.id"
+              >
                 <FriendItem 
                   :name="friend.name" 
                   :avatar="friend.avatar" 
@@ -93,11 +99,16 @@
       <!-- 中间文章详情区：核心修改部分 -->
       <div class="flex-grow p-6 overflow-y-auto relative">
         <!-- 烟花特效画布 -->
-        <canvas ref="fireworksCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none z-10"></canvas>
+        <canvas
+          ref="fireworksCanvas"
+          class="absolute top-0 left-0 w-full h-full pointer-events-none z-10"
+        />
         
         <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 p-8 relative z-20 transform transition-all duration-300 hover:shadow-md">
           <!-- 文章标题 -->
-          <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ articleData.title }}</h1>
+          <h1 class="text-4xl font-bold text-gray-800 mb-4">
+            {{ articleData.title }}
+          </h1>
           
           <!-- 文章元信息（阅读量、发布时间等） -->
           <div class="text-sm text-gray-500 mb-6 flex flex-wrap items-center gap-6 pb-6 border-b border-gray-100">
@@ -122,7 +133,10 @@
               :class="isLiked ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
               @click="handleLike"
             >
-              <i class="fas fa-heart" :class="{ 'fa-solid': isLiked, 'fa-regular': !isLiked }"></i>
+              <i
+                class="fas fa-heart"
+                :class="{ 'fa-solid': isLiked, 'fa-regular': !isLiked }"
+              />
               <span class="font-medium">{{ articleData.likeCount }} 点赞</span>
             </button>
           </div>
@@ -130,14 +144,20 @@
           <!-- 文章封面图 -->
           <div class="w-full h-64 md:h-96 overflow-hidden rounded-lg mb-8 shadow-md bg-gradient-to-br from-gray-100 to-gray-200 relative group">
             <!-- loading占位符 -->
-            <div v-if="imageLoading" class="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+            <div
+              v-if="imageLoading"
+              class="absolute inset-0 flex items-center justify-center bg-gray-100 z-10"
+            >
               <div class="flex flex-col items-center">
                 <i class="fas fa-image text-gray-400 text-4xl mb-2" />
                 <span class="text-gray-500 text-sm">图片加载中...</span>
               </div>
             </div>
             <!-- 错误提示 -->
-            <div v-if="imageError" class="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+            <div
+              v-if="imageError"
+              class="absolute inset-0 flex items-center justify-center bg-gray-100 z-10"
+            >
               <div class="flex flex-col items-center">
                 <i class="fas fa-exclamation-circle text-gray-400 text-4xl mb-2" />
                 <span class="text-gray-500 text-sm">图片加载失败</span>
@@ -160,34 +180,52 @@
           </h2>
           <div class="prose prose-emerald max-w-none text-gray-700 leading-relaxed mb-10">
             <!-- 渲染结构化内容 -->
-            <template v-for="(item, idx) in paragraphs" :key="idx">
+            <template
+              v-for="(item, idx) in paragraphs"
+              :key="idx"
+            >
               <!-- h2 标题 -->
-              <h2 v-if="item.type === 'h2'" class="text-3xl font-bold text-gray-900 mt-8 mb-4 pt-4 border-t-2 border-emerald-200 flex items-center">
-                <span class="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-500 mr-3 rounded"></span>
+              <h2
+                v-if="item.type === 'h2'"
+                class="text-3xl font-bold text-gray-900 mt-8 mb-4 pt-4 border-t-2 border-emerald-200 flex items-center"
+              >
+                <span class="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-500 mr-3 rounded" />
                 {{ item.text }}
               </h2>
               
               <!-- h3 标题 -->
-              <h3 v-else-if="item.type === 'h3'" class="text-2xl font-semibold text-gray-800 mt-6 mb-3 flex items-center text-emerald-700">
-                <span class="w-0.5 h-6 bg-emerald-500 mr-2.5 rounded"></span>
+              <h3
+                v-else-if="item.type === 'h3'"
+                class="text-2xl font-semibold text-gray-800 mt-6 mb-3 flex items-center text-emerald-700"
+              >
+                <span class="w-0.5 h-6 bg-emerald-500 mr-2.5 rounded" />
                 {{ item.text }}
               </h3>
               
               <!-- h4 标题 -->
-              <h4 v-else-if="item.type === 'h4'" class="text-lg font-semibold text-gray-700 mt-4 mb-2 ml-4 flex items-center">
-                <span class="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full mr-2"></span>
+              <h4
+                v-else-if="item.type === 'h4'"
+                class="text-lg font-semibold text-gray-700 mt-4 mb-2 ml-4 flex items-center"
+              >
+                <span class="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full mr-2" />
                 {{ item.text }}
               </h4>
               
               <!-- 段落文本 -->
-              <p v-else-if="item.type === 'p'" class="mb-4 text-base text-gray-700 leading-8">
+              <p
+                v-else-if="item.type === 'p'"
+                class="mb-4 text-base text-gray-700 leading-8"
+              >
                 {{ item.text }}
               </p>
             </template>
           </div>
           
           <!-- 文章标签 -->
-          <div v-if="articleData.tags && articleData.tags.length > 0" class="flex flex-wrap gap-2 mt-8 mb-10 pb-6 border-t border-gray-100 pt-6">
+          <div
+            v-if="articleData.tags && articleData.tags.length > 0"
+            class="flex flex-wrap gap-2 mt-8 mb-10 pb-6 border-t border-gray-100 pt-6"
+          >
             <span
               v-for="tag in articleData.tags"
               :key="tag"
@@ -209,7 +247,9 @@
                 class="p-4 border border-gray-200 rounded-lg hover:bg-emerald-50 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-md"
                 @click="gotoArticleDetail(related.id)"
               >
-                <h4 class="font-semibold text-gray-800 mb-2">{{ related.title }}</h4>
+                <h4 class="font-semibold text-gray-800 mb-2">
+                  {{ related.title }}
+                </h4>
                 <p class="text-sm text-gray-500 flex items-center">
                   <i class="far fa-clock mr-1 text-emerald-500" />{{ related.readTime }}分钟阅读
                 </p>
@@ -220,7 +260,10 @@
       </div>
 
       <!-- 右侧边栏：保留（和主界面一致） -->
-      <aside class="w-full md:w-72 flex-shrink-0 p-6 hidden lg:block" aria-label="右侧工具栏">
+      <aside
+        class="w-full md:w-72 flex-shrink-0 p-6 hidden lg:block"
+        aria-label="右侧工具栏"
+      >
         <!-- 复制主界面右侧边栏代码（词典、AI助手等） -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6 transform transition-all duration-300 hover:shadow-md">
           <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center">
@@ -236,9 +279,14 @@
                 <span class="font-bold text-emerald-600 text-lg">1,280 个</span>
               </p>
               <div class="w-full bg-gray-200 rounded-full h-2">
-                <div class="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full" style="width: 36%; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);"></div>
+                <div
+                  class="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full"
+                  style="width: 36%; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);"
+                />
               </div>
-              <p class="text-xs text-gray-500 text-right">已完成 36%</p>
+              <p class="text-xs text-gray-500 text-right">
+                已完成 36%
+              </p>
             </div>
           </div>
         </div>

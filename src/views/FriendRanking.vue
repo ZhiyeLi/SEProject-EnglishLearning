@@ -25,19 +25,31 @@
             
             <ul class="space-y-2">
               <!-- 加载状态 -->
-              <li v-if="friendLoading" class="p-3 text-center text-gray-500">
+              <li
+                v-if="friendLoading"
+                class="p-3 text-center text-gray-500"
+              >
                 <i class="fas fa-spinner fa-spin mr-2" />加载中...
               </li>
               <!-- 错误提示 -->
-              <li v-else-if="friendError" class="p-3 text-center text-red-500">
+              <li
+                v-else-if="friendError"
+                class="p-3 text-center text-red-500"
+              >
                 {{ friendError }}
               </li>
               <!-- 无好友提示 -->
-              <li v-else-if="friendList.length === 0" class="p-3 text-center text-gray-500">
+              <li
+                v-else-if="friendList.length === 0"
+                class="p-3 text-center text-gray-500"
+              >
                 暂无好友，快去添加吧！
               </li>
               <!-- 好友列表 -->
-              <li v-for="friend in friendList" :key="friend.id">
+              <li
+                v-for="friend in friendList"
+                :key="friend.id"
+              >
                 <div class="relative">
                   <FriendItem 
                     :name="friend.name" 
@@ -112,7 +124,9 @@
         <div class="w-full h-full bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
           <!-- 排行榜头部 -->
           <div class="px-6 py-4 border-b flex justify-between items-center flex-shrink-0">
-            <h3 class="font-bold text-lg text-gray-800">好友周学习排行榜</h3>
+            <h3 class="font-bold text-lg text-gray-800">
+              好友周学习排行榜
+            </h3>
             <div class="flex items-center space-x-4">
               <span class="text-xs text-gray-500">统计周期：{{ weekRange }}</span>
               <template v-if="myRanking">
@@ -122,21 +136,34 @@
           </div>
 
           <!-- 加载状态（占满剩余高度） -->
-          <div v-if="loading" class="flex-grow flex items-center justify-center py-12">
-            <div class="inline-block w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
-            <p class="mt-2 text-sm text-gray-500 ml-2">加载排行榜数据中...</p>
+          <div
+            v-if="loading"
+            class="flex-grow flex items-center justify-center py-12"
+          >
+            <div class="inline-block w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+            <p class="mt-2 text-sm text-gray-500 ml-2">
+              加载排行榜数据中...
+            </p>
           </div>
 
           <!-- 无数据状态（占满剩余高度） -->
-          <div v-else-if="rankingList.length === 0" class="flex-grow flex items-center justify-center py-12">
+          <div
+            v-else-if="rankingList.length === 0"
+            class="flex-grow flex items-center justify-center py-12"
+          >
             <div class="text-center">
-              <i class="fas fa-medal text-4xl text-gray-300 mb-2"></i>
-              <p class="text-gray-500">暂无好友学习数据</p>
+              <i class="fas fa-medal text-4xl text-gray-300 mb-2" />
+              <p class="text-gray-500">
+                暂无好友学习数据
+              </p>
             </div>
           </div>
 
           <!-- 排行榜列表（占满剩余高度，滚动） -->
-          <div v-else class="flex-grow overflow-y-auto">
+          <div
+            v-else
+            class="flex-grow overflow-y-auto"
+          >
             <div 
               v-for="(item, index) in rankingList" 
               :key="item.userId"
@@ -152,7 +179,7 @@
                       index === 1 ? 'text-gray-400' : '',
                       index === 2 ? 'text-amber-700' : ''
                     ]"
-                  ></i>
+                  />
                   <span class="absolute -top-1 -right-1 text-xs text-white bg-black/70 rounded-full w-4 h-4 flex items-center justify-center">
                     {{ index + 1 }}
                   </span>
@@ -171,7 +198,9 @@
 
               <!-- 昵称 -->
               <div class="flex-grow">
-                <div class="font-medium text-gray-800">{{ item.username }}</div>
+                <div class="font-medium text-gray-800">
+                  {{ item.username }}
+                </div>
               </div>
 
               <!-- 单词总数 -->

@@ -58,13 +58,18 @@ const routes = [
     component: () => import("@/views/QuestionBank.vue"),
   },
   {
-    path: '/rank',
-    name: 'Rank', 
+    path: "/exam-practice",
+    name: "ExamPractice",
+    component: () => import("@/views/ExamPractice.vue"),
+  },
+  {
+    path: "/rank",
+    name: "Rank",
     component: () => import("@/views/FriendRanking.vue"),
   },
   {
-    path: '/article/:articleId',
-    name: 'ArticleDetail',
+    path: "/article/:articleId",
+    name: "ArticleDetail",
     component: () => import("@/views/ArticleDetail.vue"),
   },
 ];
@@ -75,28 +80,22 @@ const router = createRouter({
 });
 
 // 路由守卫
-router.beforeEach((to, from, next) => 
-{
+router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("token");
   // 如果去往登录页
-  if (to.path === "/login") 
-  {
+  if (to.path === "/login") {
     if (token) {
       // 已登录则跳转首页
       next("/");
     } else {
       next();
     }
-  }
-  else if(token)
-  {
+  } else if (token) {
     // 去往其他页面
-      next();
-  }
-  else 
-  {
-      // 未登录跳转登录页
-      next("/login");
+    next();
+  } else {
+    // 未登录跳转登录页
+    next("/login");
   }
 });
 
