@@ -13,6 +13,7 @@ router.get("/passed", wordController.getPassedWords);
 router.get("/selected-type", wordController.getSelectedWordType);
 router.get("/today-status", wordController.getTodayCheckInStatus);
 router.get("/statistics", wordController.getCheckInStatistics);
+router.get("/unpassed", wordController.getUnpassedWords);
 router.get("/:wordId", wordController.getWordDetail);
 
 router.post("/mark-passed", wordController.markWordPassed);

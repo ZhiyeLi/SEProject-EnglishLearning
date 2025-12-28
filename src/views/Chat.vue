@@ -4,7 +4,7 @@
     <NavBar :nav-items="navItems">
       <template #actions>
         <ActionButtons
-          @suggestions="() => {}"
+          @suggestions="gotoAiChat"
           @settings="gotoSettings"
           @home="gotoHome"
           @notifications="() => {}"
@@ -50,31 +50,31 @@
                 v-for="friend in friendList"
                 :key="friend.id"
               >
-              <div class="relative">
-                <FriendItem 
-                  :name="friend.name" 
-                  :avatar="friend.avatar || 'https://picsum.photos/seed/default/100/100'" 
-                  :status="friend.status || 'offline'" 
-                  :class="friend.id === currentFriendId ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''"
-                >
-                  <template #actions>
-                    <button
-                      class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
-                      @click="selectFriend(friend)"
-                    >
-                      <i class="fas fa-comment" />
-                    </button>
-                  </template>
-                </FriendItem>
-                <!-- 未读消息标志 -->
-                <span
-                  v-if="unreadCounts[friend.id] > 0"
-                  class="absolute top-2 right-4 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse"
-                  :class="{ 'h-6 w-6': unreadCounts[friend.id] > 9 }" 
-                >
-                  {{ unreadCounts[friend.id] > 99 ? '99+' : unreadCounts[friend.id] }}
-                </span>
-              </div>
+                <div class="relative">
+                  <FriendItem 
+                    :name="friend.name" 
+                    :avatar="friend.avatar || 'https://picsum.photos/seed/default/100/100'" 
+                    :status="friend.status || 'offline'" 
+                    :class="friend.id === currentFriendId ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''"
+                  >
+                    <template #actions>
+                      <button
+                        class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
+                        @click="selectFriend(friend)"
+                      >
+                        <i class="fas fa-comment" />
+                      </button>
+                    </template>
+                  </FriendItem>
+                  <!-- 未读消息标志 -->
+                  <span
+                    v-if="unreadCounts[friend.id] > 0"
+                    class="absolute top-2 right-4 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse"
+                    :class="{ 'h-6 w-6': unreadCounts[friend.id] > 9 }" 
+                  >
+                    {{ unreadCounts[friend.id] > 99 ? '99+' : unreadCounts[friend.id] }}
+                  </span>
+                </div>
               </li>
               <li>
                 <button 
@@ -154,7 +154,10 @@
       "
       >
         <!-- 聊天头部 -->
-        <div v-if="currentFriend" class="bg-white border-b border-gray-200 p-4 flex items-center shadow-sm">
+        <div
+          v-if="currentFriend"
+          class="bg-white border-b border-gray-200 p-4 flex items-center shadow-sm"
+        >
           <!-- 当前选中好友的头像和名称 -->
           <div class="flex items-center flex-grow">
             <img 
@@ -167,12 +170,12 @@
             </h3>
             <!-- 显示好友在线状态 -->
             <span 
-            v-if="currentFriend?.status === 'online'"
-            class="ml-2 w-2 h-2 bg-green-500 rounded-full"
-            title="在线"
-          ></span>
+              v-if="currentFriend?.status === 'online'"
+              class="ml-2 w-2 h-2 bg-green-500 rounded-full"
+              title="在线"
+            />
+          </div>
         </div>
-      </div>
         
         <!-- 聊天消息区域 -->
         <div
@@ -183,75 +186,91 @@
           max-height: calc(100vh - 220px); /* 适配屏幕最大高度 */
           "
         >
-        <!-- 消息加载状态 -->
-        <div v-if="messageLoading" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500">
-          <i class="fas fa-spinner fa-spin mr-2" />加载消息中...
-        </div>
-
-        <!-- 未选择好友提示 -->
-        <div v-else-if="!currentFriend" class="h-full flex items-center justify-center text-gray-500">
-          <div class="flex flex-col items-center">
-            <i class="fas fa-comment-dots text-4xl text-gray-300 block"></i>
-            <p class="mt-3">请选择一个好友开始聊天</p>
+          <!-- 消息加载状态 -->
+          <div
+            v-if="messageLoading"
+            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500"
+          >
+            <i class="fas fa-spinner fa-spin mr-2" />加载消息中...
           </div>
-        </div>
 
-        <!-- 无消息提示 -->
-        <div v-else-if="!messageList || messageList.length === 0" class="h-full flex items-center justify-center text-gray-500">
-          <div class="flex flex-col items-center"> 
-            <i class="fas fa-paper-plane text-4xl mb-2 text-gray-300 block mr-0"></i> 
-            <p class="ml-0 mt-3">暂无消息，开始聊天吧！</p> 
+          <!-- 未选择好友提示 -->
+          <div
+            v-else-if="!currentFriend"
+            class="h-full flex items-center justify-center text-gray-500"
+          >
+            <div class="flex flex-col items-center">
+              <i class="fas fa-comment-dots text-4xl text-gray-300 block" />
+              <p class="mt-3">
+                请选择一个好友开始聊天
+              </p>
+            </div>
           </div>
-        </div>
 
-        <!-- 循环渲染消息列表 -->
-        <div 
-          v-for="(msg, index) in messageList" 
-          :key="msg.id || index" 
-          :class="[
-            'flex items-start mb-4 animate-fadeIn',
-          msg.isMine ? 'justify-end' : ''
-        ]"
-      >
-        <!-- 对方消息头像（用当前选中好友的头像） -->
-        <img 
-          v-if="!msg.isMine"
-          :src="currentFriend?.avatar || 'https://picsum.photos/seed/friend1/100/100'" 
-          :alt="currentFriend?.name" 
-          class="w-8 h-8 rounded-full object-cover mr-2 mt-1 flex-shrink-0"
-        >
+          <!-- 无消息提示 -->
+          <div
+            v-else-if="!messageList || messageList.length === 0"
+            class="h-full flex items-center justify-center text-gray-500"
+          >
+            <div class="flex flex-col items-center"> 
+              <i class="fas fa-paper-plane text-4xl mb-2 text-gray-300 block mr-0" /> 
+              <p class="ml-0 mt-3">
+                暂无消息，开始聊天吧！
+              </p> 
+            </div>
+          </div>
 
-        <div class="max-w-[70%]">
+          <!-- 循环渲染消息列表 -->
           <div 
+            v-for="(msg, index) in messageList" 
+            :key="msg.id || index" 
             :class="[
-              'p-3 rounded-lg shadow-sm',
-              msg.isMine 
-                ? 'bg-emerald-500 text-white rounded-tr-none' 
-                : 'bg-white rounded-tl-none'
-          ]"
-        >
-          <p :class="msg.isMine ? 'text-white' : 'text-gray-800'">
-            {{ msg.content }}
-          </p>
-          <!-- 消息时间 -->
-          <p class="text-xs mt-1 opacity-70">
-            {{ formatTime(msg.time) }}
-          </p>
-        </div>
-      </div>
+              'flex items-start mb-4 animate-fadeIn',
+              msg.isMine ? 'justify-end' : ''
+            ]"
+          >
+            <!-- 对方消息头像（用当前选中好友的头像） -->
+            <img 
+              v-if="!msg.isMine"
+              :src="currentFriend?.avatar || 'https://picsum.photos/seed/friend1/100/100'" 
+              :alt="currentFriend?.name" 
+              class="w-8 h-8 rounded-full object-cover mr-2 mt-1 flex-shrink-0"
+            >
+
+            <div class="max-w-[70%]">
+              <div 
+                :class="[
+                  'p-3 rounded-lg shadow-sm',
+                  msg.isMine 
+                    ? 'bg-emerald-500 text-white rounded-tr-none' 
+                    : 'bg-white rounded-tl-none'
+                ]"
+              >
+                <p :class="msg.isMine ? 'text-white' : 'text-gray-800'">
+                  {{ msg.content }}
+                </p>
+                <!-- 消息时间 -->
+                <p class="text-xs mt-1 opacity-70">
+                  {{ formatTime(msg.time) }}
+                </p>
+              </div>
+            </div>
     
             <!-- 我的消息头像 -->
             <img 
-            v-if="msg.isMine"
-            src="https://picsum.photos/seed/me/100/100" 
-            alt="我" 
-            class="w-8 h-8 rounded-full object-cover ml-2 mt-1 flex-shrink-0"
-          >   
-      </div>
-    </div>
+              v-if="msg.isMine"
+              src="https://picsum.photos/seed/me/100/100" 
+              alt="我" 
+              class="w-8 h-8 rounded-full object-cover ml-2 mt-1 flex-shrink-0"
+            >   
+          </div>
+        </div>
         
         <!-- 消息输入区域 -->
-        <div v-if="currentFriend" class="bg-white border-t border-gray-200 p-3">
+        <div
+          v-if="currentFriend"
+          class="bg-white border-t border-gray-200 p-3"
+        >
           <div class="flex items-center">
             <textarea 
               v-model="message"

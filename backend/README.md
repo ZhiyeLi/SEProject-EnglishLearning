@@ -41,6 +41,19 @@
    mvn spring-boot:run
    ```
 
+5. **（可选但推荐）添加进度视图与索引，支持去重统计**
+   为不修改原有表结构、同时提升进度统计与查询性能，提供了额外 SQL：
+   `src/main/resources/progress_views.sql`
+
+   执行方式：
+   ```bash
+   mysql -u root -p english_learning < src/main/resources/progress_views.sql
+   ```
+   该脚本会：
+   - 创建视图 `vw_user_passed_words`（按单词+词性去重的已打卡列表）
+   - 创建视图 `vw_user_progress_summary`（每用户每类型的已打卡汇总）
+   - 创建基础索引以提升查询性能（不修改原始表结构）
+
 ### 方式二：手动执行
 
 1. **启动 MySQL 并创建数据库**

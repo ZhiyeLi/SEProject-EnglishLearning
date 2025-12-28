@@ -7,7 +7,7 @@
     <NavBar :nav-items="navItems">
       <template #actions>
         <ActionButtons
-          @suggestions="() => {}"
+          @suggestions="gotoAiChat"
           @settings="gotoSettings"
           @home="gotoHome"
           @notifications="() => {}"

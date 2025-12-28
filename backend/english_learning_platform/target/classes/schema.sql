@@ -258,4 +258,31 @@ CREATE TABLE `user_settings` (
   UNIQUE KEY `uk_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 表: ai_chat_sessions
+DROP TABLE IF EXISTS `ai_chat_sessions`;
+CREATE TABLE `ai_chat_sessions` (
+  `session_id` BIGINT AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL,
+  `title` VARCHAR(255),
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`session_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+  INDEX `idx_user_id` (`user_id`),
+  INDEX `idx_updated_at` (`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 表: ai_chat_messages
+DROP TABLE IF EXISTS `ai_chat_messages`;
+CREATE TABLE `ai_chat_messages` (
+  `message_id` BIGINT AUTO_INCREMENT,
+  `session_id` BIGINT NOT NULL,
+  `role` VARCHAR(50) NOT NULL COMMENT 'user或assistant',
+  `content` LONGTEXT NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`message_id`),
+  FOREIGN KEY (`session_id`) REFERENCES `ai_chat_sessions`(`session_id`) ON DELETE CASCADE,
+  INDEX `idx_session_id` (`session_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;

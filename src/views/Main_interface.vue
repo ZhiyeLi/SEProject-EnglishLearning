@@ -46,7 +46,10 @@
                 暂无好友，快去添加吧！
               </li>
               <!-- 遍历真实好友列表 -->
-              <li v-for="friend in friendList" :key="friend.id">
+              <li
+                v-for="friend in friendList"
+                :key="friend.id"
+              >
                 <FriendItem 
                   :name="friend.name" 
                   :avatar="friend.avatar" 

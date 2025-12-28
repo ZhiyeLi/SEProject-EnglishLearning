@@ -8,31 +8,36 @@ const ResponseUtil = require("../utils/response");
  */
 const register = async (req, res) => {
   try {
-    const { username, password, email } = req.body;
+    console.log("收到注册请求:", req.body);
+    const { username, password, email, userName, userPassword, userEmail } = req.body;
+    const finalUsername = username || userName;
+    const finalPassword = password || userPassword;
+    const finalEmail = email || userEmail;
 
     // 验证必填字段
-    if (!username || !password || !email) {
+    if (!finalUsername || !finalPassword || !finalEmail) {
       return ResponseUtil.error(res, "用户名、密码和邮箱均为必填项", 400);
     }
 
     // 检查邮箱是否已存在
     const existingUser = await dbGet(
       "SELECT user_id FROM users WHERE user_email = ?",
-      [email]
+      [finalEmail]
     );
     if (existingUser) {
       return ResponseUtil.error(res, "该邮箱已被注册", 400);
     }
 
     // 加密密码
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(finalPassword, 10);
 
     // 插入新用户
     const result = await dbRun(
       `INSERT INTO users (user_name, user_password, user_email) VALUES (?, ?, ?)`,
-      [username, hashedPassword, email]
+      [finalUsername, hashedPassword, finalEmail]
     );
 
+    console.log("注册成功:", finalUsername);
     return ResponseUtil.success(res, { userId: result.lastID }, "注册成功");
   } catch (error) {
     console.error("注册失败:", error);
@@ -45,28 +50,37 @@ const register = async (req, res) => {
  */
 const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    console.log("收到登录请求:", req.body);
+    const { username, password, userName, userPassword } = req.body;
+    const finalUsername = username || userName;
+    const finalPassword = password || userPassword;
 
-    if (!username || !password) {
+    if (!finalUsername || !finalPassword) {
+      console.log("登录失败: 用户名或密码为空");
       return ResponseUtil.error(res, "用户名和密码不能为空", 400);
     }
 
+    console.log("正在查询用户:", finalUsername);
     // 查询用户（支持用户名或邮箱登录）
     const user = await dbGet(
       "SELECT * FROM users WHERE user_name = ? OR user_email = ?",
-      [username, username]
+      [finalUsername, finalUsername]
     );
 
     if (!user) {
+      console.log("登录失败: 用户不存在");
       return ResponseUtil.error(res, "用户名或密码错误", 401);
     }
 
+    console.log("正在验证密码...");
     // 验证密码
-    const isPasswordValid = await bcrypt.compare(password, user.user_password);
+    const isPasswordValid = await bcrypt.compare(finalPassword, user.user_password);
     if (!isPasswordValid) {
+      console.log("登录失败: 密码错误");
       return ResponseUtil.error(res, "用户名或密码错误", 401);
     }
 
+    console.log("登录成功, 正在生成 token...");
     // 生成 JWT token
     const token = jwt.sign(
       { userId: user.user_id, email: user.user_email },

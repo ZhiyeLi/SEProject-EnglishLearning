@@ -6,8 +6,11 @@ const ResponseUtil = require("../utils/response");
  */
 const getWordTypeList = async (req, res) => {
   try {
+    // 重新统计实机的单词个数（按单词和词性去重）
     const types = await dbAll(
-      "SELECT type_id, name, description, total_words FROM word_types"
+      `SELECT t.type_id, t.name, t.description, 
+       (SELECT COUNT(*) FROM (SELECT 1 FROM words WHERE type_id = t.type_id GROUP BY word, part_of_speech)) as total_words 
+       FROM word_types t`
     );
 
     // 转换为前端期望的格式(驼峰命名)
@@ -16,7 +19,7 @@ const getWordTypeList = async (req, res) => {
       typeId: type.type_id, // 数据库的type_id
       name: formatTypeName(type.name),
       description: type.description,
-      totalWords: type.total_words,
+      totalWords: type.total_words || 0,
     }));
 
     return ResponseUtil.success(res, formattedTypes);
@@ -55,9 +58,13 @@ const getUserWordProgress = async (req, res) => {
       const progressData = {};
 
       for (const type of wordTypes) {
-        // 获取用户已打卡的单词
+        // 获取用户已打卡的单词（按单词和词性去重统计）
         const progressRecords = await dbAll(
-          "SELECT word_id, passed_date FROM user_word_progress WHERE user_id = ? AND type_id = ? AND stage >= 1",
+          `SELECT MIN(w.word_id) as word_id 
+           FROM user_word_progress up
+           JOIN words w ON up.word_id = w.word_id
+           WHERE up.user_id = ? AND up.type_id = ? AND up.stage >= 1
+           GROUP BY w.word, w.part_of_speech`,
           [userId, type.type_id]
         );
 
@@ -82,9 +89,11 @@ const getUserWordProgress = async (req, res) => {
     }
 
     // 如果指定了typeId,返回单个类型的进度
-    // 获取该类型的总单词数
+    // 获取该类型的总单词数（按单词和词性去重）
     const wordType = await dbGet(
-      "SELECT type_id, name, total_words FROM word_types WHERE type_id = ?",
+      `SELECT t.type_id, t.name, 
+       (SELECT COUNT(*) FROM (SELECT 1 FROM words WHERE type_id = t.type_id GROUP BY word, part_of_speech)) as total_words 
+       FROM word_types t WHERE t.type_id = ?`,
       [typeId]
     );
 
@@ -92,9 +101,13 @@ const getUserWordProgress = async (req, res) => {
       return ResponseUtil.error(res, "词汇类型不存在", 404);
     }
 
-    // 获取用户已打卡的单词
+    // 获取用户已打卡的单词（按单词和词性去重统计）
     const progressRecords = await dbAll(
-      "SELECT word_id, passed_date FROM user_word_progress WHERE user_id = ? AND type_id = ? AND stage >= 1",
+      `SELECT MIN(w.word_id) as word_id 
+       FROM user_word_progress up
+       JOIN words w ON up.word_id = w.word_id
+       WHERE up.user_id = ? AND up.type_id = ? AND up.stage >= 1
+       GROUP BY w.word, w.part_of_speech`,
       [userId, typeId]
     );
 
@@ -135,17 +148,22 @@ const getWordsByType = async (req, res) => {
 
     const offset = (page - 1) * pageSize;
 
-    // 获取总数
+    // 获取总数（按单词和词性去重）
     const countResult = await dbGet(
-      "SELECT COUNT(*) as total FROM words WHERE type_id = ?",
+      "SELECT COUNT(*) as total FROM (SELECT 1 FROM words WHERE type_id = ? GROUP BY word, part_of_speech)",
       [typeId]
     );
 
-    // 获取单词列表
+    // 获取单词列表（按单词和词性合并）
     const words = await dbAll(
-      `SELECT word_id, word, part_of_speech, phonetic, definition, example, audio_url, image_url
+      `SELECT MIN(word_id) as word_id, word, part_of_speech, 
+              MAX(phonetic) as phonetic, 
+              GROUP_CONCAT(definition, '；') as definition, 
+              GROUP_CONCAT(example, ' | ') as example, 
+              MAX(audio_url) as audio_url, MAX(image_url) as image_url
        FROM words 
        WHERE type_id = ?
+       GROUP BY word, part_of_speech
        LIMIT ? OFFSET ?`,
       [typeId, parseInt(pageSize), offset]
     );
@@ -290,17 +308,23 @@ const createCheckInPlan = async (req, res) => {
 
     const startDate = new Date().toISOString().split("T")[0];
 
-    // 获取剩余单词数
+    // 获取剩余单词数（按单词和词性去重）
     const wordType = await dbGet(
-      "SELECT total_words FROM word_types WHERE type_id = ?",
+      `SELECT (SELECT COUNT(*) FROM (SELECT 1 FROM words WHERE type_id = t.type_id GROUP BY word, part_of_speech)) as total_words 
+       FROM word_types t WHERE t.type_id = ?`,
       [typeId]
     );
     const progressResult = await dbGet(
-      "SELECT COUNT(*) as passed FROM user_word_progress WHERE user_id = ? AND type_id = ? AND stage >= 1",
+      `SELECT COUNT(*) as passed FROM (
+         SELECT 1 FROM user_word_progress up
+         JOIN words w ON up.word_id = w.word_id
+         WHERE up.user_id = ? AND up.type_id = ? AND up.stage >= 1
+         GROUP BY w.word, w.part_of_speech
+       )`,
       [userId, typeId]
     );
 
-    const remainingWords = wordType.total_words - (progressResult?.passed || 0);
+    const remainingWords = (wordType?.total_words || 0) - (progressResult?.passed || 0);
     const daysNeeded = Math.ceil(remainingWords / wordsPerDay);
 
     // 插入或更新计划
@@ -356,17 +380,23 @@ const getUserCheckInPlan = async (req, res) => {
       return ResponseUtil.success(res, null, "暂无打卡计划");
     }
 
-    // 计算剩余单词数
+    // 计算剩余单词数（按单词和词性去重）
     const wordType = await dbGet(
-      "SELECT total_words FROM word_types WHERE type_id = ?",
+      `SELECT (SELECT COUNT(*) FROM (SELECT 1 FROM words WHERE type_id = t.type_id GROUP BY word, part_of_speech)) as total_words 
+       FROM word_types t WHERE t.type_id = ?`,
       [typeId]
     );
     const progressResult = await dbGet(
-      "SELECT COUNT(*) as passed FROM user_word_progress WHERE user_id = ? AND type_id = ? AND stage >= 1",
+      `SELECT COUNT(*) as passed FROM (
+         SELECT 1 FROM user_word_progress up
+         JOIN words w ON up.word_id = w.word_id
+         WHERE up.user_id = ? AND up.type_id = ? AND up.stage >= 1
+         GROUP BY w.word, w.part_of_speech
+       )`,
       [userId, typeId]
     );
 
-    const remainingWords = wordType.total_words - (progressResult?.passed || 0);
+    const remainingWords = (wordType?.total_words || 0) - (progressResult?.passed || 0);
     const daysNeeded = Math.ceil(remainingWords / plan.words_per_day);
 
     return ResponseUtil.success(res, {
@@ -430,12 +460,16 @@ const getPassedWords = async (req, res) => {
 
     const words = await dbAll(
       `SELECT 
-         w.word_id, w.word, w.phonetic, w.definition, w.example,
-         p.passed_date, p.review_count
+         MIN(w.word_id) as word_id, w.word, 
+         MAX(w.phonetic) as phonetic, 
+         GROUP_CONCAT(w.definition, '；') as definition, 
+         GROUP_CONCAT(w.example, ' | ') as example,
+         MAX(p.passed_date) as passed_date, MAX(p.review_count) as review_count
        FROM user_word_progress p
        JOIN words w ON p.word_id = w.word_id
        WHERE p.user_id = ? AND p.type_id = ? AND p.stage >= 1
-       ORDER BY p.passed_date DESC`,
+       GROUP BY w.word, w.part_of_speech
+       ORDER BY passed_date DESC`,
       [userId, typeId]
     );
 
@@ -581,17 +615,35 @@ const getWordDetail = async (req, res) => {
   try {
     const { wordId } = req.params;
 
-    const word = await dbGet("SELECT * FROM words WHERE word_id = ?", [wordId]);
+    // 先获取该wordId对应的单词和词性
+    const baseWord = await dbGet(
+      "SELECT word, part_of_speech FROM words WHERE word_id = ?",
+      [wordId]
+    );
 
-    if (!word) {
+    if (!baseWord) {
       return ResponseUtil.error(res, "单词不存在", 404);
     }
 
-    // 解析 JSON 字段
+    // 获取所有相同单词和词性的记录并合并
+    const allEntries = await dbAll(
+      "SELECT * FROM words WHERE word = ? AND part_of_speech = ?",
+      [baseWord.word, baseWord.part_of_speech]
+    );
+
     const wordDetail = {
-      ...word,
-      synonyms: word.synonyms ? JSON.parse(word.synonyms) : [],
-      antonyms: word.antonyms ? JSON.parse(word.antonyms) : [],
+      ...allEntries[0],
+      word_id: parseInt(wordId),
+      definition: allEntries
+        .map((e) => e.definition)
+        .filter((d) => d)
+        .join("；"),
+      example: allEntries
+        .map((e) => e.example)
+        .filter((e) => e)
+        .join(" | "),
+      synonyms: allEntries[0].synonyms ? JSON.parse(allEntries[0].synonyms) : [],
+      antonyms: allEntries[0].antonyms ? JSON.parse(allEntries[0].antonyms) : [],
     };
 
     return ResponseUtil.success(res, wordDetail);
@@ -666,9 +718,14 @@ const getCheckInStatistics = async (req, res) => {
       [userId, typeId]
     );
 
-    // 获取总单词数
+    // 获取总单词数（按单词和词性去重）
     const wordsResult = await dbGet(
-      "SELECT COUNT(*) as totalWords FROM user_word_progress WHERE user_id = ? AND type_id = ? AND stage >= 1",
+      `SELECT COUNT(*) as totalWords FROM (
+         SELECT 1 FROM user_word_progress up
+         JOIN words w ON up.word_id = w.word_id
+         WHERE up.user_id = ? AND up.type_id = ? AND up.stage >= 1
+         GROUP BY w.word, w.part_of_speech
+       )`,
       [userId, typeId]
     );
 
@@ -691,6 +748,64 @@ const getCheckInStatistics = async (req, res) => {
   }
 };
 
+/**
+ * 获取未打卡的单词列表（按单词+词性去重）
+ */
+const getUnpassedWords = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { typeId, page = 1, pageSize = 20 } = req.query;
+
+    if (!typeId) {
+      return ResponseUtil.error(res, "类型ID不能为空", 400);
+    }
+
+    const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+    // 统计未打卡数量（按单词+词性去重）
+    const countResult = await dbGet(
+      `SELECT COUNT(*) as total FROM (
+         SELECT w.word, w.part_of_speech
+         FROM words w
+         WHERE w.type_id = ?
+         GROUP BY w.word, w.part_of_speech
+         HAVING NOT EXISTS (
+           SELECT 1 FROM user_word_progress up
+           JOIN words w2 ON up.word_id = w2.word_id
+           WHERE up.user_id = ? AND up.type_id = w.type_id AND up.stage >= 1
+             AND w2.word = w.word AND w2.part_of_speech = w.part_of_speech
+         )
+       ) t`,
+      [typeId, userId]
+    );
+
+    // 查询未打卡列表（合并同词同词性条目）
+    const words = await dbAll(
+      `SELECT MIN(w.word_id) as word_id, w.word, w.part_of_speech,
+              MAX(w.phonetic) as phonetic,
+              GROUP_CONCAT(w.definition, '；') as definition,
+              GROUP_CONCAT(w.example, ' | ') as example,
+              MAX(w.audio_url) as audio_url, MAX(w.image_url) as image_url
+       FROM words w
+       WHERE w.type_id = ?
+       GROUP BY w.word, w.part_of_speech
+       HAVING NOT EXISTS (
+         SELECT 1 FROM user_word_progress up
+         JOIN words w2 ON up.word_id = w2.word_id
+         WHERE up.user_id = ? AND up.type_id = w.type_id AND up.stage >= 1
+           AND w2.word = w.word AND w2.part_of_speech = w.part_of_speech
+       )
+       LIMIT ? OFFSET ?`,
+      [typeId, userId, parseInt(pageSize), offset]
+    );
+
+    return ResponseUtil.paginate(res, words, countResult.total, parseInt(page), parseInt(pageSize));
+  } catch (error) {
+    console.error("获取未打卡单词失败:", error);
+    return ResponseUtil.error(res, "获取未打卡单词失败", 500);
+  }
+};
+
 module.exports = {
   getWordTypeList,
   getUserWordProgress,
@@ -707,4 +822,5 @@ module.exports = {
   getWordDetail,
   getTodayCheckInStatus,
   getCheckInStatistics,
+  getUnpassedWords,
 };

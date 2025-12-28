@@ -38,7 +38,10 @@
           >
             暂无对话历史
           </div>
-          <div v-else class="divide-y divide-gray-200">
+          <div
+            v-else
+            class="divide-y divide-gray-200"
+          >
             <div
               v-for="(chat, index) in chatHistory"
               :key="chat.sessionId"

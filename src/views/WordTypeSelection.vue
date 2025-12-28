@@ -173,7 +173,6 @@ const typeStyles = {
   2: { color: "blue", icon: "fa-book" },
   3: { color: "purple", icon: "fa-graduation-cap" },
   4: { color: "orange", icon: "fa-globe" },
-  5: { color: "pink", icon: "fa-flask" },
 };
 
 const router = useRouter();
@@ -224,7 +223,12 @@ function getProgressPercentage(typeId) {
   const progress = getTypeProgress(typeId);
   const type = wordTypes.value.find((t) => t.id === typeId);
   if (!type || !type.totalWords) return 0;
-  const percentage = Math.round((progress.passedCount / type.totalWords) * 100);
+  const total = Number(type.totalWords) || 0;
+  const passed = Number(progress.passedCount) || 0;
+  if (total === 0) return 0;
+  const raw = (passed / total) * 100;
+  let percentage = parseFloat(raw.toFixed(1));
+  if (passed > 0 && percentage === 0) percentage = 0.1;
   return Math.min(percentage, 100);
 }
 
@@ -245,23 +249,26 @@ async function confirmSelection() {
   }
 
   try {
-    // 保存已选择的类型 - 使用数字typeId
-    const result = await wordProgressManager.setSelectedType(
-      selectedType.value.id
-    );
+    // 保存已选择的类型 - 使用后端的typeId（数字）
+    const typeId = selectedType.value.id || selectedType.value.typeId;
+    const result = await wordProgressManager.setSelectedType(typeId);
 
     if (!result.success) {
       alert("保存词汇类型失败,请重试");
       return;
     }
 
+    console.log("类型已保存，即将导航到打卡页面，typeId=", typeId);
+
     // 导航到单词打卡页面 - 使用数字typeId
     router
       .push({
         name: "WordCheckIn",
-        params: { typeId: selectedType.value.id },
+        params: { typeId: typeId },
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("导航失败:", err);
+      });
   } catch (error) {
     console.error("选择词汇类型失败:", error);
     alert("服务器错误: " + error.message);
