@@ -177,11 +177,11 @@
             <!-- 消息加载状态 -->
             <div
               v-if="messageLoading"
-              class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500"
+              class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 opacity-0 pointer-events-none"
+              style="transition: opacity 0.2s;"
             >
               <i class="fas fa-spinner fa-spin mr-2" />加载消息中...
             </div>
-
             <!-- 未选择好友提示 -->
             <div
               v-else-if="!currentFriend"
@@ -464,8 +464,6 @@ import NavBar from '@/components/common/NavBar.vue';
 import ActionButtons from '@/components/common/ActionButtons.vue';
 import FriendItem from '@/components/business/FriendItem.vue';
 import EndBar from '@/components/common/EndBar.vue';
-// 移除 FriendRanking 组件引入 ↓
-// import FriendRanking from '@/components/business/FriendRanking.vue'; 
 import { friendApi } from '@/api/friend';
 
 // 核心响应式变量
@@ -528,7 +526,6 @@ const handleRankClick = () => {
   activeTab.value = 'rank';
   currentFriend.value = null;
   clearMessagePoll();
-  // 跳转到 views/FriendRanking.vue（路由名称需和 router/index.js 中配置一致）
   router.push({ name: 'Rank' }).catch(() => {});
 };
 
@@ -589,7 +586,7 @@ const sendMessage = async () => {
     const res = await friendApi.sendMessage({ receiverId: currentFriend.value.id, content });
     if (res.code === 200) {
       // 替换临时消息
-      const idx = messageList.value.findIndex(m => m.id?.startsWith('temp-'));
+      const idx = messageList.value.findIndex(m => String(m.id)?.startsWith('temp-'));
       if (idx !== -1) messageList.value.splice(idx, 1);
       
       const formattedMsg = {
@@ -606,7 +603,7 @@ const sendMessage = async () => {
     }
   } catch (err) {
     // 回滚乐观更新
-    const idx = messageList.value.findIndex(m => m.id?.startsWith('temp-'));
+    const idx = messageList.value.findIndex(m => String(m.id)?.startsWith('temp-'));
     if (idx !== -1) messageList.value.splice(idx, 1);
     alert(err.message || '网络异常，发送失败');
     console.error('发送消息失败：', err);
@@ -685,11 +682,12 @@ const fetchFriendRequests = async () => {
   try {
     friendRequestLoading.value = true;
     const res = await friendApi.getFriendRequests();
+    console.log("后端返回的原始数据：", res.data);
     if (res.code === 200) {
       friendRequests.value = res.data.map(request => ({
-        id: String(request.request_id || request.requestId),
+        id: String(request.requestId),
         requesterId: String(request.sender_id || request.senderId),
-        name: request.user_name || request.senderName || request.name,
+        name: request.userName,
         avatar: request.avatar || 'https://picsum.photos/seed/default/100/100',
         time: formatTime(request.created_at || request.createdAt)
       }));
@@ -765,7 +763,6 @@ const fetchMessageList = async (friendId) => {
     console.error('获取消息列表失败：', err);
   } finally {
     messageLoading.value = false;
-    scrollToBottom();
   }
 };
 
@@ -828,6 +825,19 @@ onMounted(async () => {
   await fetchFriendList();
   await fetchFriendRequests();
   await fetchUnreadCounts();
+  // 如果路由带有 friendId，尝试自动选择该好友
+  try {
+    const initialFriendId = router.currentRoute?.value?.query?.friendId || router.currentRoute?.value?.params?.friendId;
+    if (initialFriendId) {
+      const found = friendList.value.find(f => String(f.id) === String(initialFriendId));
+      if (found) {
+        // 使用现有的选择逻辑
+        await selectFriend(found);
+      }
+    }
+  } catch (e) {
+    console.debug('自动选择初始好友失败：', e);
+  }
   
   // 启动未读数轮询
   if (!messagePollInterval.value) {
