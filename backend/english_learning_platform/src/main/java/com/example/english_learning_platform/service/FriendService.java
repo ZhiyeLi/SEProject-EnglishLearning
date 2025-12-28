@@ -42,46 +42,6 @@ public class FriendService {
         this.userWordProgressRepository = userWordProgressRepository;
     }
 
-//    public List<User> searchFriends(String keyword, Long currentUserId) {
-//        // 1. 空关键词处理：返回空列表
-//        if (keyword == null || keyword.trim().isEmpty()) {
-//            return Collections.emptyList();
-//        }
-//
-//        // 2. 处理关键词：去除空格，尝试转换为Long类型的目标用户ID（targetUserId）
-//        String trimmedKeyword = keyword.trim();
-//        Long targetUserId = null;
-//        try {
-//            targetUserId = Long.valueOf(trimmedKeyword);
-//        } catch (NumberFormatException e) {
-//            // 关键词不是数字，targetUserId保持null
-//        }
-//
-//        // 3. 获取当前用户的所有好友ID列表（从Friend表中查询）
-//        List<Friend> userFriends = friendRepository.findByUserId(currentUserId);
-//        List<Long> friendIds = userFriends.stream()
-//                .map(Friend::getFriendId)
-//                .collect(Collectors.toList());
-//
-//        // 4. 若没有好友，直接返回空列表
-//        if (friendIds.isEmpty()) {
-//            return Collections.emptyList();
-//        }
-//
-//        // 5. 数据库层面查询：好友ID在列表中 + 匹配用户ID/用户名关键词
-//        List<User> matchedFriends = userRepository.findByFriendIdsAndKeyword(
-//                friendIds,
-//                targetUserId,
-//                trimmedKeyword
-//        );
-//
-//        // 6. 最终过滤：排除自己（保险逻辑）+ 限制返回数量（前20条）
-//        return matchedFriends.stream()
-//                .filter(user -> !user.getUserId().equals(currentUserId))
-//                .limit(20)
-//                .collect(Collectors.toList());
-//    }
-
     public List<User> searchNewFriends(String keyword, Long currentUserId) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return Collections.emptyList();
@@ -134,8 +94,46 @@ public class FriendService {
         return friendRequestRepository.save(request);
     }
     
-    public List<FriendRequest> getFriendRequests(Long userId) {
-        return friendRequestRepository.findByReceiverIdAndStatus(userId, "pending");
+    public List<Map<String, Object>> getFriendRequests(Long userId) {
+        // 查询待处理的好友请求
+        List<FriendRequest> requests = friendRequestRepository.findByReceiverIdAndStatus(userId, "pending");
+        if (requests == null || requests.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 收集所有发送者ID，批量查询用户信息，避免 N+1
+        Set<Long> senderIds = new HashSet<>();
+        for (FriendRequest req : requests) {
+            senderIds.add(req.getSenderId());
+        }
+
+        List<User> senders = userRepository.findAllById(new ArrayList<>(senderIds));
+        Map<Long, User> senderMap = senders.stream().collect(Collectors.toMap(User::getUserId, u -> u));
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (FriendRequest req : requests) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("requestId", req.getRequestId());
+            item.put("senderId", req.getSenderId());
+            item.put("receiverId", req.getReceiverId());
+            item.put("status", req.getStatus());
+            item.put("createdAt", req.getCreatedAt());
+
+            User sender = senderMap.get(req.getSenderId());
+            if (sender != null) {
+                item.put("userName", sender.getUserName());
+                item.put("avatar", sender.getAvatar());
+                item.put("signature", sender.getSignature());
+            } else {
+                item.put("userName", null);
+                item.put("avatar", null);
+                item.put("signature", null);
+            }
+
+            result.add(item);
+        }
+
+        return result;
     }
     
     @Transactional

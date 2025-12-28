@@ -111,7 +111,9 @@ const getFriendRequests = async (req, res) => {
          fr.request_id,
          fr.sender_id,
          fr.created_at,
-         u.user_name,
+         u.user_name AS user_name,
+         u.user_name AS userName,
+         u.user_name AS name,
          u.avatar,
          u.signature
        FROM friend_requests fr
