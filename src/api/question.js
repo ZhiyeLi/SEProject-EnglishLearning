@@ -1,52 +1,91 @@
 /**
- * 题目相关 API
+ * 题库相关 API (重构版)
  */
 import request from "@/utils/request";
 
-export const questionApi = {
-  // 获取题目列表
-  getQuestions(params) {
-    return request.get("/api/questions", { params });
+export default {
+  // ==================== 主界面 API ====================
+
+  /**
+   * 获取列表（考试模式或单题模式）
+   * @param {Object} params - 查询参数
+   * @param {String} params.mode - 模式: 'exam' 或 'single'
+   * @param {Number} params.page - 页码
+   * @param {Number} params.pageSize - 每页数量
+   * @param {String} params.sortBy - 排序方式
+   * @param {String} params.keyword - 搜索关键字
+   * @param {String} params.category - 考试类型
+   * @param {String} params.sectionType - 题型（单题模式）
+   * @param {Array} params.containsSectionType - 包含的题型（考试模式）
+   * @param {String} params.status - 状态
+   */
+  getList(params) {
+    return request.get("/api/questionbank/list", { params });
   },
 
-  // 获取题目详情
-  getQuestionDetail(id) {
-    return request.get(`/api/questions/${id}`);
+  /**
+   * 获取今日统计
+   */
+  getTodayStats() {
+    return request.get("/api/questionbank/stats/today");
   },
 
-  // 提交答案
-  submitAnswer(id, data) {
-    return request.post(`/api/questions/${id}/submit`, data);
+  /**
+   * 添加收藏
+   * @param {String} type - 'paper' 或 'question'
+   * @param {Number} id - ID
+   */
+  addFavorite(type, id) {
+    return request.post("/api/questionbank/favorite", { type, id });
   },
 
-  // 切换收藏状态
-  toggleFavorite(id) {
-    return request.post(`/api/questions/${id}/favorite`);
+  /**
+   * 取消收藏
+   * @param {String} type - 'paper' 或 'question'
+   * @param {Number} id - ID
+   */
+  removeFavorite(type, id) {
+    return request.delete("/api/questionbank/favorite", { data: { type, id } });
   },
 
-  // 获取统计信息
-  getStatistics() {
-    return request.get("/api/questions/statistics");
+  // ==================== 做题窗口 API ====================
+
+  /**
+   * 获取试卷详情（考试模式）
+   * @param {Number} paperId - 试卷ID
+   */
+  getExamPaper(paperId) {
+    return request.get(`/api/questionbank/exam/${paperId}`);
   },
 
-  // 获取错题列表
-  getWrongQuestions() {
-    return request.get("/api/questions/wrong/list");
+  /**
+   * 获取题目详情（单题模式）
+   * @param {Number} questionId - 题目ID
+   */
+  getQuestion(questionId) {
+    return request.get(`/api/questionbank/question/${questionId}`);
   },
 
-  // 标记错题已掌握
-  markWrongQuestionMastered(id) {
-    return request.post(`/api/questions/wrong/${id}/master`);
+  /**
+   * 提交答案
+   * @param {Object} data - 提交数据
+   * @param {String} data.mode - 模式
+   * @param {Number} data.paperId - 试卷ID（考试模式）
+   * @param {Number} data.questionId - 题目ID（单题模式）
+   * @param {Array} data.answers - 答案列表
+   */
+  submitAnswers(data) {
+    return request.post("/api/questionbank/submit", data);
   },
 
-  // 获取课程列表
-  getCourses() {
-    return request.get("/api/questions/courses/list");
-  },
+  // ==================== 错题本 API ====================
 
-  // 获取课程题目
-  getCourseQuestions(courseId) {
-    return request.get(`/api/questions/courses/${courseId}/questions`);
+  /**
+   * 获取错题列表
+   * @param {Object} filter - 筛选条件
+   */
+  getWrongQuestions(filter) {
+    return request.get("/api/questionbank/wrong", { params: filter });
   },
 
   // 获取用户生词本

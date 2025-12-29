@@ -25,5 +25,4 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
     @Query("SELECT CASE WHEN f.userId = :userId THEN f.friendId ELSE f.userId END " +
             "FROM Friend f WHERE f.userId = :userId OR f.friendId = :userId")
     List<Long> findAllFriendIdsByUserId(@Param("userId") Long userId);
-
 }

@@ -8,8 +8,7 @@ import com.example.english_learning_platform.entity.User;
 import com.example.english_learning_platform.service.FriendService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
-
-import javax.xml.transform.Result;
+import com.example.english_learning_platform.dto.FriendRankingDTO;
 import java.util.List;
 import java.util.Map;
 
@@ -23,19 +22,26 @@ public class FriendController {
         this.friendService = friendService;
     }
 
-    // 搜索好友接口
-//    @GetMapping("/search")
-//    public ApiResponse<List<User>> searchFriend(
-//            @RequestAttribute("userId") Long userId, // 当前登录用户ID
-//            @RequestParam String keyword) { // 前端传入的搜索关键词（用户名/ID）
-//        try {
-//            // 调用Service层方法，搜索符合条件的好友
-//            List<User> friends = friendService.searchNewFriends(keyword, userId);
-//            return ApiResponse.success(friends);
-//        } catch (Exception e) {
-//            return ApiResponse.error(e.getMessage());
-//        }
-//    }
+    // 新增：好友周学习单词排行榜接口
+    @GetMapping("/ranking/weekly")
+    public ApiResponse<List<FriendRankingDTO>> getFriendWeeklyRanking(HttpServletRequest request) {
+        try {
+            // 1. 获取当前登录用户ID（复用项目现有逻辑：从request.getAttribute获取）
+            Long currentUserId = (Long) request.getAttribute("userId");
+            if (currentUserId == null) {
+                return ApiResponse.error(401, "未登录或会话失效");
+            }
+
+            // 2. 调用Service层获取排行榜数据
+            List<FriendRankingDTO> rankingList = friendService.getFriendWeeklyRanking(currentUserId);
+
+            // 3. 按现有格式返回成功响应
+            return ApiResponse.success(rankingList);
+        } catch (Exception e) {
+            // 统一异常处理，和现有接口保持一致
+            return ApiResponse.error(e.getMessage());
+        }
+    }
 
     // 搜索添加好友用户接口
     @GetMapping("/search")
@@ -66,10 +72,10 @@ public class FriendController {
     }
     
     @GetMapping("/requests")
-    public ApiResponse<List<FriendRequest>> getFriendRequests(HttpServletRequest request) {
+    public ApiResponse<List<Map<String, Object>>> getFriendRequests(HttpServletRequest request) {
         try {
             Long userId = (Long) request.getAttribute("userId");
-            List<FriendRequest> requests = friendService.getFriendRequests(userId);
+            List<Map<String, Object>> requests = friendService.getFriendRequests(userId);
             return ApiResponse.success(requests);
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
