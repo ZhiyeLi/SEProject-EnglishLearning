@@ -19,4 +19,7 @@ router.post("/message", friendController.sendMessage);
 router.get("/messages", friendController.getMessageList);
 router.get("/unread-count", friendController.getUnreadCount);
 
+// 好友周排行榜接口
+router.get('/ranking/weekly', authMiddleware, friendController.getFriendWeeklyRanking);
+
 module.exports = router;

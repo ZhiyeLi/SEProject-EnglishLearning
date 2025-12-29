@@ -81,6 +81,15 @@ npm run build
        password: your_actual_password # 改为你的 MySQL 密码
    ```
 
+### 题库数据补充：
+
+需要运行
+
+```
+cd backend\english_learning_platform
+.\questionbank_import.bat
+```
+
 #### 启动项目
 
 ```bash

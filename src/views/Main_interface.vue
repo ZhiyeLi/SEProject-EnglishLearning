@@ -45,25 +45,36 @@
               >
                 暂无好友，快去添加吧！
               </li>
-              <!-- 遍历真实好友列表 -->
+              <!-- 遍历真实好友列表）-->
               <li
                 v-for="friend in friendList"
                 :key="friend.id"
               >
-                <FriendItem 
-                  :name="friend.name" 
-                  :avatar="friend.avatar" 
-                  :status="friend.status"
-                >
-                  <!-- 未读信息小红点 -->
+                <div class="relative">
+                  <FriendItem 
+                    :name="friend.name" 
+                    :avatar="friend.avatar || 'https://picsum.photos/seed/default/100/100'" 
+                    :status="friend.status || 'offline'"
+                    :class="friend.id === currentFriendId ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''"
+                  >
+                    <template #actions>
+                      <button
+                        class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
+                        @click="selectFriend(friend)"
+                      >
+                        <i class="fas fa-comment" />
+                      </button>
+                    </template>
+                  </FriendItem>
+                  <!-- 未读消息标志 -->
                   <span
                     v-if="unreadCounts[friend.id] > 0"
-                    class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse z-10"
-                    :class="{ 'h-6 w-6 px-0.5': unreadCounts[friend.id] > 9 }"    
+                    class="absolute top-2 right-4 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse"
+                    :class="{ 'h-6 w-6': unreadCounts[friend.id] > 9 }" 
                   >
                     {{ unreadCounts[friend.id] > 99 ? '99+' : unreadCounts[friend.id] }}
                   </span>
-                </FriendItem>
+                </div>
               </li>
               <li>
                 <button 
@@ -124,7 +135,7 @@
                 'flex flex-col items-center py-1 transition-colors',
                 activeTab === 'rank' ? 'text-emerald-600 hover:text-emerald-700' : 'text-gray-600 hover:text-emerald-600'
               ]"
-              @click="activeTab = 'rank'"
+              @click="gotoRank"
             >
               <i class="fas fa-trophy text-xl mb-1" />
               <span class="text-sm">排行榜</span>
@@ -303,6 +314,7 @@
               <!-- 文章1 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
+                @click="gotoArticleDetail('article1')"
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
@@ -337,6 +349,7 @@
               <!-- 文章2 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 pb-5 border-b border-gray-100 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
+                @click="gotoArticleDetail('article2')"              
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
@@ -371,6 +384,7 @@
               <!-- 文章3 -->
               <div
                 class="group flex flex-col md:flex-row gap-5 hover:bg-emerald-50 p-2 rounded-lg transition-all duration-200"
+                @click="gotoArticleDetail('article3')"
               >
                 <div
                   class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-lg shadow-sm"
@@ -608,7 +622,7 @@
             </button>
           </div>
 
-          <!-- 弹窗内容（修改：添加加载状态） -->
+          <!-- 弹窗内容 -->
           <div class="px-6 py-4 max-h-80 overflow-y-auto">
             <!-- 加载状态 -->
             <div
@@ -626,7 +640,7 @@
               <i class="fas fa-inbox text-4xl mb-2 text-gray-300" />
               <p>暂无未处理的好友请求</p>
             </div>
-            <!-- 有请求列表（原有：保留time显示） -->
+            <!-- 有请求列表 -->
             <div
               v-else
               class="space-y-3 divide-y"
@@ -644,13 +658,13 @@
                   >
                   <div>
                     <p class="font-medium text-gray-800">
-                      {{ request.senderName }}
+                      {{ request.name }}
                     </p>
                     <p class="text-xs text-gray-500">
-                      ID: {{ request.requesterId }} <!-- 显示发送者ID（替换原有request.id，因为request.id是请求的主键） -->
+                      ID: {{ request.requesterId }} 
                     </p>
                     <p class="text-xs text-gray-400 mt-1">
-                      {{ request.time }} <!-- 显示格式化后的时间 -->
+                      {{ request.time }} 
                     </p>
                   </div>
                 </div>
@@ -795,8 +809,19 @@ import ActionButtons from "@/components/common/ActionButtons.vue";
 import FriendItem from "@/components/business/FriendItem.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import CustomButton from "@/components/common/CustomButton.vue";
-
 import { friendApi } from '@/api/friend'; // 后端好友接口
+// 引入文章数据方法
+// eslint-disable-next-line no-unused-vars
+import { articleList } from "@/data/articleData.js";
+
+// 文章详情页跳转函数
+const gotoArticleDetail = (articleId) => {
+  router.push({ 
+    name: "ArticleDetail", 
+    params: { articleId: articleId } 
+  }).catch(() => {});
+};
+
 
 const searchLoading = ref(false); // 搜索用户的加载状态
 
@@ -911,6 +936,16 @@ const activeTab = ref("friends");
 
 const router = useRouter();
 
+// 当前在左侧列表中高亮的好友 ID（点击后跳转到聊天页）
+const currentFriendId = ref('');
+
+function selectFriend(friend) {
+  if (!friend || !friend.id) return;
+  currentFriendId.value = friend.id;
+  // 跳转到 Chat 页面并传入 friendId，Chat 会读取并处理（若实现）
+  router.push({ name: 'Chat', query: { friendId: friend.id } }).catch(() => {});
+}
+
 function gotoChat() {
   activeTab.value = "chat";
   // push to chat route
@@ -935,6 +970,9 @@ function gotoTimeTable() {
 }
 function gotoCourse() {
   router.push({ name: "Course" }).catch(() => {});
+}
+function gotoRank(){
+  router.push({ name: "Rank" }).catch(() => {});
 }
 async function startWordCheckIn() {
   // 检查用户是否已选择过词汇类型
@@ -1092,20 +1130,18 @@ const formatTime = (timeStr) => {
   return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 };
 
-// 从后端获取好友请求列表
+// 获取好友请求
 const fetchFriendRequests = async () => {
   try {
     friendRequestLoading.value = true;
-    const res = await friendApi.getFriendRequests(); // 调用新增的接口
-    console.log('后端返回的好友请求原始数据：', res.data);
+    const res = await friendApi.getFriendRequests();
     if (res.code === 200) {
-      // 格式化后端返回的请求数据（适配前端渲染）
       friendRequests.value = res.data.map(request => ({
-        id: request.requestId, // 好友请求的唯一ID（后端主键）
-        requesterId: request.senderId, // 发送请求的用户ID
-        name: request.senderName, // 发送者昵称
-        avatar: request.senderAvatar || 'https://picsum.photos/seed/default/100/100', // 发送者头像
-        time: formatTime(request.createdAt), // 发送时间（格式化）
+        id: String(request.requestId),
+        requesterId: String(request.sender_id || request.senderId),
+        name: request.userName,
+        avatar: request.avatar || 'https://picsum.photos/seed/default/100/100',
+        time: formatTime(request.created_at || request.createdAt)
       }));
     } else {
       friendRequests.value = [];
@@ -1113,9 +1149,8 @@ const fetchFriendRequests = async () => {
     }
   } catch (err) {
     friendRequests.value = [];
-    console.error('获取好友请求异常:', err);
-    const errMsg = err.response?.data?.message;
-    alert(errMsg);
+    console.error('获取好友请求失败：', err);
+    alert(err.response?.data?.message || '网络异常，获取失败');
   } finally {
     friendRequestLoading.value = false;
   }

@@ -84,6 +84,17 @@
    SELECT * FROM words LIMIT 5;
    ```
 
+### 题库数据补充：
+
+需要运行
+
+```
+cd backend\english_learning_platform
+.\questionbank_import.bat
+```
+
+以导入题库相关数据
+
 ## 📝 配置说明
 
 ### application.yml 关键配置
