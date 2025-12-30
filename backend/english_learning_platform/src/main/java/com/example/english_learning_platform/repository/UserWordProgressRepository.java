@@ -19,6 +19,17 @@ public interface UserWordProgressRepository extends JpaRepository<UserWordProgre
     List<UserWordProgress> findByUserIdAndPassedDateIsNotNull(Long userId);
     List<UserWordProgress> findByUserIdAndPassedDate(Long userId, LocalDate passedDate);
 
+    @Query("SELECT COUNT(DISTINCT w.wordId) FROM UserWordProgress w WHERE w.userId = :userId AND w.typeId = :typeId AND w.passedDate IS NOT NULL")
+    Long countUniquePassedWordsByUserIdAndTypeId(@Param("userId") Long userId, @Param("typeId") Long typeId);
+
+    List<UserWordProgress> findByUserIdAndTypeIdAndPassedDateIsNotNull(Long userId, Long typeId);
+
+    @Query("SELECT COUNT(DISTINCT w.wordId) FROM UserWordProgress w WHERE w.userId = :userId AND w.passedDate IS NOT NULL")
+    Long countUniquePassedWordsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT CONCAT(wd.word, '|', wd.partOfSpeech) FROM UserWordProgress uwp, Word wd WHERE uwp.wordId = wd.wordId AND uwp.userId = :userId AND uwp.typeId = :typeId AND uwp.passedDate IS NOT NULL")
+    List<String> findPassedWordKeysByUserIdAndTypeId(@Param("userId") Long userId, @Param("typeId") Long typeId);
+
     @Query("SELECT COUNT(DISTINCT w.wordId) FROM UserWordProgress w " +
             "WHERE w.userId = :userId " +
             "AND w.lastReviewTime BETWEEN :startTime AND :endTime")
