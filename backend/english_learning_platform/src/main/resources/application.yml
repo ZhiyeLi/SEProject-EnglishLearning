@@ -7,7 +7,7 @@ spring:
     url: jdbc:mysql://localhost:3306/english_learning?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8&allowPublicKeyRetrieval=true
     username: root
     # 请输入你的数据库密码
-    password: qwer1234
+    password: 114514
     driver-class-name: com.mysql.cj.jdbc.Driver
 
     # 连接池配置

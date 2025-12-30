@@ -36,6 +36,7 @@
    ```
 
 4. **启动项目**
+
    ```bash
    mvn clean install
    mvn spring-boot:run
@@ -46,9 +47,11 @@
    `src/main/resources/progress_views.sql`
 
    执行方式：
+
    ```bash
    mysql -u root -p english_learning < src/main/resources/progress_views.sql
    ```
+
    该脚本会：
    - 创建视图 `vw_user_passed_words`（按单词+词性去重的已打卡列表）
    - 创建视图 `vw_user_progress_summary`（每用户每类型的已打卡汇总）
@@ -94,6 +97,17 @@ cd backend\english_learning_platform
 ```
 
 以导入题库相关数据
+
+### 单词数据补充：
+
+需要运行
+
+```
+cd backend\english_learning_platform
+.\import_words.bat
+```
+
+以导入单词相关数据
 
 ## 📝 配置说明
 
