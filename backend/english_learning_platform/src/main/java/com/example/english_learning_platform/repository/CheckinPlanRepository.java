@@ -9,5 +9,7 @@ import java.util.Optional;
 @Repository
 public interface CheckinPlanRepository extends JpaRepository<CheckinPlan, Long> {
     Optional<CheckinPlan> findByUserIdAndStatus(Long userId, String status);
+    Optional<CheckinPlan> findByUserIdAndTypeIdAndStatus(Long userId, Long typeId, String status);
     List<CheckinPlan> findByUserId(Long userId);
+    void deleteByUserIdAndStatus(Long userId, String status);
 }

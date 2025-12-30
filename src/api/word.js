@@ -70,12 +70,21 @@ export const wordApi = {
   },
 
   // 获取用户打卡计划详情
-  getUserCheckInPlan() {
-    return request.get("/api/words/plan/detail");
+  getUserCheckInPlan(typeId) {
+    const params = {};
+    if (typeId) {
+      params.typeId = typeId;
+    }
+    return request.get("/api/words/plan/detail", { params });
   },
 
   // 更新打卡计划状态
   updatePlanStatus(data) {
     return request.put("/api/words/plan/status", data);
+  },
+
+  // 获取未打卡的单词列表
+  getUnpassedWords(params) {
+    return request.get("/api/words/unpassed", { params });
   },
 };

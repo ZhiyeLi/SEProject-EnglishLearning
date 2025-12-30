@@ -12,7 +12,7 @@
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fortawesome/vue-fontawesome": "^3.1.2",
-    "axios": "^1.6.0",
+      "axios": "^1.7.0",
   "socket.io-client": "^4.7.2",
     "core-js": "^3.8.3",
     "element-plus": "^2.11.8",

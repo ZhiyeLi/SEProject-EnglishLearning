@@ -8,27 +8,27 @@ import { wordApi } from "@/api";
 export const WORD_TYPES = {
   ELEMENTARY: {
     id: "elementary",
-    name: "初级词汇",
-    description: "适合初学者",
+    name: "基础词汇",
+    description: "初级词汇基础",
     color: "emerald",
     icon: "fa-leaf",
-    totalWords: 1000,
+    totalWords: 8245,
   },
-  CET46: {
-    id: "cet46",
-    name: "四六级词汇",
-    description: "大学英语四六级",
+  CET4: {
+    id: "cet4",
+    name: "四级词汇",
+    description: "大学英语四级",
     color: "blue",
     icon: "fa-book",
-    totalWords: 1500,
+    totalWords: 13134,
   },
-  POSTGRADUATE: {
-    id: "postgraduate",
-    name: "考研词汇",
-    description: "考研英语必备",
+  CET6: {
+    id: "cet6",
+    name: "六级词汇",
+    description: "大学英语六级",
     color: "purple",
     icon: "fa-graduation-cap",
-    totalWords: 2000,
+    totalWords: 1619,
   },
   TOEFL_IELTS: {
     id: "toefl_ielts",
@@ -36,15 +36,7 @@ export const WORD_TYPES = {
     description: "出国考试必备",
     color: "orange",
     icon: "fa-globe",
-    totalWords: 2500,
-  },
-  PROFESSIONAL: {
-    id: "professional",
-    name: "专业术语词汇",
-    description: "行业专业用语",
-    color: "pink",
-    icon: "fa-flask",
-    totalWords: 800,
+    totalWords: 576,
   },
 };
 
@@ -226,11 +218,36 @@ export class WordProgressManager {
   async getSelectedType() {
     try {
       const response = await wordApi.getSelectedWordType();
-      if (response.code === 200) {
-        return response.data;
+      console.log("getSelectedType 响应:", response);
+      if (response.code === 200 && response.data) {
+        // 后端直接返回 typeId（数字）
+        // 需要转换为对象格式 { typeId: number, id: number }
+        const typeId = response.data;
+        console.log("后端返回的typeId:", typeId, "类型:", typeof typeId);
+        if (typeId) {
+          // 将选择同时缓存在 localStorage，作为客户端回退
+          try {
+            localStorage.setItem("selectedWordType", JSON.stringify({ typeId }));
+          } catch (e) {
+            // ignore
+          }
+          return { typeId: typeId, id: typeId };
+        }
       }
     } catch (error) {
       console.error("获取选择的词汇类型失败:", error);
+    }
+    // 如果后端不可用或未返回，尝试从 localStorage 中读取已选择类型作为回退
+    try {
+      const raw = localStorage.getItem("selectedWordType");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.typeId) {
+          return { typeId: parsed.typeId, id: parsed.typeId };
+        }
+      }
+    } catch (e) {
+      console.error("从 localStorage 读取 selectedWordType 失败:", e);
     }
     return null;
   }
@@ -242,10 +259,21 @@ export class WordProgressManager {
     try {
       const response = await wordApi.setSelectedWordType({ typeId });
       if (response.code === 200) {
+        try {
+          localStorage.setItem("selectedWordType", JSON.stringify({ typeId }));
+        } catch (e) {
+          // ignore
+        }
         return { success: true };
       }
     } catch (error) {
       console.error("设置词汇类型失败:", error);
+    }
+    // 即使后端设置失败，也在本地保存一下，方便客户端恢复选择
+    try {
+      localStorage.setItem("selectedWordType", JSON.stringify({ typeId }));
+    } catch (e) {
+      // ignore
     }
     return { success: false };
   }
@@ -253,16 +281,19 @@ export class WordProgressManager {
   /**
    * 获取打卡计划
    */
-  async getPlan() {
+  async getPlan(typeId) {
     try {
-      const response = await wordApi.getUserCheckInPlan();
+      const response = await wordApi.getUserCheckInPlan(typeId);
       if (response.code === 200) {
+        // 成功获取后，同步保存到本地作为缓存
+        this.savePlanToLocal(typeId, response.data);
         return response.data;
       }
     } catch (error) {
       console.error("获取打卡计划失败:", error);
     }
-    return null;
+    // API失败时，尝试从本地缓存获取
+    return this.getPlanFromLocal(typeId);
   }
 
   /**
@@ -280,14 +311,87 @@ export class WordProgressManager {
         wordsPerDay,
       });
       if (response.code === 200) {
+        // 成功创建后，保存到本地缓存
+        this.savePlanToLocal(typeId, response.data);
         return response.data;
       } else {
         return { error: response.message };
       }
     } catch (error) {
       console.error("创建打卡计划失败:", error);
-      return { error: "创建失败" };
+      // API失败时，创建本地计划作为回退
+      const localPlan = this.createLocalPlan(typeId, wordsPerDay);
+      this.savePlanToLocal(typeId, localPlan);
+      return localPlan;
     }
+  }
+
+  /**
+   * 从本地获取计划
+   */
+  getPlanFromLocal(typeId) {
+    try {
+      const uid = this.getCurrentUserId();
+      const key = `wordCheckInPlan:${uid}:${typeId}`;
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const plan = JSON.parse(raw);
+        // 检查是否为当前typeId的计划
+        if (plan && Number(plan.typeId) === Number(typeId)) {
+          return plan;
+        }
+      }
+    } catch (e) {
+      console.error("从本地获取计划失败:", e);
+    }
+    return null;
+  }
+
+  /**
+   * 保存计划到本地
+   */
+  savePlanToLocal(typeId, plan) {
+    try {
+      const uid = this.getCurrentUserId();
+      const key = `wordCheckInPlan:${uid}:${typeId}`;
+      localStorage.setItem(key, JSON.stringify(plan));
+    } catch (e) {
+      console.error("保存计划到本地失败:", e);
+    }
+  }
+
+  /**
+   * 创建本地计划（当API失败时的回退）
+   */
+  createLocalPlan(typeId, wordsPerDay) {
+    const now = new Date().toISOString();
+    return {
+      id: `local_${typeId}_${Date.now()}`,
+      typeId: Number(typeId),
+      wordsPerDay: wordsPerDay,
+      remainingWords: 0, // 需要后续计算
+      daysNeeded: 0, // 需要后续计算
+      status: "active",
+      createdAt: now,
+      updatedAt: now,
+      isLocal: true, // 标记为本地创建的计划
+    };
+  }
+
+  /**
+   * 获取当前用户ID
+   */
+  getCurrentUserId() {
+    try {
+      const raw = localStorage.getItem("userStore");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return parsed?.userInfo?.id || "anon";
+      }
+    } catch (e) {
+      // ignore
+    }
+    return "anon";
   }
 
   /**
@@ -347,6 +451,23 @@ export class WordProgressManager {
       console.error("获取打卡统计失败:", error);
     }
     return null;
+  }
+
+  /**
+   * 获取未打卡的单词列表
+   */
+  async getUnpassedWords(typeId) {
+    try {
+      const response = await wordApi.getUnpassedWords({
+        typeId,
+      });
+      if (response.code === 200) {
+        return response.data || [];
+      }
+    } catch (error) {
+      console.error("获取未打卡单词列表失败:", error);
+    }
+    return [];
   }
 }
 

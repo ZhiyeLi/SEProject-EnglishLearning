@@ -1,6 +1,8 @@
 .DS_Store
 node_modules
 /dist
+# Maven build outputs
+backend/english_learning_platform/target/
 target/
 *.class
 

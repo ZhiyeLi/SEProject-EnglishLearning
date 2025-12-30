@@ -4,10 +4,10 @@
     <NavBar :nav-items="navItems">
       <template #actions>
         <ActionButtons
-          @suggestions="() => {}"
+          @suggestions="showSuggestions"
           @settings="gotoSettings"
           @home="goHome"
-          @notifications="() => {}"
+          @notifications="showNotifications"
         />
       </template>
     </NavBar>
@@ -94,7 +94,7 @@
             <button
               :disabled="currentProgress.passedCount === 0"
               class="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all shadow hover:shadow-md transform hover:-translate-y-0.5"
-              @click="showReviewModal = true"
+              @click="startReview"
             >
               <i class="fas fa-redo mr-2" />
               复习已打卡单词 ({{ currentProgress.passedCount }})
@@ -109,18 +109,14 @@
               切换词汇类型
             </button>
 
-            <!-- 暂停/继续按钮 -->
+            <!-- 恢复上次打卡进度 -->
             <button
-              :class="[
-                'flex items-center px-4 py-2 rounded-lg transition-all shadow hover:shadow-md transform hover:-translate-y-0.5',
-                isPaused
-                  ? 'bg-green-500 text-white hover:bg-green-600'
-                  : 'bg-orange-500 text-white hover:bg-orange-600',
-              ]"
-              @click="togglePause"
+              :disabled="!resumeAvailable || !currentPlan"
+              class="flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all shadow hover:shadow-md transform hover:-translate-y-0.5"
+              @click="resumeCheckIn"
             >
-              <i :class="[isPaused ? 'fas fa-play' : 'fas fa-pause', 'mr-2']" />
-              {{ isPaused ? "继续打卡" : "暂停打卡" }}
+              <i class="fas fa-history mr-2" />
+              恢复上次进度
             </button>
           </div>
         </div>
@@ -138,13 +134,13 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
               <div class="text-sm text-gray-600 mb-1">
-                每日打卡数
+                每次打卡数
               </div>
               <div class="text-2xl font-bold text-emerald-600">
                 {{ currentPlan.wordsPerDay }}
               </div>
               <div class="text-xs text-gray-600 mt-1">
-                个单词/天
+                个单词/次
               </div>
             </div>
             <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
@@ -160,34 +156,15 @@
             </div>
             <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
               <div class="text-sm text-gray-600 mb-1">
-                需要天数
+                需要打卡次数
               </div>
               <div class="text-2xl font-bold text-purple-600">
                 {{ currentPlan.daysNeeded }}
               </div>
               <div class="text-xs text-gray-600 mt-1">
-                天
+                次
               </div>
             </div>
-          </div>
-          <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p class="text-sm text-gray-700">
-              <i class="fas fa-info-circle text-blue-500 mr-2" />
-              <span
-                v-if="currentPlan.status === 'paused'"
-                class="text-orange-600 font-semibold"
-              >
-                打卡已暂停
-              </span>
-              <span
-                v-else
-                class="text-emerald-600 font-semibold"
-              >
-                按照计划，您将在
-                <strong>{{ currentPlan.daysNeeded }}</strong> 天内完成
-                <strong>{{ currentPlan.remainingWords }}</strong> 个单词的打卡。
-              </span>
-            </p>
           </div>
         </div>
 
@@ -251,161 +228,194 @@
     <!-- 打卡计划模态框 -->
     <div
       v-if="showPlanModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-40 p-4 pointer-events-none"
+      @click="showPlanModal = false"
     >
-      <div
-        class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fadeIn"
-      >
-        <h2 class="text-2xl font-bold text-gray-800 mb-1">
-          <i class="fas fa-calendar-check text-emerald-500 mr-2" />制订打卡计划
-        </h2>
-        <p class="text-gray-600 mb-6">
-          选择每天要打卡的单词数量（1-100）
-        </p>
-
-        <!-- 错误提示 -->
+      <div class="pointer-events-auto">
         <div
-          v-if="planError"
-          class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg"
+          class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fadeIn z-50"
+          @click.stop
         >
-          <p class="text-red-700 text-sm flex items-center">
-            <i class="fas fa-exclamation-circle mr-2" />{{ planError }}
+          <h2 class="text-2xl font-bold text-gray-800 mb-1">
+            <i class="fas fa-calendar-check text-emerald-500 mr-2" />制订打卡计划
+          </h2>
+          <p class="text-gray-600 mb-6">
+            选择每天要打卡的单词数量（1-100）
           </p>
-        </div>
 
-        <!-- 输入框 -->
-        <div class="mb-6">
-          <label
-            for="planInput"
-            class="block text-sm font-semibold text-gray-700 mb-2"
+          <!-- 错误提示 -->
+          <div
+            v-if="planError"
+            class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg"
           >
-            每天打卡数量（单词/天）
-          </label>
-          <input
-            id="planInput"
-            v-model.number="planWordsPerDay"
-            type="number"
-            min="1"
-            max="100"
-            placeholder="请输入1-100之间的数字"
-            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
-            @keyup.enter="confirmPlan"
-          >
-          <p class="text-xs text-gray-600 mt-2">
-            💡 根据您选择的数量，系统将自动计算完成打卡所需的天数
-          </p>
-        </div>
+            <p class="text-red-700 text-sm flex items-center">
+              <i class="fas fa-exclamation-circle mr-2" />{{ planError }}
+            </p>
+          </div>
 
-        <!-- 计算结果预览 -->
-        <div
-          v-if="
-            planWordsPerDay && planWordsPerDay >= 1 && planWordsPerDay <= 100
-          "
-          class="mb-6 p-4 bg-emerald-50 rounded-lg border-2 border-emerald-200"
-        >
-          <p class="text-sm text-gray-700 mb-2">
-            <span class="font-semibold">计划预览：</span>
-          </p>
-          <ul class="text-sm text-gray-700 space-y-1">
-            <li>
-              📌 每天打卡：<span class="font-semibold text-emerald-600">{{
-                planWordsPerDay
-              }}</span>
-              个单词
-            </li>
-            <li>
-              📌 剩余单词：<span class="font-semibold text-emerald-600">{{
-                currentType?.totalWords - currentProgress.passedCount
-              }}</span>
-              个单词
-            </li>
-            <li>
-              📌 需要天数：<span class="font-semibold text-emerald-600">{{
-                calculateDaysNeeded(planWordsPerDay)
-              }}</span>
-              天
-            </li>
-          </ul>
-        </div>
+          <!-- 输入框 -->
+          <div class="mb-6">
+            <label
+              for="planInput"
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              每天打卡数量（单词/天）
+            </label>
+            <input
+              id="planInput"
+              v-model.number="planWordsPerDay"
+              type="number"
+              min="1"
+              max="100"
+              placeholder="请输入1-100之间的数字"
+              class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+              @keyup.enter="confirmPlan"
+            >
+            <p class="text-xs text-gray-600 mt-2">
+              💡 根据您选择的数量，系统将自动计算完成打卡所需的天数
+            </p>
+          </div>
 
-        <!-- 按钮 -->
-        <div class="flex gap-3">
-          <button
-            class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold transition-all"
-            @click="showPlanModal = false"
-          >
-            取消
-          </button>
-          <button
-            :disabled="
-              !planWordsPerDay || planWordsPerDay < 1 || planWordsPerDay > 100
+          <!-- 计算结果预览 -->
+          <div
+            v-if="
+              planWordsPerDay && planWordsPerDay >= 1 && planWordsPerDay <= 100
             "
-            class="flex-1 px-4 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold transition-all"
-            @click="confirmPlan"
+            class="mb-6 p-4 bg-emerald-50 rounded-lg border-2 border-emerald-200"
           >
-            <i class="fas fa-check mr-2" />确认计划
-          </button>
+            <p class="text-sm text-gray-700 mb-2">
+              <span class="font-semibold">计划预览：</span>
+            </p>
+            <ul class="text-sm text-gray-700 space-y-1">
+              <li>
+                📌 每次打卡：<span class="font-semibold text-emerald-600">{{
+                  planWordsPerDay
+                }}</span>
+                个单词
+              </li>
+              <li>
+                📌 剩余单词：<span class="font-semibold text-emerald-600">{{
+                  currentType?.totalWords - currentProgress.passedCount
+                }}</span>
+                个单词
+              </li>
+              <li>
+                📌 需要打卡次数：<span class="font-semibold text-emerald-600">{{
+                  calculateDaysNeeded(planWordsPerDay)
+                }}</span>
+                次
+              </li>
+            </ul>
+          </div>
+
+          <!-- 按钮 -->
+          <div class="flex gap-3">
+            <button
+              class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold transition-all"
+              @click="showPlanModal = false"
+            >
+              取消
+            </button>
+            <button
+              :disabled="
+                !planWordsPerDay || planWordsPerDay < 1 || planWordsPerDay > 100
+              "
+              class="flex-1 px-4 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold transition-all"
+              @click="confirmPlan"
+            >
+              <i class="fas fa-check mr-2" />确认计划
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 复习单词模态框 -->
+
+
+    <!-- 学习建议弹窗 -->
     <div
-      v-if="showReviewModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      v-if="showSuggestionsModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 p-4 pointer-events-none"
+      @click="showSuggestionsModal = false"
     >
       <div
-        class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 animate-fadeIn max-h-96 overflow-y-auto"
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 animate-fadeIn z-50 pointer-events-auto"
+        @click.stop
       >
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold text-gray-800">
-            <i class="fas fa-redo text-blue-500 mr-2" />复习已打卡单词
+        <!-- 弹窗头部 -->
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+            <i class="fas fa-lightbulb text-yellow-500 mr-3" />
+            学习建议
           </h2>
           <button
-            class="text-gray-600 hover:text-gray-800 p-2"
-            @click="showReviewModal = false"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+            @click="showSuggestionsModal = false"
           >
-            <i class="fas fa-times text-xl" />
+            <i class="fas fa-times text-2xl" />
           </button>
         </div>
 
-        <!-- 单词列表 -->
-        <div class="space-y-3 mb-6">
-          <div
-            v-for="wordId in currentProgress.passedWords"
-            :key="wordId"
-            class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-all flex items-center justify-between"
-          >
+        <!-- 弹窗内容 -->
+        <div class="mb-6">
+          <div class="space-y-4">
+            <!-- 建议内容 -->
             <div>
-              <p class="font-semibold text-gray-800">
-                {{ getWordById(wordId)?.word }}
-              </p>
-              <p class="text-sm text-gray-600">
-                {{ getWordById(wordId)?.translation }}
+              <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                <span class="text-emerald-600">{{
+                  suggestionsData[currentSuggestionIndex].title
+                }}</span>
+              </h3>
+              <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                {{ suggestionsData[currentSuggestionIndex].content }}
               </p>
             </div>
-            <div class="flex items-center gap-2">
+
+            <!-- 建议标签 -->
+            <div class="flex flex-wrap gap-2 pt-4">
               <span
-                class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded"
-              >已打卡</span>
-              <button
-                class="text-red-500 hover:text-red-700 transition-colors"
-                title="取消打卡"
-                @click="unmarkWordAsPassed(wordId)"
+                v-for="tag in suggestionsData[currentSuggestionIndex].tags"
+                :key="tag"
+                class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm"
               >
-                <i class="fas fa-undo" />
-              </button>
+                {{ tag }}
+              </span>
             </div>
           </div>
         </div>
 
-        <p class="text-sm text-gray-600 text-center">
-          共
-          <span class="font-semibold">{{
-            currentProgress.passedWords.length
-          }}</span>
-          个已打卡单词
-        </p>
+        <!-- 弹窗底部 - 翻页控制 -->
+        <div class="flex justify-between items-center border-t border-gray-200 pt-4">
+          <button
+            :disabled="currentSuggestionIndex === 0"
+            class="px-6 py-2 rounded-lg font-medium transition-all"
+            :class="
+              currentSuggestionIndex === 0
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+            "
+            @click="previousSuggestion"
+          >
+            <i class="fas fa-chevron-left mr-2" />上一条
+          </button>
+
+          <div class="text-gray-600 font-medium">
+            {{ currentSuggestionIndex + 1 }} / {{ suggestionsData.length }}
+          </div>
+
+          <button
+            :disabled="currentSuggestionIndex === suggestionsData.length - 1"
+            class="px-6 py-2 rounded-lg font-medium transition-all"
+            :class="
+              currentSuggestionIndex === suggestionsData.length - 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+            "
+            @click="nextSuggestion"
+          >
+            下一条<i class="fas fa-chevron-right ml-2" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -415,7 +425,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onActivated, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { wordProgressManager } from "@/utils/wordData.js";
 import NavBar from "@/components/common/NavBar.vue";
@@ -430,10 +440,44 @@ const currentType = ref(null);
 const currentProgress = ref({});
 const currentPlan = ref(null);
 const showPlanModal = ref(false);
-const showReviewModal = ref(false);
 const planWordsPerDay = ref(null);
 const planError = ref("");
 const isPaused = ref(false);
+const showSuggestionsModal = ref(false);
+const currentSuggestionIndex = ref(0);
+const resumeAvailable = ref(false);
+const suggestionsData = ref([
+  {
+    title: "坚持打卡是关键",
+    content:
+      "根据你最近的学习数据，我发现你有几天没有坚持打卡。研究表明，每日坚持背单词比一次性背很多个词更能提高长期记忆效果。\n\n建议：\n• 每天固定时间打卡，形成习惯\n• 选择在精力最充沛的时候\n• 即使只有10分钟，也要坚持打卡\n\n相信你能做到！",
+    tags: ["打卡习惯", "坚持", "记忆法"],
+  },
+  {
+    title: "利用零碎时间高效学习",
+    content:
+      "你可以充分利用上下班、等车、休息间隙等零碎时间来复习单词。这些时间虽然不长，但积累起来效果显著。\n\n建议：\n• 使用移动设备随时复习\n• 利用碎片化时间做单词练习\n• 在高峰期巩固之前学过的词汇\n\n每天15-20分钟的有效学习胜过一次性的1小时被动学习。",
+    tags: ["时间管理", "碎片化学习", "效率"],
+  },
+  {
+    title: "制定合理的每日目标",
+    content:
+      "根据你的学习进度，建议适当调整每日学习单词数量。过多会导致疲劳，过少则影响进度。\n\n建议：\n• 四级备考阶段：每天50-100个单词\n• 六级备考阶段：每天80-120个单词\n• 根据个人吸收情况灵活调整\n\n记住：质量永远比数量重要！",
+    tags: ["目标设置", "学习计划", "进度管理"],
+  },
+  {
+    title: "重视拼写和发音",
+    content:
+      "单纯记忆单词的中文意思容易遗忘。建议同时关注单词的拼写、发音和用法。\n\n建议：\n• 大声朗读单词，加强发音记忆\n• 多做拼写练习，特别是容易混淆的词\n• 学习单词的衍生词和同义词\n\n这样学习的单词记忆时间会延长3倍以上。",
+    tags: ["拼写", "发音", "词汇拓展"],
+  },
+  {
+    title: "利用艾宾浩斯遗忘曲线",
+    content:
+      "我们的应用已经内置了艾宾浩斯遗忘曲线复习算法。系统会在最佳时间提醒你复习之前学过的单词。\n\n黄金复习时间点：\n• 第1次：学习后的1天\n• 第2次：学习后的3天\n• 第3次：学习后的7天\n• 第4次：学习后的15天\n• 第5次：学习后的30天\n\n按照系统提示复习，学习效果可提升5倍！",
+    tags: ["遗忘曲线", "复习计划", "科学学习"],
+  },
+]);
 
 // 导航项
 const navItems = ref([
@@ -454,9 +498,14 @@ const navItems = ref([
 // 计算属性
 const progressPercentage = computed(() => {
   if (!currentType.value) return 0;
-  return Math.round(
-    (currentProgress.value.passedCount / currentType.value.totalWords) * 100
-  );
+  const total = Number(currentType.value.totalWords) || 0;
+  const passed = Number(currentProgress.value.passedCount) || 0;
+  if (total === 0) return 0;
+  const raw = (passed / total) * 100;
+  let formatted = Number.parseFloat(raw.toFixed(1));
+  // 如果有已打卡但显示为 0.0，则至少显示 0.1%，避免误导用户
+  if (passed > 0 && formatted === 0) formatted = 0.1;
+  return formatted;
 });
 
 onMounted(async () => {
@@ -464,53 +513,161 @@ onMounted(async () => {
     // 初始化数据
     await wordProgressManager.init();
 
-    // 优先从路由参数获取typeId
+    // 优先从路由参数获取typeId，然后从后端获取已选择的类型
     let typeId = route.params.typeId;
+    console.log("从路由获取的typeId:", typeId, "类型:", typeof typeId);
 
     if (!typeId) {
       // 如果路由没有typeId，则从后端获取已选择的类型
-      const selectedTypeData = await wordProgressManager.getSelectedType();
-      typeId = selectedTypeData?.typeId;
+      try {
+        const selectedTypeData = await wordProgressManager.getSelectedType();
+        console.log("从后端获取的选择数据:", selectedTypeData);
+        typeId = selectedTypeData?.typeId || selectedTypeData?.id;
+        console.log("提取的typeId:", typeId);
+      } catch (error) {
+        console.error("获取已选择的类型失败:", error);
+      }
     }
 
     if (!typeId) {
       // 如果仍然没有typeId，显示提示并重定向到类型选择页面
-      alert("请先选择词汇类型");
+      console.warn("未选择词汇类型，重定向到类型选择页面");
       router.push({ name: "WordTypeSelection" }).catch(() => {});
       return;
     }
 
+    // 确保typeId是数字
+    typeId = Number(typeId);
+
     // 从后端获取类型列表并找到当前类型
     const typeList = await wordProgressManager.getWordTypeList();
-    const typeObj = typeList.find((t) => t.typeId == typeId); // 使用 == 以处理字符串和数字的比较
-    if (typeObj) {
-      // 设置当前类型，使用后端返回的数据格式
-      currentType.value = {
-        id: typeObj.typeId,
-        name: typeObj.name,
-        description: typeObj.description,
-        totalWords: typeObj.totalWords,
-      };
-      currentProgress.value = await wordProgressManager.getTypeProgress(typeId);
-      if (!currentProgress.value) {
-        currentProgress.value = { passedCount: 0, passedWords: [] };
-      }
-      currentPlan.value = await wordProgressManager.getPlan();
-
-      // 检查计划状态
-      if (currentPlan.value?.status === "paused") {
-        isPaused.value = true;
-      }
-    } else {
-      alert("词汇类型数据加载失败");
+    console.log("类型列表:", typeList);
+    console.log("查找typeId:", typeId, "类型:", typeof typeId);
+    const typeObj = typeList.find((t) => Number(t.typeId) === Number(typeId));
+    
+    if (!typeObj) {
+      // 如果找不到类型，重定向到选择页面
+      console.warn(`找不到对应的词汇类型: ${typeId}`);
+      console.warn("可用的类型ID:", typeList.map(t => t.typeId));
       router.push({ name: "WordTypeSelection" }).catch(() => {});
+      return;
     }
+    
+    console.log("找到的类型对象:", typeObj);
+
+    // 设置当前类型，使用后端返回的数据格式
+    currentType.value = {
+      id: typeObj.typeId || typeObj.id,
+      name: typeObj.name,
+      description: typeObj.description,
+      totalWords: typeObj.totalWords,
+    };
+    
+    currentProgress.value = await wordProgressManager.getTypeProgress(typeObj.typeId || typeObj.id);
+    if (!currentProgress.value) {
+      currentProgress.value = { passedCount: 0, passedWords: [] };
+    }
+    
+    // 获取该词汇类型的打卡计划
+    const typeIdForPlan = typeObj.typeId || typeObj.id;
+    currentPlan.value = await wordProgressManager.getPlan(typeIdForPlan);
+
+    // 如果是本地计划，更新计算字段
+    if (currentPlan.value?.isLocal) {
+      updateLocalPlanCalculations();
+    }
+
+    // 检查计划状态
+    if (currentPlan.value?.status === "paused") {
+      isPaused.value = true;
+    }
+
+    // 检查是否有可恢复的本地进度
+    updateResumeAvailable();
   } catch (error) {
     console.error("初始化失败:", error);
-    alert("加载数据失败: " + error.message);
+    console.error("详细信息:", error.message);
     router.push({ name: "WordTypeSelection" }).catch(() => {});
   }
 });
+
+/**
+ * 当返回到此页面时刷新打卡进度
+ */
+onActivated(async () => {
+  try {
+    if (currentType.value?.id) {
+      // 重新获取该词汇类型的打卡进度
+      currentProgress.value = await wordProgressManager.getTypeProgress(currentType.value.id);
+      if (!currentProgress.value) {
+        currentProgress.value = { passedCount: 0, passedWords: [] };
+      }
+      updateResumeAvailable();
+    }
+  } catch (error) {
+    console.error("刷新打卡进度失败:", error);
+  }
+});
+
+/**
+ * 监听路由参数变化，当typeId改变时重新加载数据
+ */
+watch(() => route.params.typeId, async (newTypeId) => {
+  if (newTypeId) {
+    try {
+      // 重新初始化数据
+      await loadDataForType(newTypeId);
+    } catch (error) {
+      console.error("切换词汇类型失败:", error);
+      router.push({ name: "WordTypeSelection" }).catch(() => {});
+    }
+  }
+}, { immediate: false });
+
+/**
+ * 加载指定类型的打卡数据
+ */
+async function loadDataForType(typeId) {
+  // 确保typeId是数字
+  typeId = Number(typeId);
+
+  // 从后端获取类型列表并找到当前类型
+  const typeList = await wordProgressManager.getWordTypeList();
+  const typeObj = typeList.find((t) => Number(t.typeId) === Number(typeId));
+  
+  if (!typeObj) {
+    console.warn(`找不到对应的词汇类型: ${typeId}`);
+    router.push({ name: "WordTypeSelection" }).catch(() => {});
+    return;
+  }
+
+  // 设置当前类型
+  currentType.value = {
+    id: typeObj.typeId || typeObj.id,
+    name: typeObj.name,
+    description: typeObj.description,
+    totalWords: typeObj.totalWords,
+  };
+  
+  currentProgress.value = await wordProgressManager.getTypeProgress(typeObj.typeId || typeObj.id);
+  if (!currentProgress.value) {
+    currentProgress.value = { passedCount: 0, passedWords: [] };
+  }
+  
+  // 获取该词汇类型的打卡计划
+  const typeIdForPlan = typeObj.typeId || typeObj.id;
+  currentPlan.value = await wordProgressManager.getPlan(typeIdForPlan);
+
+  // 检查计划状态
+  if (currentPlan.value?.status === "paused") {
+    isPaused.value = true;
+  } else {
+    isPaused.value = false;
+  }
+
+  // 检查是否有可恢复的本地进度
+  updateResumeAvailable();
+}
 
 /**
  * 计算需要的天数
@@ -537,8 +694,12 @@ async function confirmPlan() {
     return;
   }
 
+  // 确保使用数字typeId
+  const typeId = Number(currentType.value.id || currentType.value.typeId);
+  console.log("即将创建计划，typeId=", typeId, "wordsPerDay=", planWordsPerDay.value);
+  
   const plan = await wordProgressManager.createPlan(
-    currentType.value.id,
+    typeId,
     planWordsPerDay.value
   );
 
@@ -553,29 +714,73 @@ async function confirmPlan() {
 }
 
 /**
- * 开始打卡
+ * 开始复习
  */
-function startCheckIn() {
-  // 这里可以导航到实际的单词打卡界面
-  // 暂时只是显示提示
-  alert("单词打卡功能待实现");
+function startReview() {
+  const typeIdForReview = currentType.value.id || currentType.value.typeId;
+  router.push({ 
+    name: "WordReview", 
+    params: { typeId: typeIdForReview } 
+  }).catch(() => {});
 }
 
 /**
- * 暂停/继续打卡
+ * 开始打卡
  */
-async function togglePause() {
-  if (!currentPlan.value) return;
+function startCheckIn() {
+  const typeIdForPractice = currentType.value.id || currentType.value.typeId;
+  router.push({
+    name: "WordCheckInPractice",
+    params: { typeId: typeIdForPractice },
+  }).catch(() => {});
+}
 
-  if (isPaused.value) {
-    await wordProgressManager.resumePlan();
-    isPaused.value = false;
-  } else {
-    await wordProgressManager.pausePlan();
-    isPaused.value = true;
+/**
+ * 恢复打卡进度
+ */
+function resumeCheckIn() {
+  const typeIdForPractice = currentType.value.id || currentType.value.typeId;
+  router
+    .push({
+      name: "WordCheckInPractice",
+      params: { typeId: typeIdForPractice },
+      query: { resume: "1" },
+    })
+    .catch(() => {});
+}
+
+function getCurrentUserId() {
+  try {
+    const raw = localStorage.getItem("userStore");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return parsed?.userInfo?.id || "anon";
+    }
+  } catch (e) {
+    console.warn("读取用户ID失败，使用 anon:", e);
   }
+  return "anon";
+}
 
-  currentPlan.value = await wordProgressManager.getPlan();
+function makeProgressKey(typeId) {
+  const uid = getCurrentUserId();
+  return `wordCheckInProgress:${uid}:${typeId}`;
+}
+
+function updateResumeAvailable() {
+  try {
+    const typeId = currentType.value?.id || currentType.value?.typeId;
+    if (!typeId) {
+      resumeAvailable.value = false;
+      return;
+    }
+    const key = makeProgressKey(typeId);
+    const raw = localStorage.getItem(key);
+    resumeAvailable.value = !!raw;
+  } catch (e) {
+    console.warn("检查恢复进度失败:", e);
+    resumeAvailable.value = false;
+  }
 }
 
 /**
@@ -592,6 +797,46 @@ function goHome() {
   router.push({ name: "Home" }).catch(() => {});
 }
 
+/**
+ * 跳转到设置页面
+ */
+function gotoSettings() {
+  router.push({ name: "Settings" }).catch(() => {});
+}
+
+/**
+ * 显示学习建议
+ */
+function showSuggestions() {
+  showSuggestionsModal.value = true;
+  currentSuggestionIndex.value = 0;
+}
+
+/**
+ * 下一条建议
+ */
+function nextSuggestion() {
+  if (currentSuggestionIndex.value < suggestionsData.value.length - 1) {
+    currentSuggestionIndex.value++;
+  }
+}
+
+/**
+ * 上一条建议
+ */
+function previousSuggestion() {
+  if (currentSuggestionIndex.value > 0) {
+    currentSuggestionIndex.value--;
+  }
+}
+
+/**
+ * 显示通知
+ */
+function showNotifications() {
+  alert("通知功能待实现");
+}
+
 function gotoAiChat() {
   router.push({ name: "AiChat" }).catch(() => {});
 }
@@ -600,21 +845,20 @@ function gotoCourse() {
   router.push({ name: "Course" }).catch(() => {});
 }
 /**
- * 根据单词ID获取单词信息
+ * 更新本地计划的计算字段
  */
-function getWordById(wordId) {
-  if (!currentType.value) return null;
-  return currentType.value.words.find((w) => w.id === wordId);
-}
+function updateLocalPlanCalculations() {
+  if (!currentPlan.value || !currentProgress.value || !currentType.value) return;
 
-/**
- * 取消单词打卡标记
- */
-async function unmarkWordAsPassed(wordId) {
-  await wordProgressManager.unmarkWordAsPassed(currentType.value.id, wordId);
-  currentProgress.value = await wordProgressManager.getTypeProgress(
-    currentType.value.id
-  );
+  const remainingWords = currentType.value.totalWords - currentProgress.value.passedCount;
+  const daysNeeded = Math.ceil(remainingWords / currentPlan.value.wordsPerDay);
+
+  currentPlan.value.remainingWords = remainingWords;
+  currentPlan.value.daysNeeded = daysNeeded;
+  currentPlan.value.updatedAt = new Date().toISOString();
+
+  // 保存更新后的本地计划
+  wordProgressManager.savePlanToLocal(currentType.value.id, currentPlan.value);
 }
 </script>
 

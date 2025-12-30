@@ -38,6 +38,16 @@ const routes = [
     component: () => import("@/views/WordCheckIn.vue"),
   },
   {
+    path: "/word-check-in-practice/:typeId?",
+    name: "WordCheckInPractice",
+    component: () => import("@/views/WordCheckInPractice.vue"),
+  },
+  {
+    path: "/word-review/:typeId?",
+    name: "WordReview",
+    component: () => import("@/views/WordReview.vue"),
+  },
+  {
     path: "/timetable",
     name: "TimeTable",
     component: () => import("@/views/TimeTable.vue"),

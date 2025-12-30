@@ -51,10 +51,10 @@ public class WordController {
     }
     
     @GetMapping("/passed")
-    public ApiResponse<List<UserWordProgress>> getPassedWords(HttpServletRequest request) {
+    public ApiResponse<List<Word>> getPassedWords(HttpServletRequest request) {
         try {
             Long userId = (Long) request.getAttribute("userId");
-            List<UserWordProgress> words = wordService.getPassedWords(userId);
+            List<Word> words = wordService.getPassedWords(userId);
             return ApiResponse.success(words);
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
@@ -62,11 +62,11 @@ public class WordController {
     }
     
     @PostMapping("/mark-passed")
-    public ApiResponse<UserWordProgress> markWordPassed(HttpServletRequest request, @RequestBody Map<String, Long> data) {
+    public ApiResponse<UserWordProgress> markWordPassed(HttpServletRequest request, @RequestBody Map<String, Object> data) {
         try {
             Long userId = (Long) request.getAttribute("userId");
-            Long wordId = data.get("wordId");
-            Long typeId = data.get("typeId");
+            Long wordId = Long.parseLong(data.get("wordId").toString());
+            Long typeId = Long.parseLong(data.get("typeId").toString());
             UserWordProgress progress = wordService.markWordPassed(userId, wordId, typeId);
             return ApiResponse.success(progress);
         } catch (Exception e) {
@@ -75,10 +75,10 @@ public class WordController {
     }
     
     @PostMapping("/unmark-passed")
-    public ApiResponse<String> unmarkWordPassed(HttpServletRequest request, @RequestBody Map<String, Long> data) {
+    public ApiResponse<String> unmarkWordPassed(HttpServletRequest request, @RequestBody Map<String, Object> data) {
         try {
             Long userId = (Long) request.getAttribute("userId");
-            Long wordId = data.get("wordId");
+            Long wordId = Long.parseLong(data.get("wordId").toString());
             wordService.unmarkWordPassed(userId, wordId);
             return ApiResponse.success("取消标记成功");
         } catch (Exception e) {
@@ -107,14 +107,27 @@ public class WordController {
             return ApiResponse.error(e.getMessage());
         }
     }
+
+    @GetMapping("/{wordId}")
+    public ApiResponse<Word> getWordDetail(@PathVariable Long wordId) {
+        try {
+            Word word = wordService.getWordDetail(wordId);
+            if (word == null) {
+                return ApiResponse.error("单词不存在");
+            }
+            return ApiResponse.success(word);
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
     
     @PostMapping("/plan")
-    public ApiResponse<CheckinPlan> createCheckInPlan(HttpServletRequest request, @RequestBody Map<String, Object> data) {
+    public ApiResponse<Map<String, Object>> createCheckInPlan(HttpServletRequest request, @RequestBody Map<String, Object> data) {
         try {
             Long userId = (Long) request.getAttribute("userId");
             Long typeId = Long.parseLong(data.get("typeId").toString());
             Integer wordsPerDay = Integer.parseInt(data.get("wordsPerDay").toString());
-            CheckinPlan plan = wordService.createCheckInPlan(userId, typeId, wordsPerDay);
+            Map<String, Object> plan = wordService.createCheckInPlan(userId, typeId, wordsPerDay);
             return ApiResponse.success(plan);
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
@@ -122,11 +135,29 @@ public class WordController {
     }
     
     @GetMapping("/plan/detail")
-    public ApiResponse<CheckinPlan> getUserCheckInPlan(HttpServletRequest request) {
+    public ApiResponse<Map<String, Object>> getUserCheckInPlan(HttpServletRequest request, @RequestParam(required = false) Long typeId) {
         try {
             Long userId = (Long) request.getAttribute("userId");
-            CheckinPlan plan = wordService.getUserCheckInPlan(userId);
+            Map<String, Object> plan;
+            if (typeId != null) {
+                // 如果指定了词汇类型，获取该类型的计划
+                plan = wordService.getUserCheckInPlanByType(userId, typeId);
+            } else {
+                // 否则获取任意活跃计划
+                plan = wordService.getUserCheckInPlan(userId);
+            }
             return ApiResponse.success(plan);
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+    
+    @GetMapping("/unpassed")
+    public ApiResponse<List<Word>> getUnpassedWords(HttpServletRequest request, @RequestParam Long typeId) {
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            List<Word> words = wordService.getUnpassedWords(userId, typeId);
+            return ApiResponse.success(words);
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
         }
