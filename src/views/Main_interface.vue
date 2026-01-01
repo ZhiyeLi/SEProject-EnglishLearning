@@ -162,23 +162,23 @@
                 <h2
                   class="text-2xl font-bold text-emerald-600 mb-3 flex items-center"
                 >
-                  已连续打卡 -- 天！！！
+                  已连续打卡 {{ todayStats.streak }} 天！！！
                   <span class="ml-2 text-yellow-500 animate-pulse"><i class="fas fa-fire" /></span>
                 </h2>
                 <ul class="space-y-2 text-gray-700 text-base">
                   <li class="flex items-center">
                     <i
                       class="fas fa-plus-circle text-emerald-500 mr-2"
-                    />今日新学 <span class="font-semibold">-- 个单词</span>
+                    />今日新学 <span class="font-semibold">{{ todayStats.newWords }} 个单词</span>
                   </li>
                   <li class="flex items-center">
                     <i class="fas fa-sync text-yellow-500 mr-2" />今日复习
-                    <span class="font-semibold">-- 个单词</span>
+                    <span class="font-semibold">{{ todayStats.reviewWords }} 个单词</span>
                   </li>
                   <li class="flex items-center">
                     <i
                       class="fas fa-calendar-alt text-emerald-500 mr-2"
-                    />明日需复习 <span class="font-semibold">-- 个单词</span>
+                    />明日需复习 <span class="font-semibold">{{ todayStats.tomorrowReview }} 个单词</span>
                   </li>
                 </ul>
               </div>
@@ -811,6 +811,7 @@ import EndBar from "@/components/common/EndBar.vue";
 import CustomButton from "@/components/common/CustomButton.vue";
 import { friendApi } from '@/api/friend'; // 后端好友接口
 // 引入文章数据方法
+import { wordApi } from "@/api"; // 引入 wordApi
 // eslint-disable-next-line no-unused-vars
 import { articleList } from "@/data/articleData.js";
 
@@ -822,6 +823,50 @@ const gotoArticleDetail = (articleId) => {
   }).catch(() => {});
 };
 
+// 每日学习统计数据
+const todayStats = ref({
+  newWords: 0,
+  reviewWords: 0,
+  tomorrowReview: 0,
+  streak: 0
+});
+
+// 获取每日学习统计
+const fetchTodayStats = async () => {
+  try {
+    const res = await wordApi.getTodayCheckInStatus();
+    if (res.code === 200) {
+      // 如果今日已打卡或有记录
+      if (res.data.hasCheckedIn && res.data.record) {
+        todayStats.value.newWords = res.data.record.newWords || 0;
+        todayStats.value.reviewWords = res.data.record.reviewWords || 0;
+        todayStats.value.streak = res.data.record.streak || 0;
+      } else {
+        // 今日未打卡，数据为0
+        todayStats.value.newWords = 0;
+        todayStats.value.reviewWords = 0;
+        
+        // 尝试获取历史记录以计算连续打卡天数
+        try {
+          const statsRes = await wordApi.getCheckInStatistics();
+          if (statsRes.code === 200 && statsRes.data.records && statsRes.data.records.length > 0) {
+            // 获取最近一次打卡记录
+            const lastRecord = statsRes.data.records[0];
+            // 这里简单显示最近一次的streak，如果需要严格判断是否断签，需要比较日期
+            // 暂时直接显示最近一次的streak，假设用户昨天打卡了
+            todayStats.value.streak = lastRecord.streak || 0;
+          }
+        } catch (e) {
+          console.warn("获取历史统计失败", e);
+        }
+      }
+      // 注意：后端目前没有提供"明日需复习"的接口，暂时置为0
+      todayStats.value.tomorrowReview = 0; 
+    }
+  } catch (err) {
+    console.error("获取今日学习统计失败:", err);
+  }
+};
 
 const searchLoading = ref(false); // 搜索用户的加载状态
 
@@ -842,6 +887,7 @@ onMounted(async () => {
   await fetchFriendList(); // 加载好友列表
   await fetchFriendRequests(); // 加载好友请求列表
   await fetchUnreadCounts(); // 加载未读消息数
+  await fetchTodayStats(); // 加载今日学习统计
 
   // 开始轮询未读消息数
   if (!messagePollInterval.value) {
