@@ -579,6 +579,10 @@ function gotoCourse() {
 function gotoQuestionBank() {
   router.push({ name: "QuestionBank" }).catch(() => {});
 }
+
+function gotoSettings() {
+  router.push({ name: "Settings" }).catch(() => {});
+}
 // 加载计划数据
 async function loadPlans() {
   // 使用扩展运算符创建新数组,确保Vue能检测到变化

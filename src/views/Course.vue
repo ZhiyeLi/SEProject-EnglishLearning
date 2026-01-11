@@ -18,22 +18,13 @@
     <!-- 主内容区 -->
     <main class="flex-grow p-6">
       <div class="max-w-7xl mx-auto">
-        <!-- 返回按钮 -->
-        <button
-          class="text-emerald-600 hover:text-emerald-700 flex items-center transition-colors mb-6"
-          aria-label="返回首页"
-          @click="gotoHome"
-        >
-          <i
-            class="fas fa-arrow-left mr-2"
-            aria-hidden="true"
-          />
-          <span>返回首页</span>
-        </button>
-
-        <!-- 页面标题 -->
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">
-          英语课程
+        <!-- 页面标题 - 美化并添加图标 -->
+        <h1 class="text-3xl font-bold text-gray-800 mb-8 flex items-center">
+          <i class="fas fa-graduation-cap text-emerald-500 mr-3 text-4xl"></i>
+          <span class="relative">
+            课程
+            <span class="absolute -bottom-2 left-0 h-1 w-16 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full"></span>
+          </span>
         </h1>
 
         <!-- 搜索和筛选区域 - 优化搜索框样式和提示 -->
@@ -243,10 +234,18 @@ const gotoAiChat = () => {
   router.push({ name: "AiChat" }).catch(() => {});
 };
 
-// 导航栏项目
+const gotoSettings = () => {
+  router.push({ name: "Settings" }).catch(() => {});
+};
+
+// 导航栏项目 - 为课程标签添加图标
 const navItems = [
   { label: "首页", onClick: gotoHome, isActive: false },
-  { label: "课程", isActive: true },
+  { 
+    label: "课程", 
+    icon: "fas fa-graduation-cap", // 添加毕业帽图标
+    isActive: true 
+  },
   {
     label: "题库",
     onClick: () => router.push({ name: "QuestionBank" }).catch(() => {}),
@@ -496,5 +495,11 @@ onMounted(() => {
 
 .text-yellow-800 {
   color: #78350f !important;
+}
+
+/* 标题下划线样式优化 */
+h1 span.relative {
+  display: inline-block;
+  padding-bottom: 8px;
 }
 </style>
