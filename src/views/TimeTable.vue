@@ -4,7 +4,7 @@
     <NavBar :nav-items="navItems">
       <template #actions>
         <ActionButtons
-          @suggestions="() => {}"
+          @suggestions="showSuggestionsModal = true"
           @settings="gotoSettings"
           @home="gotoHome"
           @notifications="() => {}"
@@ -243,6 +243,103 @@
               </div>
             </div>
           </div>
+          <!-- 学习建议弹窗 -->
+    <teleport to="body">
+      <div
+        v-if="showSuggestionsModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
+        @click="handleSuggestionsBackdropClick"
+      >
+        <div
+          class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[70vh] overflow-hidden transform transition-all"
+          @click.stop
+        >
+          <!-- 弹窗头部 -->
+          <div
+            class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-blue-50"
+          >
+            <div class="flex justify-between items-center">
+              <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-lightbulb text-yellow-500 mr-3" />
+                课程学习建议
+              </h2>
+              <button
+                class="text-gray-400 hover:text-gray-600 transition-colors"
+                @click="showSuggestionsModal = false"
+              >
+                <i class="fas fa-times text-2xl" />
+              </button>
+            </div>
+          </div>
+
+          <!-- 弹窗内容 -->
+          <div
+            class="px-8 py-6 overflow-y-auto"
+            style="max-height: calc(70vh - 140px)"
+          >
+            <div class="space-y-4">
+              <!-- 建议内容 -->
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                  <span class="text-emerald-600">{{
+                    suggestionsData[currentSuggestionIndex].title
+                  }}</span>
+                </h3>
+                <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {{ suggestionsData[currentSuggestionIndex].content }}
+                </p>
+              </div>
+
+              <!-- 建议标签 -->
+              <div class="flex flex-wrap gap-2 pt-4">
+                <span
+                  v-for="tag in suggestionsData[currentSuggestionIndex].tags"
+                  :key="tag"
+                  class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm"
+                >
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 弹窗底部 - 翻页控制 -->
+          <div
+            class="px-8 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center"
+          >
+            <button
+              :disabled="currentSuggestionIndex === 0"
+              class="px-6 py-2 rounded-lg font-medium transition-all"
+              :class="
+                currentSuggestionIndex === 0
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              "
+              @click="previousSuggestion"
+            >
+              <i class="fas fa-chevron-left mr-2" />上一条
+            </button>
+
+            <div class="text-gray-600 font-medium">
+              {{ currentSuggestionIndex + 1 }} / {{ suggestionsData.length }}
+            </div>
+
+            <button
+              :disabled="currentSuggestionIndex === suggestionsData.length - 1"
+              class="px-6 py-2 rounded-lg font-medium transition-all"
+              :class="
+                currentSuggestionIndex === suggestionsData.length - 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              "
+              @click="nextSuggestion"
+            >
+              下一条<i class="fas fa-chevron-right ml-2" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
         </div>
       </div>
     </main>
@@ -599,6 +696,62 @@ onMounted(async () => {
   await planManager.initPlans();
   await loadPlans();
 });
+// ===== 学习建议弹窗相关逻辑 =====
+const showSuggestionsModal = ref(false);
+const currentSuggestionIndex = ref(0);
+// 课程相关的学习建议数据
+const suggestionsData = ref([
+  {
+    title: "根据水平选择合适课程",
+    content:
+      "不同阶段的英语学习重点不同，选择匹配自己水平的课程能事半功倍：\n\n• 零基础：重点学习发音、基础词汇和简单句型\n• 小学阶段：注重听说训练和兴趣培养\n• 中学阶段：强化语法和阅读理解能力\n• 大学阶段：聚焦四六级考试技巧和实用英语\n\n建议先完成基础课程，再逐步进阶学习。",
+    tags: ["课程选择", "学习阶段", "基础优先"],
+  },
+  {
+    title: "高效观看课程视频的方法",
+    content:
+      "单纯观看视频效果有限，结合以下方法能提升学习效率：\n\n• 提前预习：了解课程主题和重点词汇\n• 边看边记：记录关键知识点和不懂的地方\n• 暂停练习：重要知识点暂停视频，自己尝试复述\n• 及时复习：看完视频后24小时内复习笔记\n• 实际应用：将学到的内容用在日常对话或写作中\n\n每周回顾一次所学内容，强化记忆效果。",
+    tags: ["视频学习", "学习效率", "复习技巧"],
+  },
+  {
+    title: "零基础学习者的学习节奏",
+    content:
+      "零基础学习英语需要循序渐进，不要急于求成：\n\n• 每日学习时间：建议30-60分钟，避免疲劳\n• 学习频率：每天坚持比周末集中学习效果好\n• 重点掌握：26个字母→音标→基础词汇→简单句型\n• 辅助工具：利用动画和儿歌培养语感\n• 心态调整：接受初期的不熟练，多听多说是关键\n\n坚持3个月，你会看到明显的进步！",
+    tags: ["零基础", "学习节奏", "心态调整"],
+  },
+  {
+    title: "结合课程和单词打卡效果更佳",
+    content:
+      "课程学习和单词打卡是相辅相成的：\n\n• 课前：通过单词打卡预习课程相关词汇\n• 课中：结合课程内容理解单词用法\n• 课后：复习当天课程中的重点单词\n• 定期：将课程中学到的句型和单词结合练习\n\n建议每天先完成单词打卡，再观看对应水平的课程视频。",
+    tags: ["单词打卡", "课程结合", "综合学习"],
+  },
+  {
+    title: "利用碎片时间复习课程内容",
+    content:
+      "课程内容需要反复复习才能掌握：\n\n• 通勤时间：回顾课程笔记或重点单词\n• 休息间隙：观看课程片段，强化记忆\n• 睡前10分钟：总结当天学到的知识点\n• 周末：完整复习本周所学课程\n\n我们的课程支持倍速播放，适合碎片时间快速复习。",
+    tags: ["碎片时间", "复习方法", "课程复习"],
+  },
+]);
+
+// 下一条建议
+const nextSuggestion = () => {
+  if (currentSuggestionIndex.value < suggestionsData.value.length - 1) {
+    currentSuggestionIndex.value++;
+  }
+};
+
+// 上一条建议
+const previousSuggestion = () => {
+  if (currentSuggestionIndex.value > 0) {
+    currentSuggestionIndex.value--;
+  }
+};
+
+// 点击弹窗背景关闭
+const handleSuggestionsBackdropClick = () => {
+  showSuggestionsModal.value = false;
+  currentSuggestionIndex.value = 0;
+};
 </script>
 
 <style scoped>

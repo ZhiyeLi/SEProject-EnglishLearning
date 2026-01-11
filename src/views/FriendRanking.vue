@@ -4,7 +4,7 @@
     <NavBar :nav-items="navItems">
       <template #actions>
         <ActionButtons
-          @suggestions="() => {}"
+          @suggestions="showSuggestionsModal = true"
           @settings="gotoSettings"
           @home="gotoHome"
           @notifications="() => {}"
