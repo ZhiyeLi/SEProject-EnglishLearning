@@ -46,63 +46,63 @@
                 暂无好友，快去添加吧！
               </li>
               <!-- 好友列表 -->
-                      <li
-                        v-for="friend in friendList"
-                        :key="friend.id"
+              <li
+                v-for="friend in friendList"
+                :key="friend.id"
+              >
+                <div class="relative">
+                  <FriendItem 
+                    :name="friend.name" 
+                    :avatar="friend.avatar || 'https://picsum.photos/seed/default/100/100'" 
+                    :status="friend.status || 'offline'"
+                    :class="friend.id === currentFriendId ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''"
+                  >
+                    <template #actions>
+                      <button
+                        class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
+                        @click="selectFriend(friend)"
                       >
-                        <div class="relative">
-                          <FriendItem 
-                            :name="friend.name" 
-                            :avatar="friend.avatar || 'https://picsum.photos/seed/default/100/100'" 
-                            :status="friend.status || 'offline'"
-                            :class="friend.id === currentFriendId ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''"
-                          >
-                            <template #actions>
-                              <button
-                                class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
-                                @click="selectFriend(friend)"
-                              >
-                                <i class="fas fa-comment" />
-                              </button>
-                            </template>
-                          </FriendItem>
-                          <!-- 未读消息标志 -->
-                          <span
-                            v-if="unreadCounts[friend.id] > 0"
-                            class="absolute top-2 right-4 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse"
-                            :class="{ 'h-6 w-6': unreadCounts[friend.id] > 9 }" 
-                          >
-                            {{ unreadCounts[friend.id] > 99 ? '99+' : unreadCounts[friend.id] }}
-                          </span>
-                        </div>
-                      </li>
-                      <!-- 添加好友 -->
-                      <li>
-                        <button 
-                          class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group"
-                          @click="showAddFriendModal = true"
-                        >
-                          <i class="fas fa-plus-circle mr-2 group-hover:scale-110 transition-transform" />
-                          点击添加更多好友
-                        </button>
-                      </li>
-                      <!-- 好友请求 -->
-                      <li>
-                        <button 
-                          class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group relative"
-                          @click="(showFriendRequestModal = true, fetchFriendRequests())"
-                        >
-                          <i class="fas fa-user-plus mr-2 group-hover:scale-110 transition-transform" />
-                          查看好友请求
-                          <!-- 未处理请求数小红点 -->
-                          <span
-                            v-if="pendingRequestCount > 0"
-                            class="absolute top-1 right-6 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
-                          >
-                            {{ pendingRequestCount > 99 ? '99+' : pendingRequestCount }}
-                          </span>
-                        </button>
-                      </li>
+                        <i class="fas fa-comment" />
+                      </button>
+                    </template>
+                  </FriendItem>
+                  <!-- 未读消息标志 -->
+                  <span
+                    v-if="unreadCounts[friend.id] > 0"
+                    class="absolute top-2 right-4 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse"
+                    :class="{ 'h-6 w-6': unreadCounts[friend.id] > 9 }" 
+                  >
+                    {{ unreadCounts[friend.id] > 99 ? '99+' : unreadCounts[friend.id] }}
+                  </span>
+                </div>
+              </li>
+              <!-- 添加好友 -->
+              <li>
+                <button 
+                  class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group"
+                  @click="showAddFriendModal = true"
+                >
+                  <i class="fas fa-plus-circle mr-2 group-hover:scale-110 transition-transform" />
+                  点击添加更多好友
+                </button>
+              </li>
+              <!-- 好友请求 -->
+              <li>
+                <button 
+                  class="w-full flex items-center justify-center p-3 text-emerald-600 text-sm border border-dashed border-emerald-200 rounded-lg hover:bg-emerald-50 transition-all hover:border-emerald-300 group relative"
+                  @click="(showFriendRequestModal = true, fetchFriendRequests())"
+                >
+                  <i class="fas fa-user-plus mr-2 group-hover:scale-110 transition-transform" />
+                  查看好友请求
+                  <!-- 未处理请求数小红点 -->
+                  <span
+                    v-if="pendingRequestCount > 0"
+                    class="absolute top-1 right-6 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse"
+                  >
+                    {{ pendingRequestCount > 99 ? '99+' : pendingRequestCount }}
+                  </span>
+                </button>
+              </li>
             </ul>
           </div>
           
@@ -249,8 +249,13 @@
       >
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
           <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-gray-800">添加好友</h3>
-            <button class="text-gray-400 hover:text-gray-600 transition-colors" @click="showAddFriendModal = false">
+            <h3 class="text-lg font-semibold text-gray-800">
+              添加好友
+            </h3>
+            <button
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showAddFriendModal = false"
+            >
               <i class="fas fa-times text-lg" />
             </button>
           </div>
@@ -268,16 +273,44 @@
                   <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 </div>
               </div>
-              <div v-if="searchFriendValue" class="max-h-40 overflow-y-auto border rounded-lg">
-                <div v-if="searchResults.length === 0" class="p-4 text-center text-gray-500">未找到相关好友</div>
-                <div v-else class="divide-y">
-                  <div v-for="(friend, index) in searchResults" :key="index" class="flex items-center p-3 hover:bg-gray-50 transition-colors">
-                    <img :src="friend.avatar" alt="好友头像" class="w-10 h-10 rounded-full object-cover mr-3">
+              <div
+                v-if="searchFriendValue"
+                class="max-h-40 overflow-y-auto border rounded-lg"
+              >
+                <div
+                  v-if="searchResults.length === 0"
+                  class="p-4 text-center text-gray-500"
+                >
+                  未找到相关好友
+                </div>
+                <div
+                  v-else
+                  class="divide-y"
+                >
+                  <div
+                    v-for="(friend, index) in searchResults"
+                    :key="index"
+                    class="flex items-center p-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <img
+                      :src="friend.avatar"
+                      alt="好友头像"
+                      class="w-10 h-10 rounded-full object-cover mr-3"
+                    >
                     <div class="flex-grow">
-                      <p class="font-medium text-gray-800">{{ friend.name }}</p>
-                      <p class="text-xs text-gray-500">ID: {{ friend.id }}</p>
+                      <p class="font-medium text-gray-800">
+                        {{ friend.name }}
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        ID: {{ friend.id }}
+                      </p>
                     </div>
-                    <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm transition-colors" @click="addFriend(friend)">添加</button>
+                    <button
+                      class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                      @click="addFriend(friend)"
+                    >
+                      添加
+                    </button>
                   </div>
                 </div>
               </div>
@@ -295,33 +328,71 @@
       >
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
           <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-gray-800">好友请求</h3>
-            <button class="text-gray-400 hover:text-gray-600 transition-colors" @click="showFriendRequestModal = false">
+            <h3 class="text-lg font-semibold text-gray-800">
+              好友请求
+            </h3>
+            <button
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="showFriendRequestModal = false"
+            >
               <i class="fas fa-times text-lg" />
             </button>
           </div>
           <div class="px-6 py-4 max-h-80 overflow-y-auto">
-            <div v-if="friendRequestLoading" class="p-8 text-center text-gray-500">
+            <div
+              v-if="friendRequestLoading"
+              class="p-8 text-center text-gray-500"
+            >
               <i class="fas fa-spinner fa-spin text-4xl mb-2 text-gray-300" />
               <p>加载中...</p>
             </div>
-            <div v-else-if="friendRequests.length === 0" class="p-8 text-center text-gray-500">
+            <div
+              v-else-if="friendRequests.length === 0"
+              class="p-8 text-center text-gray-500"
+            >
               <i class="fas fa-inbox text-4xl mb-2 text-gray-300" />
               <p>暂无未处理的好友请求</p>
             </div>
-            <div v-else class="space-y-3 divide-y">
-              <div v-for="(request, index) in friendRequests" :key="index" class="py-3 flex items-center justify-between">
+            <div
+              v-else
+              class="space-y-3 divide-y"
+            >
+              <div
+                v-for="(request, index) in friendRequests"
+                :key="index"
+                class="py-3 flex items-center justify-between"
+              >
                 <div class="flex items-center">
-                  <img :src="request.avatar" alt="请求者头像" class="w-12 h-12 rounded-full object-cover mr-3">
+                  <img
+                    :src="request.avatar"
+                    alt="请求者头像"
+                    class="w-12 h-12 rounded-full object-cover mr-3"
+                  >
                   <div>
-                    <p class="font-medium text-gray-800">{{ request.name }}</p>
-                    <p class="text-xs text-gray-500">ID: {{ request.requesterId }}</p>
-                    <p class="text-xs text-gray-400 mt-1">{{ request.time }}</p>
+                    <p class="font-medium text-gray-800">
+                      {{ request.name }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      ID: {{ request.requesterId }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">
+                      {{ request.time }}
+                    </p>
                   </div>
                 </div>
                 <div class="flex space-x-2">
-                  <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition-colors" @click="acceptFriendRequest(index)"><i class="fas fa-check mr-1" /> 接受</button>
-                  <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition-colors" @click="rejectFriendRequest(index)"><i class="fas fa-times mr-1" /> 拒绝</button>
+                  <button
+                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    @click="acceptFriendRequest(index)"
+                  >
+                    <i class="fas fa-check mr-1" /> 接受
+                  </button>
+                  <button
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    @click="rejectFriendRequest(index)"
+                  >
+                    <i class="fas fa-times mr-1" /> 拒绝
+                  </button>
                 </div>
               </div>
             </div>

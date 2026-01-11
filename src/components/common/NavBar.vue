@@ -80,11 +80,11 @@
             >
               <i class="fas fa-user mr-3" />个人主页
             </button>
-            <button
+            <!-- <button
               class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             >
               <i class="fas fa-comment mr-2" />设置最近状态
-            </button>
+            </button> -->
             <div class="border-t border-gray-100 my-1" />
             <button
               class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"

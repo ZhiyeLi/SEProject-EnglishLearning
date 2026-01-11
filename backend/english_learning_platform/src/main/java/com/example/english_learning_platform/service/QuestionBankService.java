@@ -393,6 +393,22 @@ public class QuestionBankService {
     }
     
     /**
+     * 获取今日按类型分组的统计
+     */
+    public Map<String, Long> getTodayStatsByType(Long userId) {
+        List<Object[]> results = userAnswerDetailRepository.countTodayAnswersByPaperType(userId);
+        Map<String, Long> statsByType = new HashMap<>();
+        
+        for (Object[] result : results) {
+            String category = (String) result[0];
+            Long count = (Long) result[1];
+            statsByType.put(category, count);
+        }
+        
+        return statsByType;
+    }
+    
+    /**
      * 添加收藏
      */
     @Transactional
@@ -971,6 +987,13 @@ public class QuestionBankService {
             .collect(Collectors.toList());
         
         return userAnswerList.equals(correctAnswerUpper);
+    }
+    
+    /**
+     * 获取用户总做题数量
+     */
+    public long getTotalAnsweredQuestions(Long userId) {
+        return userAnswerDetailRepository.countByUserId(userId);
     }
     
     /**

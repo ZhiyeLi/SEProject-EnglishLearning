@@ -186,4 +186,26 @@ public class WordController {
             return ApiResponse.error(e.getMessage());
         }
     }
+
+    @GetMapping("/consecutive-days")
+    public ApiResponse<Integer> getConsecutiveCheckInDays(HttpServletRequest request) {
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            int consecutiveDays = wordService.getConsecutiveCheckInDays(userId);
+            return ApiResponse.success(consecutiveDays);
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    @GetMapping("/total-learned")
+    public ApiResponse<Long> getTotalLearnedWords(HttpServletRequest request) {
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            long totalWords = wordService.getTotalLearnedWords(userId);
+            return ApiResponse.success(totalWords);
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
 }

@@ -155,6 +155,7 @@
 import { ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
+import { authApi } from '@/api/auth';
 // import { useRouter } from 'vue-router';
 
 // 注入全局用户状态
@@ -207,15 +208,12 @@ const rules = ref({
     {
       validator: (rule, value, callback) => {
         if (verifyMethod.value === 'password') {
-          if (value && value !== userStore.userInfo.password) {
-            passwordError.value = '原密码输入错误';
+          if (passwordError.value) {
             callback(new Error('原密码输入错误'));
           } else {
-            passwordError.value = '';
             callback();
           }
         } else {
-          passwordError.value = '';
           callback();
         }
       },
@@ -293,12 +291,15 @@ const formatContact = (contact) => {
 };
 
 // 手动验证原密码
-const validateOldPassword = () => {
+const validateOldPassword = async () => {
   if (verifyMethod.value === 'password' && form.value.oldPassword) {
-    if (form.value.oldPassword !== userStore.userInfo.password) {
-      passwordError.value = '原密码输入错误';
-    } else {
+    try {
+      await authApi.verifyPassword({
+        password: form.value.oldPassword
+      });
       passwordError.value = '';
+    } catch (error) {
+      passwordError.value = '原密码输入错误';
     }
   }
 };
@@ -409,7 +410,14 @@ const submitEmailForm = async () => {
     let verifySuccess = false;
     switch (verifyMethod.value) {
       case 'password':
-        verifySuccess = form.value.oldPassword === userStore.userInfo.password;
+        try {
+          await authApi.verifyPassword({
+            password: form.value.oldPassword
+          });
+          verifySuccess = true;
+        } catch (error) {
+          verifySuccess = false;
+        }
         break;
       case 'email':
       case 'phone':
