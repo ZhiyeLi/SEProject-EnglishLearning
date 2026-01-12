@@ -56,9 +56,22 @@
                 @keyup.enter="checkAnswer"
               >
             </div>
-            <div v-if="isCorrect !== null" class="mb-4">
-              <p v-if="isCorrect" class="text-green-600 font-semibold">正确！</p>
-              <p v-else class="text-red-600 font-semibold">{{ feedbackMessage || '不正确，请重新拼写。' }}</p>
+            <div
+              v-if="isCorrect !== null"
+              class="mb-4"
+            >
+              <p
+                v-if="isCorrect"
+                class="text-green-600 font-semibold"
+              >
+                正确！
+              </p>
+              <p
+                v-else
+                class="text-red-600 font-semibold"
+              >
+                {{ feedbackMessage || '不正确，请重新拼写。' }}
+              </p>
             </div>
             <div class="flex justify-center gap-4 mb-6">
               <button
@@ -79,7 +92,10 @@
               </button>
             </div>
             <!-- 显示答案 -->
-            <div v-if="showAnswer" class="mb-6">
+            <div
+              v-if="showAnswer"
+              class="mb-6"
+            >
               <p class="text-4xl font-bold text-blue-600 mb-2">
                 {{ currentWord.word }}
               </p>

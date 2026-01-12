@@ -80,11 +80,11 @@
             >
               <i class="fas fa-user mr-3" />个人主页
             </button>
-            <button
+            <!-- <button
               class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             >
               <i class="fas fa-comment mr-2" />设置最近状态
-            </button>
+            </button> -->
             <div class="border-t border-gray-100 my-1" />
             <button
               class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -97,7 +97,7 @@
               class="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50 transition-colors"
               @click="gotoLogin"
             >
-              <i class="fas fa-right-to-bracket mr-2" />登录
+              <i class="fas fa-right-to-bracket mr-2" />切换账号
             </button>
             <button
               class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -149,6 +149,9 @@ const gotoProfile = () => {
 // 跳转到登录
 const gotoLogin = () => {
   showDropdown.value = false;
+  // 清除用户登录状态
+  userStore.logout();
+  // 跳转到登录页
   router.push({ name: "Login" }).catch(() => {});
 };
 

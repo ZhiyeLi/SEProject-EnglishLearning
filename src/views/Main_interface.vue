@@ -436,28 +436,29 @@
             class="bg-emerald-50 rounded-lg p-3 mb-3 border border-emerald-100"
           >
             <div class="font-medium text-gray-800 text-base">
-              高考3500词
+              {{ currentType?.name || '未选择词典' }}
             </div>
             <div class="text-base text-gray-600 mt-2 space-y-1">
               <p class="flex justify-between">
                 <span>已背单词</span>
-                <span class="font-medium text-emerald-600">1,280 个</span>
+                <span class="font-medium text-emerald-600">{{ currentProgress.passedCount || 0 }} 个</span>
               </p>
               <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
                 <div
                   class="bg-emerald-500 h-1.5 rounded-full"
-                  style="width: 36%"
+                  :style="{ width: wordProgressPercentage + '%' }"
                 />
               </div>
               <p class="flex justify-between mt-2">
                 <span>剩余单词</span>
-                <span class="font-medium text-gray-700">2,220 个</span>
+                <span class="font-medium text-gray-700">{{ (currentType?.totalWords || 0) - (currentProgress.passedCount || 0) }} 个</span>
               </p>
             </div>
           </div>
 
           <button
             class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 py-2 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-sm hover:shadow text-base"
+            @click="gotoWordTypeSelection"
           >
             更换词典 <i class="fas fa-exchange-alt ml-1" />
           </button>
@@ -831,6 +832,53 @@ const todayStats = ref({
   streak: 0
 });
 
+// 当前词典类型和进度
+const currentType = ref(null);
+const currentProgress = ref({ passedCount: 0, passedWords: [] });
+
+// 计算进度百分比
+const wordProgressPercentage = computed(() => {
+  if (!currentType.value) return 0;
+  const total = Number(currentType.value.totalWords) || 0;
+  const passed = Number(currentProgress.value.passedCount) || 0;
+  if (total === 0) return 0;
+  const raw = (passed / total) * 100;
+  let formatted = Number.parseFloat(raw.toFixed(1));
+  // 如果有已打卡但显示为 0.0，则至少显示 0.1%，避免误导用户
+  if (passed > 0 && formatted === 0) formatted = 0.1;
+  return formatted;
+});
+
+// 获取当前词典类型和进度
+const fetchCurrentWordType = async () => {
+  try {
+    // 获取已选择的词汇类型
+    const selectedTypeData = await wordProgressManager.getSelectedType();
+    if (selectedTypeData?.typeId) {
+      // 获取类型列表并找到当前类型
+      const typeList = await wordProgressManager.getWordTypeList();
+      const typeObj = typeList.find(t => Number(t.typeId) === Number(selectedTypeData.typeId));
+      
+      if (typeObj) {
+        currentType.value = {
+          id: typeObj.typeId || typeObj.id,
+          name: typeObj.name,
+          description: typeObj.description,
+          totalWords: typeObj.totalWords,
+        };
+        
+        // 获取该类型的进度
+        currentProgress.value = await wordProgressManager.getTypeProgress(typeObj.typeId || typeObj.id);
+        if (!currentProgress.value) {
+          currentProgress.value = { passedCount: 0, passedWords: [] };
+        }
+      }
+    }
+  } catch (error) {
+    console.error("获取当前词典类型失败:", error);
+  }
+};
+
 // 获取每日学习统计
 const fetchTodayStats = async () => {
   try {
@@ -888,6 +936,7 @@ onMounted(async () => {
   await fetchFriendRequests(); // 加载好友请求列表
   await fetchUnreadCounts(); // 加载未读消息数
   await fetchTodayStats(); // 加载今日学习统计
+  await fetchCurrentWordType(); // 加载当前词典类型和进度
 
   // 开始轮询未读消息数
   if (!messagePollInterval.value) {
@@ -1019,6 +1068,10 @@ function gotoCourse() {
 }
 function gotoRank(){
   router.push({ name: "Rank" }).catch(() => {});
+}
+
+function gotoWordTypeSelection() {
+  startWordCheckIn();
 }
 async function startWordCheckIn() {
   // 检查用户是否已选择过词汇类型

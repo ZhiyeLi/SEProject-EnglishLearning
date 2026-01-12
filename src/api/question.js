@@ -31,6 +31,13 @@ export default {
   },
 
   /**
+   * 获取今日按类型分组的统计
+   */
+  getTodayStatsByType() {
+    return request.get("/api/questionbank/stats/today/by-type");
+  },
+
+  /**
    * 添加收藏
    * @param {String} type - 'paper' 或 'question'
    * @param {Number} id - ID
@@ -96,5 +103,12 @@ export default {
   // 添加到生词本
   addVocabulary(data) {
     return request.post("/api/questions/vocabulary/add", data);
+  },
+
+  /**
+   * 获取用户总做题数量
+   */
+  getTotalAnsweredQuestions() {
+    return request.get("/api/questionbank/stats/total");
   },
 };

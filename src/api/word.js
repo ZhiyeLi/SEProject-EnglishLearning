@@ -87,4 +87,14 @@ export const wordApi = {
   getUnpassedWords(params) {
     return request.get("/api/words/unpassed", { params });
   },
+
+  // 获取连续打卡天数
+  getConsecutiveCheckInDays() {
+    return request.get("/api/words/consecutive-days");
+  },
+
+  // 获取总单词量
+  getTotalLearnedWords() {
+    return request.get("/api/words/total-learned");
+  },
 };

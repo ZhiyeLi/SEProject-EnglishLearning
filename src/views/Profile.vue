@@ -86,20 +86,20 @@
             <ul class="space-y-3">
               <li class="flex justify-between items-center">
                 <span class="text-gray-600">连续打卡</span>
-                <span class="font-semibold text-emerald-600">42 天</span>
+                <span class="font-semibold text-emerald-600">{{ learningStats.consecutiveDays }} 天</span>
               </li>
               <li class="flex justify-between items-center">
                 <span class="text-gray-600">总单词量</span>
-                <span class="font-semibold text-emerald-600">1,258 个</span>
+                <span class="font-semibold text-emerald-600">{{ learningStats.totalWords }} 个</span>
               </li>
               <li class="flex justify-between items-center">
-                <span class="text-gray-600">学习时长</span>
-                <span class="font-semibold text-emerald-600">86 小时</span>
+                <span class="text-gray-600">已做题目</span>
+                <span class="font-semibold text-emerald-600">{{ learningStats.totalQuestions }} 道</span>
               </li>
-              <li class="flex justify-between items-center">
+              <!-- <li class="flex justify-between items-center">
                 <span class="text-gray-600">完成课程</span>
                 <span class="font-semibold text-emerald-600">12 门</span>
-              </li>
+              </li> -->
             </ul>
           </div>
           
@@ -123,51 +123,35 @@
           <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-lg font-semibold text-gray-800">
-                学习进度
+                单词学习进度
               </h2>
-              <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
+              <button 
+                class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                @click="gotoWordCheckIn"
+              >
                 查看全部
               </button>
             </div>
             
-            <!-- 进度条示例 -->
+            <!-- 词汇学习进度条 -->
             <div class="space-y-6">
-              <div>
+              <div
+                v-for="type in wordTypes"
+                :key="type.typeId"
+                class="progress-item"
+              >
                 <div class="flex justify-between mb-2">
-                  <span class="text-sm font-medium text-gray-700">四级词汇</span>
-                  <span class="text-sm font-medium text-emerald-600">68%</span>
+                  <span class="text-sm font-medium text-gray-700">{{ type.name }}</span>
+                  <span class="text-sm font-medium text-emerald-600">{{ getWordTypeProgress(type.typeId) }}%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5">
                   <div
-                    class="bg-emerald-500 h-2.5 rounded-full"
-                    style="width: 68%"
+                    class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500"
+                    :style="{ width: getWordTypeProgress(type.typeId) + '%' }"
                   />
                 </div>
-              </div>
-              
-              <div>
-                <div class="flex justify-between mb-2">
-                  <span class="text-sm font-medium text-gray-700">语法精通</span>
-                  <span class="text-sm font-medium text-emerald-600">42%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    class="bg-emerald-500 h-2.5 rounded-full"
-                    style="width: 42%"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <div class="flex justify-between mb-2">
-                  <span class="text-sm font-medium text-gray-700">阅读理解</span>
-                  <span class="text-sm font-medium text-emerald-600">75%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    class="bg-emerald-500 h-2.5 rounded-full"
-                    style="width: 75%"
-                  />
+                <div class="text-xs text-gray-500 mt-1">
+                  {{ (wordProgress[type.typeId]?.passedCount || 0) }} / {{ type.totalWords }} 个单词
                 </div>
               </div>
             </div>
@@ -179,52 +163,49 @@
               <h2 class="text-lg font-semibold text-gray-800">
                 最近活动
               </h2>
-              <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
-                更多
+              <button 
+                v-if="activities.length > 0"
+                class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                @click="toggleShowAllActivities"
+              >
+                {{ showAllActivities ? '收起' : '更多' }}
               </button>
             </div>
             
             <div class="space-y-4">
-              <div class="flex gap-3 pb-4 border-b border-gray-100">
-                <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-1">
-                  <i class="fas fa-check text-emerald-600" />
+              <div
+                v-for="(activity, index) in displayedActivities"
+                :key="index"
+                class="flex gap-3 pb-4 border-b border-gray-100 last:border-b-0"
+              >
+                <div 
+                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
+                  :class="`bg-${activity.iconColor}-100`"
+                >
+                  <i 
+                    :class="`${activity.icon} text-${activity.iconColor}-600`" 
+                  />
                 </div>
                 <div>
                   <p class="text-gray-800">
-                    完成了 <span class="font-medium">英语四级单词</span> 学习任务
+                    {{ activity.title }}
                   </p>
                   <p class="text-sm text-gray-500 mt-1">
-                    今天 09:45
+                    {{ activity.subtitle }}
                   </p>
                 </div>
               </div>
               
-              <div class="flex gap-3 pb-4 border-b border-gray-100">
-                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-1">
-                  <i class="fas fa-comment text-blue-600" />
-                </div>
-                <div>
-                  <p class="text-gray-800">
-                    向 <span class="font-medium">AI 学习助手</span> 咨询了语法问题
-                  </p>
-                  <p class="text-sm text-gray-500 mt-1">
-                    昨天 16:20
-                  </p>
-                </div>
-              </div>
-              
-              <div class="flex gap-3">
-                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-1">
-                  <i class="fas fa-trophy text-purple-600" />
-                </div>
-                <div>
-                  <p class="text-gray-800">
-                    在 <span class="font-medium">周排行榜</span> 中获得第三名
-                  </p>
-                  <p class="text-sm text-gray-500 mt-1">
-                    3天前
-                  </p>
-                </div>
+              <!-- 无活动提示 -->
+              <div 
+                v-if="activities.length === 0"
+                class="text-center py-8 text-gray-500"
+              >
+                <i class="fas fa-calendar-alt text-3xl mb-2 block" />
+                <p>今日暂无学习活动</p>
+                <p class="text-sm">
+                  开始学习后，您的活动将显示在这里
+                </p>
               </div>
             </div>
           </div>
@@ -242,17 +223,71 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user'; // 引入Pinia用户状态
 // 引入组件库的 NavBar 和 EndBar（路径根据实际组件库位置调整）
 import NavBar from '@/components/common/NavBar.vue';
 import EndBar from '@/components/common/EndBar.vue';
 import EditProfile from '@/components/profile/EditProfile.vue'; // 引入编辑组件
+import { wordProgressManager } from '@/utils/wordData.js';
+import { planApi } from '@/api/plan.js';
+import { wordApi } from '@/api/word.js';
+import questionApi from '@/api/question.js';
 
 const router = useRouter();
 const userStore = useUserStore(); // 注入用户状态
 const isEditOpen = ref(false); // 控制编辑对话框显示/隐藏
+
+// 学习统计相关
+const learningStats = ref({
+  consecutiveDays: 0,
+  totalWords: 0,
+  totalQuestions: 0
+});
+
+// 词汇学习进度相关
+const wordTypes = ref([]);
+const wordProgress = ref({});
+
+// 最近活动相关
+const activities = ref([]);
+const showAllActivities = ref(false);
+const initialDisplayCount = 4;
+
+// 加载词汇类型和进度数据
+onMounted(async () => {
+  try {
+    // 初始化单词进度管理器
+    await wordProgressManager.init();
+    
+    // 获取词汇类型列表
+    const types = await wordProgressManager.getWordTypeList();
+    wordTypes.value = types;
+    
+    // 获取用户进度
+    const progress = await wordProgressManager.getProgress();
+    wordProgress.value = progress || {};
+
+    // 加载学习统计数据
+    try {
+      await loadLearningStats();
+    } catch (error) {
+      console.error('加载学习统计失败:', error);
+      // 设置默认值以防API调用失败
+      learningStats.value = {
+        consecutiveDays: 0,
+        totalWords: 0,
+        totalQuestions: 0
+      };
+    }
+
+    // 加载今日活动数据
+    await loadTodayActivities();
+  } catch (error) {
+    console.error('加载数据失败:', error);
+  }
+});
 
 const gotoHome = () => {
   router.push('/').catch(() => {});
@@ -276,6 +311,191 @@ const gotoCourse = () => {
 
 const gotoQuestionBank = () => {
   router.push({ name: "QuestionBank" }).catch(() => {});
+};
+
+// 加载学习统计数据
+const loadLearningStats = async () => {
+  try {
+    // 获取连续打卡天数
+    const consecutiveResponse = await wordApi.getConsecutiveCheckInDays();
+    if (consecutiveResponse && consecutiveResponse.code === 200) {
+      learningStats.value.consecutiveDays = consecutiveResponse.data || 0;
+    }
+
+    // 获取总单词量
+    const wordsResponse = await wordApi.getTotalLearnedWords();
+    if (wordsResponse && wordsResponse.code === 200) {
+      learningStats.value.totalWords = wordsResponse.data || 0;
+    }
+
+    // 获取总做题数量
+    const questionsResponse = await questionApi.getTotalAnsweredQuestions();
+    if (questionsResponse && questionsResponse.code === 200) {
+      learningStats.value.totalQuestions = questionsResponse.data || 0;
+    }
+  } catch (error) {
+    console.error('加载学习统计失败:', error);
+    // 确保有默认值
+    learningStats.value = {
+      consecutiveDays: 0,
+      totalWords: 0,
+      totalQuestions: 0
+    };
+    throw error; // 重新抛出错误以便catch块处理
+  }
+};
+
+// 计算词汇类型进度百分比
+const getWordTypeProgress = (typeId) => {
+  const progress = wordProgress.value[typeId] || { passedCount: 0 };
+  const type = wordTypes.value.find(t => t.typeId === typeId);
+  if (!type || !type.totalWords) return 0;
+  
+  const total = Number(type.totalWords) || 0;
+  const passed = Number(progress.passedCount) || 0;
+  if (total === 0) return 0;
+  
+  const percentage = Math.min((passed / total) * 100, 100);
+  return Math.round(percentage);
+};
+
+// 加载今日活动数据
+const loadTodayActivities = async () => {
+  try {
+    const todayActivities = [];
+
+    // 1. 获取今日完成的计划
+    try {
+      const planResponse = await planApi.getTodayPlans();
+      if (planResponse.code === 200 && planResponse.data) {
+        const completedPlans = planResponse.data.filter(plan => plan.completed);
+        completedPlans.forEach(plan => {
+          todayActivities.push({
+            type: 'plan',
+            icon: 'fas fa-check',
+            iconColor: 'emerald',
+            title: `完成了计划：${plan.title}`,
+            subtitle: `计划类型：${plan.category} · ${formatTime(plan.completedAt || plan.updatedAt)}`,
+            time: plan.completedAt || plan.updatedAt
+          });
+        });
+      }
+    } catch (error) {
+      console.error('获取今日计划失败:', error);
+    }
+
+    // 2. 获取今日打卡的单词
+    try {
+      const wordResponse = await wordApi.getTodayCheckInStatus();
+      if (wordResponse.code === 200 && wordResponse.data) {
+        // API返回的数据结构: { typeStats: { "1": { learn: 10, review: 5 }, ... } }
+        const typeStats = wordResponse.data.typeStats || {};
+        Object.entries(typeStats).forEach(([typeId, stats]) => {
+          const type = wordTypes.value.find(t => t.typeId == typeId);
+          const typeName = type ? type.name : `类型${typeId}`;
+          
+          // 显示学习统计
+          if (stats.learn && stats.learn > 0) {
+            todayActivities.push({
+              type: 'word-learn',
+              icon: 'fas fa-book-open',
+              iconColor: 'blue',
+              title: `单词学习：${typeName}`,
+              subtitle: `新学了 ${stats.learn} 个单词`,
+              time: new Date().toISOString()
+            });
+          }
+          
+          // 显示复习统计
+          if (stats.review && stats.review > 0) {
+            todayActivities.push({
+              type: 'word-review',
+              icon: 'fas fa-redo',
+              iconColor: 'orange',
+              title: `单词复习：${typeName}`,
+              subtitle: `复习了 ${stats.review} 个单词`,
+              time: new Date().toISOString()
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('获取今日单词打卡失败:', error);
+    }
+
+    // 3. 获取今日做的题目
+    try {
+      const questionResponse = await questionApi.getTodayStatsByType();
+      if (questionResponse.code === 200 && questionResponse.data) {
+        const questionData = questionResponse.data;
+        Object.entries(questionData).forEach(([questionType, count]) => {
+          if (count > 0) {
+            // 将英文类型转换为中文显示
+            const typeDisplayName = getQuestionTypeDisplayName(questionType);
+            todayActivities.push({
+              type: 'question',
+              icon: 'fas fa-question-circle',
+              iconColor: 'purple',
+              title: `题目练习：${typeDisplayName}`,
+              subtitle: `完成了 ${count} 道题目`,
+              time: new Date().toISOString() // 使用当前时间作为练习时间
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('获取今日题目统计失败:', error);
+    }
+
+    // 按时间倒序排序
+    todayActivities.sort((a, b) => new Date(b.time) - new Date(a.time));
+    activities.value = todayActivities;
+  } catch (error) {
+    console.error('加载今日活动失败:', error);
+  }
+};
+
+// 格式化时间显示
+const formatTime = (timeString) => {
+  if (!timeString) return '';
+  const date = new Date(timeString);
+  const now = new Date();
+  const diff = now - date;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  
+  if (hours < 1) {
+    return '刚刚';
+  } else if (hours < 24) {
+    return `${hours}小时前`;
+  } else {
+    const days = Math.floor(hours / 24);
+    return `${days}天前`;
+  }
+};
+
+// 切换显示更多活动
+const toggleShowAllActivities = () => {
+  showAllActivities.value = !showAllActivities.value;
+};
+
+// 计算要显示的活动列表
+const displayedActivities = computed(() => {
+  if (showAllActivities.value) {
+    return activities.value;
+  }
+  return activities.value.slice(0, initialDisplayCount);
+});
+
+// 将题目类型英文转换为中文显示
+const getQuestionTypeDisplayName = (type) => {
+  const typeMap = {
+    'CET4': '四级',
+    'CET6': '六级',
+    'TOEFL': '托福',
+    'IELTS': '雅思',
+    'KY': '考研'
+  };
+  return typeMap[type] || type;
 };
 
 

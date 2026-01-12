@@ -28,11 +28,14 @@ public interface UserAnswerDetailRepository extends JpaRepository<UserAnswerDeta
            "AND DATE(uad.createdAt) = CURRENT_DATE")
     Long countTodayWrongAnswers(@Param("userId") Long userId);
     
-    // 查询用户今日正确率
-    @Query("SELECT AVG(uad.isCorrect) FROM UserAnswerDetail uad " +
+    // 查询用户今日答题数量（按试卷类型分组）
+    @Query("SELECT ep.category, COUNT(uad) FROM UserAnswerDetail uad " +
+           "JOIN UserExamRecord uer ON uad.recordId = uer.id " +
+           "JOIN ExamPaper ep ON uer.paperId = ep.id " +
            "WHERE uad.userId = :userId " +
-           "AND DATE(uad.createdAt) = CURRENT_DATE")
-    Double calculateTodayAccuracy(@Param("userId") Long userId);
+           "AND DATE(uad.createdAt) = CURRENT_DATE " +
+           "GROUP BY ep.category")
+    List<Object[]> countTodayAnswersByPaperType(@Param("userId") Long userId);
     
     // 查询用户错题（根据用户ID和正确性）
     @Query("SELECT uad FROM UserAnswerDetail uad " +
@@ -60,5 +63,14 @@ public interface UserAnswerDetailRepository extends JpaRepository<UserAnswerDeta
         @Param("userId") Long userId,
         @Param("subItemId") Long subItemId
     );
+    
+    // 计算用户今日正确率
+    @Query("SELECT AVG(CASE WHEN uad.isCorrect = 1 THEN 1.0 ELSE 0.0 END) FROM UserAnswerDetail uad " +
+           "WHERE uad.userId = :userId " +
+           "AND DATE(uad.createdAt) = CURRENT_DATE")
+    Double calculateTodayAccuracy(@Param("userId") Long userId);
+    
+    // 统计用户总答题数量
+    Long countByUserId(@Param("userId") Long userId);
 }
 
