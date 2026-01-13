@@ -1,0 +1,79 @@
+{
+  "frontend": {
+    "tests": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "name": "Word API Tests",
+        "tests": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "name": "Auth API Tests",
+        "tests": 5,
+        "passed": 5,
+        "failed": 0
+      },
+      {
+        "name": "Utility Functions",
+        "tests": 3,
+        "passed": 3,
+        "failed": 0
+      }
+    ],
+    "coverage": {
+      "lines": 82,
+      "statements": 81,
+      "functions": 80,
+      "branches": 75
+    }
+  },
+  "backend": {
+    "tests": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "name": "API Integration Tests",
+        "tests": 5,
+        "passed": 5,
+        "failed": 0
+      },
+      {
+        "name": "Auth Controller Tests",
+        "tests": 6,
+        "passed": 6,
+        "failed": 0
+      },
+      {
+        "name": "Database Operations",
+        "tests": 5,
+        "passed": 5,
+        "failed": 0
+      }
+    ],
+    "coverage": {
+      "lines": 85,
+      "statements": 86,
+      "functions": 84,
+      "branches": 78
+    }
+  },
+  "summary": {
+    "timestamp": "2026-01-13T12:14:31.160Z",
+    "totalTests": 27,
+    "passedTests": 27,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "coverage": {
+      "lines": 84,
+      "statements": 84,
+      "functions": 82,
+      "branches": 77
+    }
+  }
+}
