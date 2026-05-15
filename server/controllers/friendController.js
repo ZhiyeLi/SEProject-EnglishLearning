@@ -319,7 +319,7 @@ const getUnreadCount = async (req, res) => {
 };
 
 // 获取好友周排行榜
-exports.getFriendWeeklyRanking = async (req, res) => {
+const getFriendWeeklyRanking = async (req, res) => {
   try {
     // 1. 从authMiddleware获取当前用户ID（authMiddleware注入的是 req.userId）
     const currentUserId = req.userId;
@@ -393,4 +393,5 @@ module.exports = {
   sendMessage,
   getMessageList,
   getUnreadCount,
+  getFriendWeeklyRanking,
 };

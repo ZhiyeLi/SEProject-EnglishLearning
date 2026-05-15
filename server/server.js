@@ -62,6 +62,8 @@ app.use("/api/plans", require("./routes/plans"));
 app.use("/api/friends", require("./routes/friends"));
 app.use("/api/words", require("./routes/words"));
 app.use("/api/questions", require("./routes/questions"));
+app.use("/api/rag", require("./routes/rag"));
+app.use("/api/ai-chat", require("./routes/aiChat"));
 
 // 创建 http server 并挂载 Socket.IO
 const server = http.createServer(app);

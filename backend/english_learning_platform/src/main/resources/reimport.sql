@@ -1,5 +1,15 @@
 -- 重新导入数据库
+SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS=0;
+
+-- 先删除 Hibernate/JPA 自动创建的表（可能有不同列类型，需先清理避免 FK 冲突）
+DROP TABLE IF EXISTS `ai_chat_messages`;
+DROP TABLE IF EXISTS `ai_chat_sessions`;
+DROP TABLE IF EXISTS `question_sub_items`;
+DROP TABLE IF EXISTS `exam_papers`;
+DROP TABLE IF EXISTS `user_exam_records`;
+DROP TABLE IF EXISTS `user_favorites`;
+DROP TABLE IF EXISTS `user_settings`;
 
 -- 表: users
 DROP TABLE IF EXISTS `users`;

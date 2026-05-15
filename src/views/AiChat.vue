@@ -305,11 +305,9 @@ import NavBar from "@/components/common/NavBar.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import { aiChatApi } from "@/api/aiChat";
+import { sendRagMessage } from "@/api/rag";
 
 const router = useRouter();
-
-// 系统固定 prompt（可根据需要修改）
-const SYSTEM_PROMPT = `你是一个友好且实用的英语学习助手，提供具体的建议、例句和练习题，尽量简洁且有步骤。`;
 
 const userInput = ref("");
 const messages = ref([
@@ -471,13 +469,8 @@ const formatChatTime = (isoString) => {
 
 // ====================================================
 
-// ===== 在此处手动输入你的 API Key 和 Base URL =====
-const API_KEY = "sk-RhMyaUYgYl3SfJ5VBThIHPinG5uNd4HIfUR4PP5DS47SJjR0"; // 例如: "sk-xxxxxxxxxxxxx"
-const BASE_URL = "https://api.deepbricks.ai"; // 例如: "https://api.openai.com"
-// ====================================================
-
 const canSend = computed(
-  () => userInput.value.trim().length > 0 && API_KEY && BASE_URL
+  () => userInput.value.trim().length > 0
 );
 
 const formatMessage = (text) => {
@@ -542,136 +535,46 @@ async function onSend() {
   const assistantMsg = appendAssistantMessagePlaceholder();
   await scrollToBottom();
 
+  let ragSuccess = false;
   try {
-    // 在追加 chunk 之前清理可能的前缀
-    await callApiStream(text, (chunk) => {
-      const cleaned = sanitizeChunk(chunk, assistantMsg.text);
-      assistantMsg.text += cleaned;
-      scrollToBottom();
-    });
+    const res = await sendRagMessage(text);
+    if (res.code === 200 && res.data && res.data.reply) {
+      assistantMsg.text = res.data.reply;
+      ragSuccess = true;
+    } else {
+      assistantMsg.text = "[错误] " + (res.message || "请求失败");
+    }
   } catch (err) {
     assistantMsg.text += "\n[错误] " + (err.message || err);
   } finally {
     assistantTyping.value = false;
     await scrollToBottom();
-    
-    // 保存助手消息到后端（不阻塞UI）
-    if (currentChatId.value && assistantMsg.text.trim()) {
+
+    // 只在 RAG 成功时保存助手消息到后端
+    if (ragSuccess && currentChatId.value && assistantMsg.text.trim()) {
       const fullContent = assistantMsg.text.trim();
       aiChatApi.saveMessage(currentChatId.value, "assistant", fullContent).catch((error) => {
         console.error("Failed to save assistant message:", error);
       });
     }
-    
-    // 自动生成标题（如果还没有标题的话）
-    const currentSession = chatHistory.value.find((c) => c.sessionId === currentChatId.value);
-    if (currentSession && !currentSession.title) {
-      const firstUserMsg = messages.value.find((m) => m.type === "user");
-      if (firstUserMsg) {
-        const title = firstUserMsg.text.substring(0, 30);
-        aiChatApi.updateSessionTitle(currentChatId.value, title).catch((error) => {
-          console.error("Failed to update chat title:", error);
-        });
-        currentSession.title = title;
-      }
-    }
-    
-    // 更新会话消息计数
-    if (currentSession) {
-      currentSession.messageCount = messages.value.length;
-    }
-  }
-}
-
-// 清理回复中的噪音前缀
-function sanitizeChunk(chunk, existingText) {
-  try {
-    if (!chunk || typeof chunk !== "string") return chunk;
-    if (!existingText || existingText.length === 0) {
-      return chunk.replace(/^\s*assistant\s*[:\-\s]*\s*/i, "");
-    }
-    return chunk;
-  } catch (e) {
-    return chunk;
-  }
-}
-
-// 发送到用户提供的 base URL
-async function callApiStream(userText, onChunk) {
-  if (!API_KEY || !BASE_URL) {
-    throw new Error("请在代码中设置 API_KEY 和 BASE_URL");
   }
 
-  const url = BASE_URL.replace(/\/$/, "") + "/v1/chat/completions";
-  const payload = {
-    model: "gpt-3.5-turbo",
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: userText },
-    ],
-    stream: true,
-  };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${API_KEY}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`API 错误: ${res.status} ${text}`);
+  // 自动生成标题（如果还没有标题的话）
+  const currentSession = chatHistory.value.find((c) => c.sessionId === currentChatId.value);
+  if (currentSession && !currentSession.title) {
+    const firstUserMsg = messages.value.find((m) => m.type === "user");
+    if (firstUserMsg) {
+      const title = firstUserMsg.text.substring(0, 30);
+      aiChatApi.updateSessionTitle(currentChatId.value, title).catch((error) => {
+        console.error("Failed to update chat title:", error);
+      });
+      currentSession.title = title;
+    }
   }
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder("utf-8");
-  let done = false;
-  let buffer = "";
-
-  while (!done) {
-    const { value, done: d } = await reader.read();
-    done = d;
-    if (value) {
-      buffer += decoder.decode(value, { stream: true });
-      // 尝试解析 data: 事件（OpenAI 风格）
-      const parts = buffer.split("\n\n");
-      buffer = parts.pop(); // 留下不完整的部分
-      for (const part of parts) {
-        const line = part.trim();
-        if (!line) continue;
-        if (line.startsWith("data:")) {
-          const data = line.replace(/^data:\s?/, "");
-          if (data === "[DONE]") {
-            return;
-          }
-          try {
-            const parsed = JSON.parse(data);
-            const delta =
-              parsed.choices &&
-              parsed.choices[0] &&
-              (parsed.choices[0].delta?.content ||
-                parsed.choices[0].delta?.role);
-            if (delta) onChunk(delta);
-            else if (
-              parsed.choices &&
-              parsed.choices[0] &&
-              parsed.choices[0].text
-            ) {
-              onChunk(parsed.choices[0].text);
-            }
-          } catch (e) {
-            // 非 JSON：可能是普通文本
-            onChunk(data);
-          }
-        } else {
-          // 直接文本块
-          onChunk(line);
-        }
-      }
-    }
+  // 更新会话消息计数
+  if (currentSession) {
+    currentSession.messageCount = messages.value.length;
   }
 }
 

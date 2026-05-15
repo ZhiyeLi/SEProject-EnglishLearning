@@ -35,7 +35,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/test/**", "/api/health").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/send-verify-code", "/api/auth/reset-password", "/api/test/**", "/api/health", "/api/rag/**").permitAll()
                 .requestMatchers("/api/files/**").permitAll() // 允许访问静态资源（音频、图片）
                 .anyRequest().authenticated()
             )
