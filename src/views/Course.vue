@@ -21,10 +21,10 @@
       <div class="max-w-7xl mx-auto">
         <!-- 页面标题 - 美化并添加图标 -->
         <h1 class="text-3xl font-bold text-gray-800 mb-8 flex items-center">
-          <i class="fas fa-graduation-cap text-emerald-500 mr-3 text-4xl"></i>
+          <i class="fas fa-graduation-cap text-emerald-500 mr-3 text-4xl" />
           <span class="relative">
             课程
-            <span class="absolute -bottom-2 left-0 h-1 w-16 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full"></span>
+            <span class="absolute -bottom-2 left-0 h-1 w-16 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full" />
           </span>
         </h1>
 

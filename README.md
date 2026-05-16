@@ -42,6 +42,59 @@ npm run build
 
 ---
 
+## reCAPTCHA 配置（登录/注册）
+
+### 1. 获取密钥
+
+前往：
+https://www.google.com/recaptcha/admin/create
+
+请选择 **reCAPTCHA v2（“I’m not a robot”）**。否则会报类型不匹配。
+
+### 2. 白名单域名填写
+
+只填域名，不要带 `http://` 或端口。
+
+必填：
+- localhost
+- 127.0.0.1
+
+如果用局域网访问（IP 会变），建议用固定本地域名（如 `el.local`）并加入白名单。
+
+### 3. 填写到项目配置
+
+前端（Site Key）：
+- `.env.development`
+- `.env.production`
+
+填写：
+```
+VUE_APP_RECAPTCHA_SITE_KEY=你的SiteKey（第一个）
+```
+
+后端（Secret Key）：
+- `backend/english_learning_platform/src/main/resources/application.yml`
+
+填写：
+```
+recaptcha:
+   secret: 你的SecretKey（第二个）
+```
+
+### 4. 重启服务
+
+配置修改后必须重启：
+- 前端：`npm run serve`
+- 后端：`mvn spring-boot:run`
+
+### 5. 网络说明（可选）
+
+如果网络无法访问 `google.com`，请确保能访问：
+- www.recaptcha.net
+- www.gstatic.com
+
+---
+
 ## 后端部分
 
 ### 第一步：如果你还未初始化或者更新数据库，请参考以下步骤操作：

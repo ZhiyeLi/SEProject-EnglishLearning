@@ -23,7 +23,16 @@ export const useUserStore = defineStore("user", {
         const response = await authApi.login({
           username: loginData.username,
           password: loginData.password,
+          recaptchaToken: loginData.recaptchaToken,
         });
+
+        if (response.code === 200 && response.data?.requireCaptcha) {
+          return {
+            success: false,
+            requireCaptcha: true,
+            message: response.message,
+          };
+        }
 
         if (response.code === 200) {
           localStorage.setItem("token", response.data.token);

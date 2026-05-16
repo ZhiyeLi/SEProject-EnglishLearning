@@ -4,7 +4,7 @@
 export { authApi } from "./auth";
 export { planApi } from "./plan";
 export { wordApi } from "./word";
-export { questionApi } from "./question";
+export { default as questionApi } from "./question";
 export { friendApi } from "./friend";
 export * as settingsApi from "./settings";
 export { optionsApi } from "./options";
