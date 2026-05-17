@@ -115,6 +115,15 @@ public class AuthService {
         userRepository.save(user);
     }
     
+    public void verifyPassword(Long userId, String password) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+        
+        if (!passwordEncoder.matches(password, user.getUserPassword())) {
+            throw new RuntimeException("密码错误");
+        }
+    }
+    
     private UserDTO convertToDTO(User user) {
         String createdAtStr = user.getCreatedAt() != null ? 
             user.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")) : 

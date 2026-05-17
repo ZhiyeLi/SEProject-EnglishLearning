@@ -45,4 +45,9 @@ export const authApi = {
   changePassword(data) {
     return request.post("/api/auth/change-password", data);
   },
+
+  // 验证密码
+  verifyPassword(data) {
+    return request.post("/api/auth/verify-password", data);
+  },
 };

@@ -87,12 +87,12 @@
 
 
       <!-- 密码修改区域 -->
-      <el-divider content-position="left">
+      <!-- <el-divider content-position="left">
         修改密码
-      </el-divider>
+      </el-divider> -->
       
       <!-- 验证方式选择 -->
-      <el-form-item label="验证方式">
+      <!-- <el-form-item label="验证方式">
         <el-radio-group
           v-model="verifyMethod"
           @change="resetPasswordForm"
@@ -107,23 +107,25 @@
             手机验证
           </el-radio>
         </el-radio-group>
-      </el-form-item>
+      </el-form-item> -->
       
       <!-- 原密码验证 -->
-      <el-form-item 
+      <!-- <el-form-item 
         v-if="verifyMethod === 'password'" 
         label="原密码"
         prop="oldPassword"
+        :error="passwordError"
       >
         <el-input 
           v-model="form.oldPassword" 
           type="password"
           placeholder="请输入原密码"
+          @blur="validateOldPassword"
         />
-      </el-form-item>
+      </el-form-item> -->
       
       <!-- 邮箱验证 -->
-      <el-form-item 
+      <!-- <el-form-item 
         v-if="verifyMethod === 'email'" 
         label="验证码"
         prop="verifyCode"
@@ -145,10 +147,10 @@
             </el-button>
           </el-col>
         </el-row>
-      </el-form-item>
+      </el-form-item> -->
       
       <!-- 手机验证 -->
-      <el-form-item 
+      <!-- <el-form-item 
         v-if="verifyMethod === 'phone'" 
         label="验证码"
         prop="verifyCode"
@@ -170,10 +172,10 @@
             </el-button>
           </el-col>
         </el-row>
-      </el-form-item>
+      </el-form-item> -->
       
       <!-- 新密码 -->
-      <el-form-item
+      <!-- <el-form-item
         label="新密码"
         prop="newPassword"
       >
@@ -182,10 +184,10 @@
           type="password"
           placeholder="请输入新密码（6-20位）"
         />
-      </el-form-item>
+      </el-form-item> -->
       
       <!-- 确认密码 -->
-      <el-form-item
+      <!-- <el-form-item
         label="确认密码"
         prop="confirmPassword"
       >
@@ -194,7 +196,7 @@
           type="password"
           placeholder="请再次输入新密码"
         />
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
     <!-- 对话框底部按钮 -->
     <template #footer>
@@ -215,12 +217,10 @@
 import { ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
-import { useRouter } from 'vue-router';
+import { authApi } from '@/api/auth';
+// import { useRouter } from 'vue-router';
 // 注入全局用户状态
-const userStore = useUserStore();
-//导入路由
-const router = useRouter();
-// 接收父组件传递的“是否打开对话框”参数
+const userStore = useUserStore();// const router = useRouter(); // 暂时未使用// 接收父组件传递的“是否打开对话框”参数
 const props = defineProps({
   open: {
     type: Boolean,
@@ -238,10 +238,10 @@ const form = ref({
   name: '',
   signature: '',
   location: '',
-  oldPassword: '',
-  newPassword: '',
-  confirmPassword: '',
-  verifyCode: ''
+  // oldPassword: '',
+  // newPassword: '',
+  // confirmPassword: '',
+  // verifyCode: ''
 }); // 表单数据
 const fileList = ref([]); // 上传文件列表
 const isOpen = ref(false); // 对话框显示状态
@@ -250,6 +250,7 @@ const verifyMethod = ref('password'); // 验证方式默认值（密码验证）
 const codeSending = ref(false); // 验证码发送状态
 const countDown = ref(60); // 倒计时秒数
 let countDownTimer = null; // 倒计时定时器
+const passwordError = ref(''); // 密码错误提示信息
 
 // 表单校验规则
 const rules = ref({
@@ -264,48 +265,49 @@ const rules = ref({
     { max: 20, message: '地区不能超过 20 个字符', trigger: 'blur' }
   ],
   oldPassword: [
-    { required: () => verifyMethod.value === 'password', message: '请输入原密码', trigger: 'blur'},
-    {
-      validator: (rule,value,callback) =>{
-        // 只有选择"输入原密码"方式时才验证
-        if (verifyMethod.value === 'password') {
-          // 比对输入的原密码与userStore中的密码
-          if (value !== userStore.userInfo.password) {
-            callback(new Error('原密码输入错误'));
-          } else {
-            callback();
-          }
-        } else {
-          callback();
-        }
-      }
-    }
+    // { required: () => verifyMethod.value === 'password', message: '请输入原密码', trigger: 'blur'},
+    // {
+    //   validator: (rule,value,callback) =>{
+    //     // 只有选择"输入原密码"方式时才验证
+    //     if (verifyMethod.value === 'password') {
+    //       if (passwordError.value) {
+    //         callback(new Error('原密码输入错误'));
+    //       } else {
+    //         callback();
+    //       }
+    //     } else {
+    //       callback();
+    //     }
+    //   }
+    // }
   ],
   verifyCode: [
-    { required: verifyMethod.value !== 'password', message: '请输入验证码', trigger: 'blur'},
-    { min: 6,max: 6,message: '验证码为6位', trigger: 'blur'}
+    // { required: verifyMethod.value !== 'password', message: '请输入验证码', trigger: 'blur'},
+    // { min: 6,max: 6,message: '验证码为6位', trigger: 'blur'}
   ],
-  newPassword: [
-    { required: true,message: '请输入新密码', trigger: 'blur'},
-    { min: 6,max: 20,message: '密码长度在6-20之间', trigger: 'blur'}
-  ],
-  confirmPassword: [
-    { required: true,message: '请确认新密码', trigger: 'blur'},
-    { 
-      validator: (rule,value,callback) =>{
-        if(value !==form.value.newPassword){
-          callback(new Error('两次输入的密码不一致'));
-        }
-        else{
-          callback();
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
+  // newPassword: [
+  //   { required: true,message: '请输入新密码', trigger: 'blur'},
+  //   { min: 6,max: 20,message: '密码长度在6-20之间', trigger: 'blur'}
+  // ],
+  // confirmPassword: [
+  //   { required: true,message: '请确认新密码', trigger: 'blur'},
+  //   { 
+  //     validator: (rule,value,callback) =>{
+  //       if(value !==form.value.newPassword){
+  //         callback(new Error('两次输入的密码不一致'));
+  //       }
+  //       else{
+  //         callback();
+  //       }
+  //     },
+  //     trigger: 'blur'
+  //   }
+  // ],
 });
 
+// /*
 // 格式化邮箱/手机号，隐藏中间部分内容
+// eslint-disable-next-line no-unused-vars
 const formatContact = (contact) => {
   if (!contact) return '';
   // 处理邮箱（如：zhangsan666@qq.com → zhang***@qq.com）
@@ -321,21 +323,43 @@ const formatContact = (contact) => {
   }
   return contact;
 };
+// */
 
 // 监听验证方式变化
 watch(verifyMethod, () => {
+  passwordError.value = '';
   formRef.value.clearValidate(['oldPassword', 'verifyCode']);
 });
 
-// 重置密码表单
-const resetPasswordForm = () => {
-  form.value.oldPassword = '';
-  form.value.verifyCode = '';
-  form.value.newPassword = '';
-  form.value.confirmPassword = '';
+// /*
+// 手动验证原密码
+// eslint-disable-next-line no-unused-vars
+const validateOldPassword = async () => {
+  if (verifyMethod.value === 'password' && form.value.oldPassword) {
+    try {
+      await authApi.verifyPassword({
+        password: form.value.oldPassword
+      });
+      passwordError.value = '';
+    } catch (error) {
+      passwordError.value = '原密码输入错误';
+    }
+  }
 };
+// */
 
+// 重置密码表单（由于密码字段被注释，暂时保留但不执行）
+// const resetPasswordForm = () => {
+//   form.value.oldPassword = '';
+//   form.value.verifyCode = '';
+//   form.value.newPassword = '';
+//   form.value.confirmPassword = '';
+//   passwordError.value = '';
+// };
+
+// /*
 // 发送验证码
+// eslint-disable-next-line no-unused-vars
 const sendVerifyCode = (type) => {
   // 模拟发送验证码
   codeSending.value = true;
@@ -353,6 +377,7 @@ const sendVerifyCode = (type) => {
     }
   }, 1000);
 };
+// */
 
 // 监听父组件的 open  props，同步对话框状态并回显数据
 watch(() => props.open, (newVal) => {
@@ -363,7 +388,7 @@ watch(() => props.open, (newVal) => {
     delete userInfo.password;
     // 3. 赋值给表单，同时重置密码相关字段
     form.value = { ...userInfo };
-    resetPasswordForm(); 
+    // resetPasswordForm(); // 密码字段被注释，暂时禁用 
 }, { immediate: true });
 
 // 监听对话框关闭，向父组件发送关闭事件
@@ -373,6 +398,7 @@ watch(isOpen, (newVal) => {
     clearInterval(countDownTimer);
     codeSending.value = false;
     countDown.value = 60;
+    passwordError.value = '';
   }
 });
 
@@ -406,31 +432,43 @@ const submitForm = async () => {
     await formRef.value.validate();
      // 准备更新的数据
     const updateData = { ...form.value };
-    // 移除密码相关字段（实际项目中应单独处理密码修改接口）
-    const { newPassword, ...userInfo } = updateData;
+    // 移除密码相关字段（由于密码字段被注释，实际上已不存在）
+    // const { newPassword, ...userInfo } = updateData;
     // 调用Pinia的action更新用户信息
-    userStore.updateUserInfo(userInfo);
+    userStore.updateUserInfo(updateData);
     
-     // 处理密码修改
-    if (newPassword) {
-      // 1. 验证原密码（仅当验证方式为密码时）
-      if (verifyMethod.value === 'password' && form.value.oldPassword !== userStore.userInfo.password) {
-        ElMessage.error('原密码验证失败');
-        return;
-      }
-      
-      // 2. 调用密码修改接口（实际项目中替换为真实API）
-      // await userApi.updatePassword({ newPassword, verifyCode, type: verifyMethod.value });
-      
-      // 3. 同步更新userStore中的密码
-      userStore.updatePassword(newPassword);
-      // 重置密码表单
-      resetPasswordForm();
-      
-      ElMessage.success('密码修改成功，请重新登录');
-      // 实际项目中这里需要跳转到登录页
-      router.push('/login');
-    }
+     // 处理密码修改（如果有新密码）
+     // 由于密码字段被注释，暂时禁用密码修改功能
+     // 在需要时可以取消注释恢复功能
+     // if (newPassword) {
+     //   // 由于验证方式被注释，暂时跳过密码验证，直接修改密码
+     //   // 在实际使用时需要取消注释验证方式并启用验证
+     //   // if (verifyMethod.value === 'password') {
+     //   //   try {
+     //   //     await authApi.verifyPassword({
+     //   //       password: form.value.oldPassword
+     //   //     });
+     //   //   } catch (error) {
+     //   //     ElMessage.error('原密码验证失败');
+     //   //     return;
+     //   //   }
+     //   // }
+     //   
+     //   // 2. 调用密码修改接口
+     //   await authApi.changePassword({
+     //     oldPassword: form.value.oldPassword,
+     //     newPassword: form.value.newPassword
+     //   });
+     //   
+     //   // 3. 密码修改成功后需要重新登录，不需要更新前端状态
+     //   
+     //   // 重置密码表单
+     //   resetPasswordForm();
+     //   
+     //   ElMessage.success('密码修改成功，请重新登录');
+     //   // 实际项目中这里需要跳转到登录页
+     //   router.push('/login');
+     // }
     // 关闭对话框
     isOpen.value = false;
     // 提示成功

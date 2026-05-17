@@ -179,15 +179,34 @@ public class WordService {
     
     public Map<String, Object> getTodayCheckInStatus(Long userId) {
         LocalDate today = LocalDate.now();
-        Optional<DailyStudyRecord> record = dailyStudyRecordRepository
+        Optional<DailyStudyRecord> recordOpt = dailyStudyRecordRepository
                 .findByUserIdAndStudyDate(userId, today);
         
         Map<String, Object> status = new HashMap<>();
-        status.put("hasCheckedIn", record.isPresent());
+        status.put("hasCheckedIn", recordOpt.isPresent());
         status.put("date", today);
-        if (record.isPresent()) {
-            status.put("record", record.get());
+        
+        // 按类型汇总学习和复习统计
+        Map<String, Map<String, Integer>> typeStats = new HashMap<>();
+        int totalNewWords = 0;
+        int totalReviewWords = 0;
+        
+        if (recordOpt.isPresent()) {
+            DailyStudyRecord record = recordOpt.get();
+            String typeId = record.getTypeId().toString();
+            Map<String, Integer> stats = typeStats.computeIfAbsent(typeId, k -> new HashMap<>());
+            
+            stats.put("learn", record.getNewWords() != null ? record.getNewWords() : 0);
+            stats.put("review", record.getReviewWords() != null ? record.getReviewWords() : 0);
+            
+            totalNewWords += record.getNewWords() != null ? record.getNewWords() : 0;
+            totalReviewWords += record.getReviewWords() != null ? record.getReviewWords() : 0;
         }
+        
+        status.put("typeStats", typeStats);
+        status.put("totalNewWords", totalNewWords);
+        status.put("totalReviewWords", totalReviewWords);
+        status.put("records", recordOpt.isPresent() ? List.of(recordOpt.get()) : Collections.emptyList());
         
         return status;
     }
@@ -344,5 +363,63 @@ public class WordService {
         return allMergedWords.stream()
                 .filter(word -> !passedKeys.contains(word.getWord() + "|" + word.getPartOfSpeech()))
                 .toList();
+    }
+
+    /**
+     * 获取用户连续打卡天数
+     */
+    public int getConsecutiveCheckInDays(Long userId) {
+        List<DailyStudyRecord> records = dailyStudyRecordRepository
+                .findByUserIdOrderByStudyDateDesc(userId);
+
+        if (records.isEmpty()) {
+            return 0;
+        }
+
+        int consecutiveDays = 0;
+        LocalDate today = LocalDate.now();
+
+        // 检查今天是否打卡
+        boolean hasCheckedInToday = records.stream()
+                .anyMatch(record -> record.getStudyDate().equals(today));
+
+        // 确定起始检查日期
+        LocalDate startDate;
+        if (!hasCheckedInToday) {
+            // 如果今天没打卡，从昨天开始检查
+            startDate = today.minusDays(1);
+            final LocalDate yesterday = startDate; // 创建final变量用于lambda
+            boolean hasCheckedInYesterday = records.stream()
+                    .anyMatch(record -> record.getStudyDate().equals(yesterday));
+            if (!hasCheckedInYesterday) {
+                return 0;
+            }
+        } else {
+            startDate = today;
+        }
+
+        // 从起始日期开始向前计算连续天数
+        LocalDate checkDate = startDate;
+        while (true) {
+            final LocalDate finalCheckDate = checkDate; // 创建final变量用于lambda
+            boolean hasCheckedIn = records.stream()
+                    .anyMatch(record -> record.getStudyDate().equals(finalCheckDate));
+
+            if (hasCheckedIn) {
+                consecutiveDays++;
+                checkDate = checkDate.minusDays(1);
+            } else {
+                break;
+            }
+        }
+
+        return consecutiveDays;
+    }
+
+    /**
+     * 获取用户总单词量（已掌握的单词数）
+     */
+    public long getTotalLearnedWords(Long userId) {
+        return userWordProgressRepository.countUniquePassedWordsByUserId(userId);
     }
 }
