@@ -75,4 +75,16 @@ public class AuthController {
             return ApiResponse.error(e.getMessage());
         }
     }
+    
+    @PostMapping("/verify-password")
+    public ApiResponse<String> verifyPassword(HttpServletRequest request, @RequestBody Map<String, String> data) {
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            String password = data.get("password");
+            authService.verifyPassword(userId, password);
+            return ApiResponse.success("密码验证成功");
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
 }

@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * 题库控制器
  * 提供题库相关的所有 API 接口
@@ -71,6 +73,22 @@ public class QuestionBankController {
             return ApiResponse.success(stats);
         } catch (Exception e) {
             log.error("Failed to get today stats", e);
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+    
+    /**
+     * 1.2.1 获取今日按类型分组的统计
+     * GET /api/questionbank/stats/today/by-type
+     */
+    @GetMapping("/stats/today/by-type")
+    public ApiResponse<Map<String, Long>> getTodayStatsByType(HttpServletRequest request) {
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            Map<String, Long> stats = questionBankService.getTodayStatsByType(userId);
+            return ApiResponse.success(stats);
+        } catch (Exception e) {
+            log.error("Failed to get today stats by type", e);
             return ApiResponse.error(e.getMessage());
         }
     }
@@ -188,6 +206,22 @@ public class QuestionBankController {
             return ApiResponse.success(response);
         } catch (Exception e) {
             log.error("Failed to get wrong questions", e);
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+    
+    /**
+     * 获取用户总做题数量
+     * GET /api/questionbank/stats/total
+     */
+    @GetMapping("/stats/total")
+    public ApiResponse<Long> getTotalAnsweredQuestions(HttpServletRequest request) {
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            long totalQuestions = questionBankService.getTotalAnsweredQuestions(userId);
+            return ApiResponse.success(totalQuestions);
+        } catch (Exception e) {
+            log.error("Failed to get total answered questions", e);
             return ApiResponse.error(e.getMessage());
         }
     }
