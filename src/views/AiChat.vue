@@ -15,9 +15,13 @@
     <!-- 主内容区 -->
     <main class="flex-grow flex flex-col md:flex-row gap-4 p-6">
       <!-- 左侧：历史对话列表 -->
-      <div class="w-full md:w-64 bg-white rounded-lg shadow-sm overflow-hidden flex flex-col">
+      <div
+        class="w-full md:w-64 bg-white rounded-lg shadow-sm overflow-hidden flex flex-col"
+      >
         <!-- 历史列表头部 -->
-        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 flex items-center justify-between">
+        <div
+          class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 flex items-center justify-between"
+        >
           <h3 class="font-semibold text-white text-base flex items-center">
             <i class="fas fa-history mr-2" /> 对话历史
           </h3>
@@ -46,7 +50,11 @@
               v-for="(chat, index) in chatHistory"
               :key="chat.sessionId"
               class="p-3 cursor-pointer hover:bg-emerald-50 transition-colors border-l-4 transition-colors"
-              :class="currentChatId === chat.sessionId ? 'border-l-emerald-500 bg-emerald-50' : 'border-l-transparent'"
+              :class="
+                currentChatId === chat.sessionId
+                  ? 'border-l-emerald-500 bg-emerald-50'
+                  : 'border-l-transparent'
+              "
               @click="switchChat(chat.sessionId)"
             >
               <p class="text-sm font-medium text-gray-800 truncate">
@@ -305,6 +313,8 @@ import NavBar from "@/components/common/NavBar.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import { aiChatApi } from "@/api/aiChat";
+import { AI_API_KEY, AI_BASE_URL, AI_MODEL } from "@/utils/aiConfig";
+import { callApiStream, sanitizeChunk } from "@/utils/aiStream";
 
 const router = useRouter();
 
@@ -338,7 +348,7 @@ const initializeChatHistory = async () => {
     const response = await aiChatApi.getSessions();
     if (response && response.code === 200 && response.data) {
       chatHistory.value = response.data || [];
-      
+
       // 如果没有历史，创建第一个对话
       if (chatHistory.value.length === 0) {
         await createNewChat();
@@ -373,7 +383,7 @@ const loadSessionMessages = async (sessionId) => {
           minute: "2-digit",
         }),
       }));
-      
+
       if (messages.value.length === 0) {
         messages.value = [
           {
@@ -431,11 +441,13 @@ const deleteChat = async (sessionId) => {
     alert("至少需要保留一个对话");
     return;
   }
-  
+
   try {
     const response = await aiChatApi.deleteSession(sessionId);
     if (response && response.code === 200) {
-      const index = chatHistory.value.findIndex((c) => c.sessionId === sessionId);
+      const index = chatHistory.value.findIndex(
+        (c) => c.sessionId === sessionId,
+      );
       if (index > -1) {
         chatHistory.value.splice(index, 1);
         if (currentChatId.value === sessionId) {
@@ -470,14 +482,14 @@ const formatChatTime = (isoString) => {
 };
 
 // ====================================================
-
-// ===== 在此处手动输入你的 API Key 和 Base URL =====
-const API_KEY = "sk-RhMyaUYgYl3SfJ5VBThIHPinG5uNd4HIfUR4PP5DS47SJjR0"; // 例如: "sk-xxxxxxxxxxxxx"
-const BASE_URL = "https://api.deepbricks.ai"; // 例如: "https://api.openai.com"
+// 大模型配置（与题库 AI 解析复用同一份配置）
+const API_KEY = AI_API_KEY;
+const BASE_URL = AI_BASE_URL;
+const MODEL = AI_MODEL;
 // ====================================================
 
 const canSend = computed(
-  () => userInput.value.trim().length > 0 && API_KEY && BASE_URL
+  () => userInput.value.trim().length > 0 && API_KEY && BASE_URL,
 );
 
 const formatMessage = (text) => {
@@ -509,7 +521,7 @@ const appendUserMessage = (text) => {
     }),
   };
   messages.value.push(msg);
-  
+
   // 异步保存用户消息到后端（不阻塞UI）
   if (currentChatId.value) {
     aiChatApi.saveMessage(currentChatId.value, "user", text).catch((error) => {
@@ -544,133 +556,56 @@ async function onSend() {
 
   try {
     // 在追加 chunk 之前清理可能的前缀
-    await callApiStream(text, (chunk) => {
-      const cleaned = sanitizeChunk(chunk, assistantMsg.text);
-      assistantMsg.text += cleaned;
-      scrollToBottom();
+    await callApiStream({
+      apiKey: API_KEY,
+      baseUrl: BASE_URL,
+      model: MODEL,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: text },
+      ],
+      onChunk: (chunk) => {
+        const cleaned = sanitizeChunk(chunk, assistantMsg.text);
+        assistantMsg.text += cleaned;
+        scrollToBottom();
+      },
     });
   } catch (err) {
     assistantMsg.text += "\n[错误] " + (err.message || err);
   } finally {
     assistantTyping.value = false;
     await scrollToBottom();
-    
+
     // 保存助手消息到后端（不阻塞UI）
     if (currentChatId.value && assistantMsg.text.trim()) {
       const fullContent = assistantMsg.text.trim();
-      aiChatApi.saveMessage(currentChatId.value, "assistant", fullContent).catch((error) => {
-        console.error("Failed to save assistant message:", error);
-      });
+      aiChatApi
+        .saveMessage(currentChatId.value, "assistant", fullContent)
+        .catch((error) => {
+          console.error("Failed to save assistant message:", error);
+        });
     }
-    
+
     // 自动生成标题（如果还没有标题的话）
-    const currentSession = chatHistory.value.find((c) => c.sessionId === currentChatId.value);
+    const currentSession = chatHistory.value.find(
+      (c) => c.sessionId === currentChatId.value,
+    );
     if (currentSession && !currentSession.title) {
       const firstUserMsg = messages.value.find((m) => m.type === "user");
       if (firstUserMsg) {
         const title = firstUserMsg.text.substring(0, 30);
-        aiChatApi.updateSessionTitle(currentChatId.value, title).catch((error) => {
-          console.error("Failed to update chat title:", error);
-        });
+        aiChatApi
+          .updateSessionTitle(currentChatId.value, title)
+          .catch((error) => {
+            console.error("Failed to update chat title:", error);
+          });
         currentSession.title = title;
       }
     }
-    
+
     // 更新会话消息计数
     if (currentSession) {
       currentSession.messageCount = messages.value.length;
-    }
-  }
-}
-
-// 清理回复中的噪音前缀
-function sanitizeChunk(chunk, existingText) {
-  try {
-    if (!chunk || typeof chunk !== "string") return chunk;
-    if (!existingText || existingText.length === 0) {
-      return chunk.replace(/^\s*assistant\s*[:\-\s]*\s*/i, "");
-    }
-    return chunk;
-  } catch (e) {
-    return chunk;
-  }
-}
-
-// 发送到用户提供的 base URL
-async function callApiStream(userText, onChunk) {
-  if (!API_KEY || !BASE_URL) {
-    throw new Error("请在代码中设置 API_KEY 和 BASE_URL");
-  }
-
-  const url = BASE_URL.replace(/\/$/, "") + "/v1/chat/completions";
-  const payload = {
-    model: "gpt-3.5-turbo",
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: userText },
-    ],
-    stream: true,
-  };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${API_KEY}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`API 错误: ${res.status} ${text}`);
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder("utf-8");
-  let done = false;
-  let buffer = "";
-
-  while (!done) {
-    const { value, done: d } = await reader.read();
-    done = d;
-    if (value) {
-      buffer += decoder.decode(value, { stream: true });
-      // 尝试解析 data: 事件（OpenAI 风格）
-      const parts = buffer.split("\n\n");
-      buffer = parts.pop(); // 留下不完整的部分
-      for (const part of parts) {
-        const line = part.trim();
-        if (!line) continue;
-        if (line.startsWith("data:")) {
-          const data = line.replace(/^data:\s?/, "");
-          if (data === "[DONE]") {
-            return;
-          }
-          try {
-            const parsed = JSON.parse(data);
-            const delta =
-              parsed.choices &&
-              parsed.choices[0] &&
-              (parsed.choices[0].delta?.content ||
-                parsed.choices[0].delta?.role);
-            if (delta) onChunk(delta);
-            else if (
-              parsed.choices &&
-              parsed.choices[0] &&
-              parsed.choices[0].text
-            ) {
-              onChunk(parsed.choices[0].text);
-            }
-          } catch (e) {
-            // 非 JSON：可能是普通文本
-            onChunk(data);
-          }
-        } else {
-          // 直接文本块
-          onChunk(line);
-        }
-      }
     }
   }
 }

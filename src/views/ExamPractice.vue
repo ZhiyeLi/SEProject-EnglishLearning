@@ -135,15 +135,15 @@
                     formatTime(
                       Math.max(
                         0,
-                        audioCurrentTime - (currentQuestion.audioStartSec || 0)
-                      )
+                        audioCurrentTime - (currentQuestion.audioStartSec || 0),
+                      ),
                     )
                   }}
                   /
                   {{
                     formatTime(
                       (currentQuestion.audioEndSec || audioDuration) -
-                        (currentQuestion.audioStartSec || 0)
+                        (currentQuestion.audioStartSec || 0),
                     )
                   }}
                 </div>
@@ -893,7 +893,145 @@
                     <i class="fas fa-lightbulb text-yellow-500 mr-1" />
                     解析
                   </div>
-                  <div class="text-gray-700">{{ detail.explanation }}</div>
+                  <div class="text-gray-700">
+                    {{ detail.explanation }}
+                  </div>
+                </div>
+
+                <!-- AI 智能解析（客观题） -->
+                <div
+                  v-if="
+                    detail.isObjective !== false && !isListeningDetail(detail)
+                  "
+                  class="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm font-medium text-emerald-800">
+                      <i class="fas fa-robot text-emerald-600 mr-1" />
+                      AI智能解析
+                    </div>
+                    <button
+                      class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
+                      :disabled="getDetailAiState(detail).loading"
+                      @click="runAiObjectiveExplain(detail)"
+                    >
+                      <i class="fas fa-magic mr-2" />
+                      {{
+                        getDetailAiState(detail).loading
+                          ? "生成中..."
+                          : "AI智能解析"
+                      }}
+                    </button>
+                  </div>
+
+                  <div
+                    v-if="getDetailAiState(detail).error"
+                    class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3"
+                  >
+                    <i class="fas fa-exclamation-circle mr-1" />
+                    {{ getDetailAiState(detail).error }}
+                  </div>
+
+                  <div
+                    v-else-if="getDetailAiState(detail).loading"
+                    class="flex items-center gap-3 text-sm text-gray-600"
+                  >
+                    <div class="bg-white p-3 rounded-lg">
+                      <div class="flex gap-1">
+                        <div
+                          class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                          style="animation-delay: 0s"
+                        />
+                        <div
+                          class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                          style="animation-delay: 0.2s"
+                        />
+                        <div
+                          class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                          style="animation-delay: 0.4s"
+                        />
+                      </div>
+                    </div>
+                    <span>AI 正在生成解析...</span>
+                  </div>
+
+                  <div
+                    v-else-if="getDetailAiState(detail).text"
+                    class="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed"
+                  >
+                    {{ getDetailAiState(detail).text }}
+                  </div>
+
+                  <div v-else class="text-sm text-gray-600">
+                    点击右侧按钮生成 AI 解析（支持流式输出）。
+                  </div>
+                </div>
+
+                <!-- AI 作文精批（仅写作/翻译主观题） -->
+                <div
+                  v-else-if="isWritingOrTranslationDetail(detail)"
+                  class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm font-medium text-blue-800">
+                      <i class="fas fa-robot text-blue-600 mr-1" />
+                      AI作文精批
+                    </div>
+                    <button
+                      class="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
+                      :disabled="getDetailAiState(detail).loading"
+                      @click="runAiWritingReview(detail)"
+                    >
+                      <i class="fas fa-pen mr-2" />
+                      {{
+                        getDetailAiState(detail).loading
+                          ? "精批中..."
+                          : "AI作文精批"
+                      }}
+                    </button>
+                  </div>
+
+                  <div
+                    v-if="getDetailAiState(detail).error"
+                    class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3"
+                  >
+                    <i class="fas fa-exclamation-circle mr-1" />
+                    {{ getDetailAiState(detail).error }}
+                  </div>
+
+                  <div
+                    v-else-if="getDetailAiState(detail).loading"
+                    class="flex items-center gap-3 text-sm text-gray-600"
+                  >
+                    <div class="bg-white p-3 rounded-lg">
+                      <div class="flex gap-1">
+                        <div
+                          class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                          style="animation-delay: 0s"
+                        />
+                        <div
+                          class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                          style="animation-delay: 0.2s"
+                        />
+                        <div
+                          class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                          style="animation-delay: 0.4s"
+                        />
+                      </div>
+                    </div>
+                    <span>AI 正在精批中...</span>
+                  </div>
+
+                  <div
+                    v-else-if="getDetailAiState(detail).text"
+                    class="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed"
+                  >
+                    {{ getDetailAiState(detail).text }}
+                  </div>
+
+                  <div v-else class="text-sm text-gray-600">
+                    点击右侧按钮生成精批与改写建议（仅写作/翻译）。
+                  </div>
                 </div>
               </div>
             </div>
@@ -933,12 +1071,19 @@ import {
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import questionApi from "@/api/question";
+import { AI_API_KEY, AI_BASE_URL, AI_MODEL } from "@/utils/aiConfig";
+import { callApiStream, sanitizeChunk } from "@/utils/aiStream";
 
 export default {
   name: "ExamPractice",
   setup() {
     const route = useRoute();
     const router = useRouter();
+
+    // AI 配置（与 AI 伴学复用同一套流式调用实现）
+    const API_KEY = AI_API_KEY;
+    const BASE_URL = AI_BASE_URL;
+    const MODEL = AI_MODEL;
 
     // 模式
     const mode = ref(route.query.mode || "single"); // 'exam' 或 'single'
@@ -978,6 +1123,9 @@ export default {
     const resultCorrectCount = ref(0);
     const resultObjectiveCount = ref(0);
 
+    // AI 智能解析/作文精批（按 subItemId 独立维护状态）
+    const detailAiStates = reactive({});
+
     // 详情页音频控制
     const detailAudioRefs = reactive({}); // { subItemId: audioElement }
     const detailAudioStates = reactive({}); // { subItemId: { playing, currentTime, duration } }
@@ -993,7 +1141,7 @@ export default {
       const questionId = currentQuestion.value.id;
       if (!questionId) return [];
       return subItems.value.filter(
-        (item) => item.parentQuestionId === questionId
+        (item) => item.parentQuestionId === questionId,
       );
     });
 
@@ -1039,7 +1187,7 @@ export default {
       const currentInSegment = audioCurrentTime.value - startSec;
       return Math.max(
         0,
-        Math.min(100, (currentInSegment / segmentDuration) * 100)
+        Math.min(100, (currentInSegment / segmentDuration) * 100),
       );
     });
 
@@ -1103,7 +1251,7 @@ export default {
     // 判断是否已作答
     const hasAnswered = (questionId) => {
       const items = subItems.value.filter(
-        (item) => item.parentQuestionId === questionId
+        (item) => item.parentQuestionId === questionId,
       );
       return items.some((item) => userAnswers[item.id]);
     };
@@ -1179,7 +1327,7 @@ export default {
       // 将 ■ 替换为可点击的标记
       return text.replace(
         /■/g,
-        '<span class="insert-marker cursor-pointer text-blue-600 font-bold hover:bg-blue-100 px-1">[■]</span>'
+        '<span class="insert-marker cursor-pointer text-blue-600 font-bold hover:bg-blue-100 px-1">[■]</span>',
       );
     };
 
@@ -1219,7 +1367,7 @@ export default {
 
       audioPlayer.value.currentTime = Math.max(
         startSec,
-        Math.min(endSec, newTime)
+        Math.min(endSec, newTime),
       );
     };
 
@@ -1311,12 +1459,12 @@ export default {
         if (isFavorited.value) {
           await questionApi.removeFavorite(
             mode.value === "exam" ? "paper" : "question",
-            id
+            id,
           );
         } else {
           await questionApi.addFavorite(
             mode.value === "exam" ? "paper" : "question",
-            id
+            id,
           );
         }
         isFavorited.value = !isFavorited.value;
@@ -1341,7 +1489,7 @@ export default {
           if (isEmpty) {
             unansweredItems.push({
               questionIndex: questions.value.findIndex(
-                (q) => q.id === item.parentQuestionId
+                (q) => q.id === item.parentQuestionId,
               ),
               itemIndex: idx,
               itemId: item.id,
@@ -1624,6 +1772,187 @@ export default {
       return answer;
     };
 
+    // ====== AI 智能解析 / 作文精批 ======
+
+    const OBJECTIVE_AI_SYSTEM_PROMPT = `你是一名英语题库解析老师。\n\n要求：\n1）无论用户答对还是答错，都必须做“用户答案 vs 正确答案”的对比说明；\n2）选择题要逐选项解释为什么对/错；填空/插入题要解释依据与常见干扰；\n3）尽量贴合原题语境（如果提供材料原文，可引用关键句/关键词）；\n4）输出用中文，结构化分段，简洁但要点充分，不要寒暄。`;
+
+    const WRITING_AI_SYSTEM_PROMPT = `你是一名大学英语写作/翻译老师，负责对学生答案进行“精批”。\n\n要求：\n- 如果题目是写作：从内容切题、结构、语言、语法、词汇多样性、连贯性等维度点评；给出可执行的修改建议；提供一版更高分的改写范文。\n- 如果题目是翻译：从忠实度、表达自然度、语法、用词、句式等维度点评；逐句指出问题并给出更地道译法；提供一版完整参考译文。\n- 若提供参考答案，必须对比用户答案与参考答案；若无参考答案，也要给出你认为更好的版本。\n- 输出中文，结构化分段，避免空泛。`;
+
+    const stripHtml = (html) => {
+      if (!html) return "";
+      return String(html)
+        .replace(/<br\s*\/?\s*>/gi, "\n")
+        .replace(/<\/?p\s*>/gi, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/&nbsp;/g, " ")
+        .trim();
+    };
+
+    const truncateText = (text, maxLen = 2500) => {
+      if (!text) return "";
+      const str = String(text);
+      if (str.length <= maxLen) return str;
+      return `${str.slice(0, maxLen)}\n...(内容过长已截断)...`;
+    };
+
+    const hasMeaningfulAnswer = (answer) => {
+      if (answer === null || answer === undefined) return false;
+      if (Array.isArray(answer)) return answer.length > 0;
+      if (typeof answer === "string") return answer.trim().length > 0;
+      return true;
+    };
+
+    const getParentQuestion = (detail) => {
+      const parentId = detail?.parentQuestionId;
+      if (!parentId) return null;
+      return questions.value.find((q) => q.id === parentId) || null;
+    };
+
+    // 听力题：通常带音频资源，且父题 sectionType 为 listening
+    const isListeningDetail = (detail) => {
+      if (detail?.audioUrl) return true;
+      const parent = getParentQuestion(detail);
+      return parent?.sectionType === "listening";
+    };
+
+    // 仅写作/翻译（在数据层面二者都归到 sectionType=writing）才展示精批入口
+    const isWritingOrTranslationDetail = (detail) => {
+      if (detail?.isObjective !== false) return false;
+      const parent = getParentQuestion(detail);
+      return parent?.sectionType === "writing";
+    };
+
+    const getDetailAiState = (detail) => {
+      const key = detail?.subItemId;
+      if (!key) return { text: "", loading: false, error: "" };
+
+      if (!detailAiStates[key]) {
+        detailAiStates[key] = {
+          text: "",
+          loading: false,
+          error: "",
+          controller: null,
+        };
+      }
+      return detailAiStates[key];
+    };
+
+    const buildObjectivePrompt = (detail) => {
+      const parent = getParentQuestion(detail);
+      const header = [parent?.sectionName, parent?.title]
+        .filter(Boolean)
+        .join(" - ");
+      const stem = stripHtml(detail?.content);
+
+      const optionsText = Array.isArray(detail?.options)
+        ? detail.options
+            .map((o) => `${o.key}. ${stripHtml(o.value)}`)
+            .join("\n")
+        : "";
+
+      const userAnswerText = formatUserAnswer(detail?.userAnswer) || "";
+      const correctAnswerText =
+        formatCorrectAnswer(detail?.correctAnswer) || "";
+      const explanationText = stripHtml(detail?.explanation);
+      const materialText = truncateText(detail?.materialText, 2500);
+
+      return `【所属部分】${header || "(未知)"}\n\n【题干】\n${stem || "(空)"}\n\n${optionsText ? `【选项】\n${optionsText}\n\n` : ""}【用户答案】${userAnswerText || "(未作答)"}\n【正确答案】${correctAnswerText || "(无)"}\n\n${explanationText ? `【原解析（供参考）】\n${explanationText}\n\n` : ""}${materialText ? `【材料原文/语境（节选）】\n${materialText}\n\n` : ""}请按结构输出：\n1) 考点/题型方法\n2) 答案对比（用户 vs 正确，即使答对也要对比）\n3) 解析（必要时逐选项/逐空说明）\n4) 易错点与技巧`;
+    };
+
+    const buildWritingPrompt = (detail) => {
+      const parent = getParentQuestion(detail);
+      const header = [parent?.sectionName, parent?.title]
+        .filter(Boolean)
+        .join(" - ");
+      const stem = stripHtml(detail?.content);
+      const materialText = truncateText(detail?.materialText, 3000);
+      const userAnswerText = formatUserAnswer(detail?.userAnswer) || "";
+      const correctAnswerText =
+        formatCorrectAnswer(detail?.correctAnswer) || "";
+
+      return `【所属部分】${header || "(未知)"}\n\n【题干】\n${stem || "(空)"}\n\n${materialText ? `【材料/原文（节选）】\n${materialText}\n\n` : ""}【我的答案】\n${userAnswerText || "(未作答)"}\n\n${correctAnswerText ? `【参考答案】\n${correctAnswerText}\n\n` : ""}请进行精批，并给出：\n1) 总体点评（优点/主要问题）\n2) 具体修改建议（按语法/用词/连贯/结构分点）\n3) 逐句/逐段改写示例（原句 → 建议）\n4) 一版更高分的改写范文/参考译文\n5) 若有参考答案：对比差异与可学习点`;
+    };
+
+    const runAiForDetail = async (detail, type) => {
+      const state = getDetailAiState(detail);
+
+      // 未作答直接提示，不请求 API
+      if (!hasMeaningfulAnswer(detail?.userAnswer)) {
+        state.loading = false;
+        state.text = "";
+        state.error = "该题未作答，无法生成 AI 解析/精批。";
+        return;
+      }
+
+      // 取消上一次请求
+      if (state.controller) {
+        try {
+          state.controller.abort();
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      const controller = new AbortController();
+      state.controller = controller;
+      state.loading = true;
+      state.text = "";
+      state.error = "";
+
+      const systemPrompt =
+        type === "writing"
+          ? WRITING_AI_SYSTEM_PROMPT
+          : OBJECTIVE_AI_SYSTEM_PROMPT;
+      const userPrompt =
+        type === "writing"
+          ? buildWritingPrompt(detail)
+          : buildObjectivePrompt(detail);
+
+      try {
+        await callApiStream({
+          apiKey: API_KEY,
+          baseUrl: BASE_URL,
+          model: MODEL,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          signal: controller.signal,
+          onChunk: (chunk) => {
+            const cleaned = sanitizeChunk(chunk, state.text);
+            state.text += cleaned;
+          },
+        });
+      } catch (err) {
+        // 用户关闭弹窗/重复点击导致的取消不提示错误
+        if (err?.name === "AbortError") {
+          return;
+        }
+        state.error = err?.message || String(err);
+      } finally {
+        if (state.controller === controller) {
+          state.loading = false;
+          state.controller = null;
+        }
+      }
+    };
+
+    const runAiObjectiveExplain = async (detail) => {
+      // 听力题不接入 AI 智能解析（避免音频材料导致的接口异常）
+      if (isListeningDetail(detail)) {
+        const state = getDetailAiState(detail);
+        state.loading = false;
+        state.text = "";
+        state.error = "听力题暂不支持 AI 智能解析。";
+        return;
+      }
+      await runAiForDetail(detail, "objective");
+    };
+
+    const runAiWritingReview = async (detail) => {
+      await runAiForDetail(detail, "writing");
+    };
+
     // 滚动到指定详情
     const scrollToDetail = (subItemId) => {
       const element = document.getElementById(`detail-${subItemId}`);
@@ -1793,6 +2122,22 @@ export default {
       }
     });
 
+    // 监听详情弹窗关闭：终止 AI 流式请求
+    watch(showDetailModal, (visible) => {
+      if (visible) return;
+      Object.values(detailAiStates).forEach((s) => {
+        if (s?.controller) {
+          try {
+            s.controller.abort();
+          } catch (e) {
+            // ignore
+          }
+          s.controller = null;
+        }
+        if (s) s.loading = false;
+      });
+    });
+
     // 监听全屏变化
     const handleFullscreenChange = () => {
       isFullscreen.value = !!document.fullscreenElement;
@@ -1808,6 +2153,17 @@ export default {
       if (audioPlayer.value) {
         audioPlayer.value.pause();
       }
+
+      // 退出页面时终止所有 AI 流式请求
+      Object.values(detailAiStates).forEach((s) => {
+        if (s?.controller) {
+          try {
+            s.controller.abort();
+          } catch (e) {
+            // ignore
+          }
+        }
+      });
     });
 
     return {
@@ -1884,6 +2240,12 @@ export default {
       isCorrectOption,
       formatUserAnswer,
       formatCorrectAnswer,
+      // AI 解析/精批
+      getDetailAiState,
+      runAiObjectiveExplain,
+      runAiWritingReview,
+      isWritingOrTranslationDetail,
+      isListeningDetail,
       scrollToDetail,
       // 详情页音频控制
       detailAudioRefs,

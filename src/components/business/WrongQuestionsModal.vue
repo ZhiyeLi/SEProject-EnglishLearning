@@ -31,13 +31,17 @@
             <div class="text-3xl font-bold text-red-600">
               {{ stats.total }}
             </div>
-            <div class="text-sm text-gray-600 mt-1">总错题数</div>
+            <div class="text-sm text-gray-600 mt-1">
+              总错题数
+            </div>
           </div>
           <div class="text-center">
             <div class="text-3xl font-bold text-orange-600">
               {{ stats.recent }}
             </div>
-            <div class="text-sm text-gray-600 mt-1">近7天新增</div>
+            <div class="text-sm text-gray-600 mt-1">
+              近7天新增
+            </div>
           </div>
         </div>
       </div>
@@ -50,12 +54,24 @@
             class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500"
             @change="fetchWrongQuestions"
           >
-            <option value="all">全部类型</option>
-            <option value="CET4">四级</option>
-            <option value="CET6">六级</option>
-            <option value="KY">考研</option>
-            <option value="IELTS">雅思</option>
-            <option value="TOEFL">托福</option>
+            <option value="all">
+              全部类型
+            </option>
+            <option value="CET4">
+              四级
+            </option>
+            <option value="CET6">
+              六级
+            </option>
+            <option value="KY">
+              考研
+            </option>
+            <option value="IELTS">
+              雅思
+            </option>
+            <option value="TOEFL">
+              托福
+            </option>
           </select>
 
           <select
@@ -63,11 +79,21 @@
             class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500"
             @change="fetchWrongQuestions"
           >
-            <option value="all">全部题型</option>
-            <option value="listening">听力</option>
-            <option value="reading">阅读</option>
-            <option value="writing">写作</option>
-            <option value="speaking">口语</option>
+            <option value="all">
+              全部题型
+            </option>
+            <option value="listening">
+              听力
+            </option>
+            <option value="reading">
+              阅读
+            </option>
+            <option value="writing">
+              写作
+            </option>
+            <option value="speaking">
+              口语
+            </option>
           </select>
 
           <select
@@ -75,25 +101,42 @@
             class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500"
             @change="fetchWrongQuestions"
           >
-            <option value="recent">最近错题</option>
-            <option value="frequency">错误次数</option>
+            <option value="recent">
+              最近错题
+            </option>
+            <option value="frequency">
+              错误次数
+            </option>
           </select>
         </div>
       </div>
 
       <!-- 错题列表 -->
       <div class="flex-1 overflow-y-auto p-6">
-        <div v-if="loading" class="text-center py-12">
+        <div
+          v-if="loading"
+          class="text-center py-12"
+        >
           <i class="fas fa-spinner fa-spin text-4xl text-red-500 mb-4" />
-          <div class="text-gray-600">加载中...</div>
+          <div class="text-gray-600">
+            加载中...
+          </div>
         </div>
 
-        <div v-else-if="wrongQuestions.length === 0" class="text-center py-12">
+        <div
+          v-else-if="wrongQuestions.length === 0"
+          class="text-center py-12"
+        >
           <i class="fas fa-check-circle text-6xl text-green-300 mb-4" />
-          <div class="text-gray-600 text-lg">太棒了！暂无错题</div>
+          <div class="text-gray-600 text-lg">
+            太棒了！暂无错题
+          </div>
         </div>
 
-        <div v-else class="space-y-4">
+        <div
+          v-else
+          class="space-y-4"
+        >
           <div
             v-for="item in wrongQuestions"
             :key="item.id"
@@ -138,7 +181,9 @@
             </div>
 
             <!-- 来源 -->
-            <div class="text-sm text-gray-500">来自: {{ item.paperName }}</div>
+            <div class="text-sm text-gray-500">
+              来自: {{ item.paperName }}
+            </div>
           </div>
         </div>
       </div>
