@@ -16,7 +16,7 @@ set /p DB_PASSWORD=请输入数据库密码:
 
 echo.
 echo [1/2] 开始执行数据表初始化...
-mysql -h%DB_HOST% -P%DB_PORT% -u%DB_USER% -p%DB_PASSWORD% %DB_NAME% < src\main\resources\reimport.sql
+mysql -h%DB_HOST% -P%DB_PORT% -u%DB_USER% -p%DB_PASSWORD% --default-character-set=utf8mb4 %DB_NAME% < src\main\resources\reimport.sql
 
 if %errorlevel% neq 0 (
     echo [错误] 数据表初始化失败！
@@ -32,7 +32,7 @@ echo [成功] 数据表初始化完成！
 echo.
 
 echo [2/2] 开始导入单词数据...
-mysql -h%DB_HOST% -P%DB_PORT% -u%DB_USER% -p%DB_PASSWORD% %DB_NAME% < src\main\resources\words_dataimport.sql
+mysql -h%DB_HOST% -P%DB_PORT% -u%DB_USER% -p%DB_PASSWORD% --default-character-set=utf8mb4 %DB_NAME% < src\main\resources\words_dataimport.sql
 
 if %errorlevel% neq 0 (
     echo [错误] 单词数据导入失败！

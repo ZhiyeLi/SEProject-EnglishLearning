@@ -528,7 +528,7 @@ import ActionButtons from "@/components/common/ActionButtons.vue";
 import WrongQuestionsModal from "@/components/business/WrongQuestionsModal.vue";
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import questionApi from "@/api/question";
+import { questionApi } from "@/api/question";
 
 export default {
   name: "QuestionBank",

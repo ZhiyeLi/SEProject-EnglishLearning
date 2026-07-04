@@ -3,7 +3,7 @@
  */
 import request from "@/utils/request";
 
-export default {
+export const questionApi = {
   // ==================== 主界面 API ====================
 
   /**

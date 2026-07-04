@@ -1136,10 +1136,7 @@ import {
   watch,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import questionApi from "@/api/question";
-import { AI_API_KEY, AI_BASE_URL, AI_MODEL } from "@/utils/aiConfig";
-import { callApiStream, sanitizeChunk } from "@/utils/aiStream";
-import { renderMarkdownToSafeHtml } from "@/utils/markdown";
+import { questionApi } from "@/api/question";
 
 export default {
   name: "ExamPractice",

@@ -289,6 +289,33 @@ async function initDatabase() {
     `);
     console.log("✅ user_vocabulary 表创建成功");
 
+    // 18. AI聊天会话表
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS ai_chat_sessions (
+        session_id VARCHAR(36) PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        title VARCHAR(255),
+        message_count INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+      )
+    `);
+    console.log("✅ ai_chat_sessions 表创建成功");
+
+    // 19. AI聊天消息表
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS ai_chat_messages (
+        message_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id VARCHAR(36) NOT NULL,
+        role VARCHAR(20) NOT NULL,
+        content TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (session_id) REFERENCES ai_chat_sessions(session_id) ON DELETE CASCADE
+      )
+    `);
+    console.log("✅ ai_chat_messages 表创建成功");
+
     // 创建索引以提升查询性能
     await dbRun(
       "CREATE INDEX IF NOT EXISTS idx_plans_user_date ON plans(user_id, date)"

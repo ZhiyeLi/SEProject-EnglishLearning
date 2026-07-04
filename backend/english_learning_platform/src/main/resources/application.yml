@@ -7,7 +7,7 @@ spring:
     url: jdbc:mysql://localhost:3306/english_learning?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8&allowPublicKeyRetrieval=true
     username: root
     # 请输入你的数据库密码
-    password: sysu
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
     # 连接池配置
@@ -41,7 +41,8 @@ spring:
 
 # 服务器配置
 server:
-  port: 8080
+  # 默认端口使用 9090，可通过环境变量 SERVER_PORT 覆盖，例如：SERVER_PORT=9091
+  port: ${SERVER_PORT:9090}
   address: 0.0.0.0 # 监听所有网卡，允许局域网访问
   servlet:
     context-path:
