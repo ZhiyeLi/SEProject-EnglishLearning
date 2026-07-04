@@ -40,10 +40,12 @@ class EmbeddingService:
                     )
                     try:
                         from FlagEmbedding import BGEM3FlagModel
+                        import torch
+                        device = "cuda" if torch.cuda.is_available() else "cpu"
                         self._model = BGEM3FlagModel(
                             'BAAI/bge-m3',
-                            use_fp16=False,
-                            device="cpu",
+                            use_fp16=(device == "cuda"),
+                            device=device,
                         )
                         logger.info("BGE-M3 model loaded successfully.")
                     except Exception:

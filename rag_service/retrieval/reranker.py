@@ -24,10 +24,12 @@ class RerankerService:
         if self._model is None:
             logger.info("Loading BGE reranker model (first use)...")
             from FlagEmbedding import FlagReranker
+            import torch
+            device = "cuda" if torch.cuda.is_available() else "cpu"
             self._model = FlagReranker(
                 'BAAI/bge-reranker-v2-m3',
-                use_fp16=False,
-                device="cpu",
+                use_fp16=(device == "cuda"),
+                device=device,
             )
             self._patch_tokenizer_prepare_for_model()
             logger.info("BGE reranker model loaded successfully.")

@@ -5,7 +5,7 @@ from prompts.grader import GRADE_PROMPT
 logger = logging.getLogger(__name__)
 
 _llm = None
-VALID_GRADES = {"relevant", "partial", "irrelevant"}
+VALID_GRADES = ["irrelevant", "partial", "relevant"]
 
 
 def init_grade(llm: ChatOpenAI):
