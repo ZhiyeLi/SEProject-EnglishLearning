@@ -8,11 +8,11 @@ from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
-from sse_starlette.sse import EventSourceResponse
+from starlette.responses import StreamingResponse
 
 from retrieval.embeddings import EmbeddingService
 from retrieval.hybrid_search import HybridSearchService
-from retrieval.reranker import RerankerService
+
 
 from graph.nodes.retrieve import init_retrieve
 from graph.nodes.grade import init_grade
@@ -82,12 +82,9 @@ def init_rag():
         logger.error(f"HybridSearchService 初始化失败: {e}")
         hybrid_search = None
 
-    try:
-        reranker = RerankerService()
-        logger.info("RerankerService initialized")
-    except Exception as e:
-        logger.error(f"RerankerService 初始化失败: {e}")
-        reranker = None
+    # Reranker disabled — BGE-M3 CUDA + reranker CPU conflict causes segfault on Windows.
+    # Hybrid search (dense+sparse RRF) already provides good ranking quality.
+    reranker = None
 
     init_retrieve(hybrid_search, reranker)
     init_grade(llm)
@@ -134,7 +131,7 @@ async def rag_chat(request: ChatRequest, http_request: Request):
 
     accept_header = http_request.headers.get("accept", "")
 
-    # SSE streaming
+    # SSE streaming — token-level output
     if "text/event-stream" in accept_header:
         async def event_generator():
             initial_state = {
@@ -149,32 +146,33 @@ async def rag_chat(request: ChatRequest, http_request: Request):
             }
 
             try:
-                async for event in graph.astream_events(
-                    initial_state,
-                    config=config,
-                    version="v2",
-                ):
-                    kind = event.get("event", "")
-                    if kind == "on_chat_model_stream":
-                        chunk = event.get("data", {}).get("chunk")
-                        if chunk and hasattr(chunk, "content") and chunk.content:
-                            yield {
-                                "event": "token",
-                                "data": json.dumps({"token": chunk.content}),
-                            }
-                    elif kind == "on_chain_end" and event.get("name") == "generate":
-                        yield {
-                            "event": "done",
-                            "data": json.dumps({"done": True, "session_id": session_id}),
-                        }
+                # Step 1: Run retrieval graph
+                state = graph.invoke(initial_state, config=config)
+                docs = state.get("retrieved_docs", [])
+
+                # Step 2: Stream generation token by token
+                gen_state = {**state, "query": query}
+                from graph.nodes.generate import generate_node_stream
+                async for token in generate_node_stream(gen_state):
+                    data = json.dumps({"token": token}, ensure_ascii=False)
+                    yield f"event: token\ndata: {data}\n\n"
+
+                done = json.dumps({"done": True, "session_id": session_id}, ensure_ascii=False)
+                yield f"event: done\ndata: {done}\n\n"
             except Exception as e:
                 logger.error(f"SSE stream error: {e}", exc_info=True)
-                yield {
-                    "event": "error",
-                    "data": json.dumps({"error": "流式输出中断，请重试"}),
-                }
+                err = json.dumps({"error": "stream error, retry"}, ensure_ascii=False)
+                yield f"event: error\ndata: {err}\n\n"
 
-        return EventSourceResponse(event_generator())
+        return StreamingResponse(
+            event_generator(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
+        )
 
     # JSON full response (backward compat)
     else:
@@ -190,7 +188,13 @@ async def rag_chat(request: ChatRequest, http_request: Request):
                 "user_level": request.user_level or "intermediate",
             }
 
-            result = graph.invoke(initial_state, config=config)
+            # Step 1: Run retrieval graph
+            state = graph.invoke(initial_state, config=config)
+
+            # Step 2: Generate answer
+            from graph.nodes.generate import generate_node
+            gen_state = {**state, "query": query}
+            result = generate_node(gen_state)
             return ChatResponse(answer=result.get("answer", ""), session_id=session_id)
 
         except Exception as e:
