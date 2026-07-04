@@ -209,7 +209,7 @@
 
 <script>
 import { ref, reactive, onMounted } from "vue";
-import questionApi from "@/api/question";
+import { questionApi } from "@/api/question";
 
 export default {
   name: "WrongQuestionsModal",

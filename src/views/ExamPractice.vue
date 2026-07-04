@@ -986,7 +986,7 @@ import {
   watch,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import questionApi from "@/api/question";
+import { questionApi } from "@/api/question";
 
 export default {
   name: "ExamPractice",

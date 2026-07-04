@@ -1,0 +1,86 @@
+template_type,exam_level,title,structure,useful_expressions,sample_sentence,notes
+"议论文","四级","观点对比型","段落1: 引出话题，提出两种不同观点
+段落2: 观点A及其理由
+段落3: 观点B及其理由
+段落4: 自己的观点和总结","引出话题：Recently, [话题] has aroused wide concern. / There is a heated debate about [话题].
+表达观点A：Some people believe that... / Those who support this view argue that...
+表达观点B：However, others hold the opposite opinion. / They contend that...
+表达自己观点：As far as I am concerned... / From my perspective... / In conclusion...","Recently, whether college students should take part-time jobs has aroused wide concern. Some people believe that part-time jobs help students gain social experience, while others argue that they distract from academic studies. As far as I am concerned, taking a part-time job is beneficial as long as students manage their time wisely.","四级作文开头常用模板句式，注意不要生硬套用，要结合具体话题自然过渡"
+"议论文","四级","问题解决型","段落1: 描述问题现状及严重性
+段落2: 分析问题产生的原因（2-3点）
+段落3: 提出解决方案（2-3点）
+段落4: 总结展望","描述问题：Nowadays, [问题] has become a serious problem. / There is a growing concern about [问题].
+分析原因：Several factors contribute to this problem. / The reasons are as follows.
+提出方案：Effective measures should be taken to... / To solve this problem, we can...
+总结：Only by doing so can we... / I believe that with joint efforts...","Nowadays, environmental pollution has become a serious problem. Several factors contribute to this issue, including industrial waste and vehicle emissions. Effective measures should be taken, such as promoting clean energy and raising public awareness. Only by doing so can we create a sustainable future.","原因和解决方案之间要有逻辑关联"
+"议论文","六级","利弊分析型","段落1: 引出话题并介绍背景
+段落2: 分析优点/积极影响（2-3点）
+段落3: 分析缺点/潜在问题（2-3点）
+段落4: 权衡后给出建议或结论","介绍背景：With the development of [领域], [话题] has become increasingly popular.
+列举优点：The advantages can be listed as follows. / First and foremost...
+列举缺点：However, every coin has two sides. / On the downside...
+权衡结论：The advantages outweigh the disadvantages. / We should make rational use of...","With the development of technology, online learning has become increasingly popular. Its advantages include flexibility and rich resources. However, it also has drawbacks such as lack of face-to-face interaction. In my opinion, the advantages outweigh the disadvantages if students maintain self-discipline.","六级作文需要更深入的论证，可用举例、对比、因果等方式展开"
+"图表作文","四级","图表描述型","段落1: 描述图表（类型、趋势、关键数据）
+段落2: 分析数据背后的原因（2-3点）
+段落3: 总结趋势或提出预测","描述图表：As is shown in the chart/graph... / The chart illustrates...
+描述趋势：increase sharply / decrease gradually / remain stable / reach a peak
+分析原因：There are several reasons behind this trend. / The following factors account for...
+总结预测：It can be predicted that... / The trend is likely to continue...","As is shown in the bar chart, the number of English learners in China has increased sharply from 50 million in 2010 to 200 million in 2020. The main reasons include globalization and the importance of English in career development. It can be predicted that this upward trend will continue.","图表作文必须引用具体数据；描述趋势用一般现在时或现在完成时"
+"应用文","四级","书信/邮件","开头: 称呼（Dear [Name],）
+正文段落1: 表明写信目的
+正文段落2: 详细内容（提供信息/表达观点/说明情况）
+正文段落3: 期待回复或补充说明
+结尾: 礼貌套语 + 签名","正式开头：Dear Sir or Madam, / Dear Mr. Smith,
+半正式开头：Dear Professor Li,
+目的表达：I am writing to... / The purpose of this letter is to...
+请求帮助：I would appreciate it if you could... / I wonder if you could...
+表达感谢：Thank you for your time. / I am grateful for your help.
+结尾：Yours sincerely, / Yours faithfully, / Best regards,","Dear Professor Li,
+I am writing to ask for your advice on how to improve my English writing skills. I have been practicing regularly but still struggle with organizing my ideas logically. I would appreciate it if you could recommend some effective methods or resources. Thank you for your time.
+Yours sincerely,
+[Name]","注意正式和非正式信件的语气区别；Dear Sir/Madam 结束用 Yours faithfully"
+"应用文","四级","通知/告示","标题: Notice / Announcement
+正文段落1: 活动目的
+正文段落2: 时间、地点、要求等细节
+正文段落3: 呼吁参与/注意事项
+落款: 发布单位 + 日期","开头：Notice / Attention please! / We are glad to announce that...
+时间地点：The event will be held in [地点] on [日期]. / Time: [时间], Venue: [地点]
+呼吁参与：All are welcome! / Please sign up before... / Don't miss this opportunity!
+结束：For more information, please contact...","Notice
+The English Corner will be held in the Student Center this Friday at 7:00 PM. There will be native English speakers joining us for conversation practice. All students are welcome to attend. Please bring your student ID for entry.
+The English Club
+May 15, 2025","通知要求简洁明了，关键信息（时间、地点、要求）不能遗漏"
+"应用文","六级","建议信/倡议书","标题（倡议书）: A Proposal / An Initiative
+正文段落1: 引出倡议的背景和意义
+正文段落2: 具体倡议内容（2-3条建议）
+正文段落3: 呼吁大家一起行动
+末尾: 发起人/单位","引出倡议：In recent years, [问题] has drawn our attention.
+提出倡议：I propose that we should... / It is suggested that...
+具体建议：Firstly... Secondly... Last but not least...
+呼吁行动：Let us join hands to... / Your participation will make a difference.","A Proposal on Campus Waste Reduction
+In recent years, the amount of campus waste has drawn our attention. I propose that we take the following actions: Firstly, use reusable water bottles and bags. Secondly, sort garbage properly. Let us join hands to make our campus greener.
+The Student Union","倡议书语气要有号召力，多用 we/let's 增加参与感"
+"议论文","托福雅思","观点论证型","段落1(Introduction): Background + Thesis statement
+段落2(Body 1): Topic sentence + Evidence + Analysis
+段落3(Body 2): Topic sentence + Evidence + Analysis
+段落4(Body 3, optional): Counter-argument + Rebuttal
+段落5(Conclusion): Restate thesis + Summary + Final thought","Thesis: This essay will argue that... / I strongly believe that...
+论证：For instance... / Research shows that... / This demonstrates that...
+让步反驳：Some may argue that... However... / While it is true that..., it should be noted that...
+结论：In conclusion... / To sum up... / The evidence clearly supports...","This essay will argue that learning a second language at an early age is more effective than starting in adulthood. Research shows that young children have greater neural plasticity, which facilitates language acquisition. While some may argue that adults have better learning strategies, the natural immersion ability of children outweighs this advantage. In conclusion, early language education should be prioritized in school curricula.","托福雅思要求逻辑严密，每段用PEEL结构（Point-Evidence-Explanation-Link）"
+"议论文","托福雅思","讨论双方观点型","段落1: 改写题目 + 提出双方观点存在争议
+段落2: 讨论观点A + 理由和例证
+段落3: 讨论观点B + 理由和例证
+段落4: 给出自己的立场 + 总结","改写题目：There is ongoing debate about whether... / Opinions differ on the question of...
+讨论一方：On the one hand... / Supporters of this view claim that...
+讨论另一方：On the other hand... / However, opponents point out that...
+给出立场：Having considered both sides, I tend to agree with... / My personal view is that...","There is ongoing debate about whether university education should focus on academic knowledge or practical skills. On the one hand, academic knowledge provides a theoretical foundation. On the other hand, practical skills are essential for employment. Having considered both sides, I believe a balanced approach combining theory and practice is ideal.","注意各段篇幅均衡，不能一方写很长另一方很短"
+"常用过渡词","四级","文章衔接","递进: furthermore/moreover/in addition/besides
+转折: however/nevertheless/on the contrary/in contrast
+因果: therefore/consequently/as a result/thus
+举例: for example/for instance/such as/to illustrate
+总结: in conclusion/to sum up/in brief/all in all
+顺序: firstly/secondly/finally/last but not least","使用方法：过渡词放在句首+逗号，或句中连接两个分句","递进: Moreover, reading aloud helps improve pronunciation.
+转折: However, memorizing alone is not enough.
+因果: Therefore, daily practice is essential.
+举例: For instance, you can use flashcards to review words.","过渡词是文章连贯性的关键，四级作文至少使用5-8个不同的过渡表达"

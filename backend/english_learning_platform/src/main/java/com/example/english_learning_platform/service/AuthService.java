@@ -84,8 +84,16 @@ public class AuthService {
     public UserDTO updateUserInfo(Long userId, User updates) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
-        
-        if (updates.getUserEmail() != null) {
+
+        if (updates.getUserName() != null && !updates.getUserName().isBlank()) {
+            userRepository.findByUserName(updates.getUserName()).ifPresent(existing -> {
+                if (!existing.getUserId().equals(userId)) {
+                    throw new RuntimeException("用户名已被使用");
+                }
+            });
+            user.setUserName(updates.getUserName());
+        }
+        if (updates.getUserEmail() != null && !updates.getUserEmail().isBlank()) {
             user.setUserEmail(updates.getUserEmail());
         }
         if (updates.getAvatar() != null) {
@@ -97,20 +105,30 @@ public class AuthService {
         if (updates.getSignature() != null) {
             user.setSignature(updates.getSignature());
         }
-        
+
         user = userRepository.save(user);
         return convertToDTO(user);
     }
     
     @Transactional
     public void changePassword(Long userId, String oldPassword, String newPassword) {
+        if (oldPassword == null || oldPassword.isBlank()) {
+            throw new RuntimeException("原密码不能为空");
+        }
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new RuntimeException("新密码不能为空");
+        }
+        if (newPassword.length() < 6) {
+            throw new RuntimeException("新密码长度不能少于6位");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
-        
+
         if (!passwordEncoder.matches(oldPassword, user.getUserPassword())) {
             throw new RuntimeException("原密码错误");
         }
-        
+
         user.setUserPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }

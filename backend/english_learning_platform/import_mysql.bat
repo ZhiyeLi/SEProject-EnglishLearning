@@ -9,8 +9,9 @@ echo.
 set DB_NAME=english_learning
 set DB_USER=root
 set SCRIPT_DIR=%~dp0
-set SCHEMA_FILE=%SCRIPT_DIR%src\main\resources\schema.sql
-set DATA_FILE=%SCRIPT_DIR%src\main\resources\data.sql
+set SQL_DIR=%SCRIPT_DIR%src\main\resources
+:: 统一使用正斜杠，避免 mysql source 在 Windows 下把反斜杠解析异常
+set SQL_DIR=%SQL_DIR:\=/%
 
 echo 请输入 MySQL root 密码:
 set /p DB_PASS=
@@ -27,7 +28,7 @@ echo ✅ MySQL 服务正在运行
 
 echo.
 echo [2/4] 创建数据库...
-mysql -u %DB_USER% -p%DB_PASS% -e "CREATE DATABASE IF NOT EXISTS %DB_NAME% CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u%DB_USER% -p%DB_PASS% --default-character-set=utf8mb4 -e "CREATE DATABASE IF NOT EXISTS %DB_NAME% CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 if %errorlevel% equ 0 (
     echo ✅ 数据库 %DB_NAME% 创建成功
 ) else (
@@ -37,8 +38,8 @@ if %errorlevel% equ 0 (
 )
 
 echo.
-echo [3/4] 导入表结构...
-mysql -u %DB_USER% -p%DB_PASS% %DB_NAME% < "%SCHEMA_FILE%" 2>nul
+echo [3/4] 导入表结构（关闭外键约束）...
+mysql -u%DB_USER% -p%DB_PASS% --default-character-set=utf8mb4 %DB_NAME% -e "SET FOREIGN_KEY_CHECKS=0; source %SQL_DIR%/schema.sql;"
 if %errorlevel% equ 0 (
     echo ✅ 表结构导入成功
 ) else (
@@ -49,7 +50,7 @@ if %errorlevel% equ 0 (
 
 echo.
 echo [4/4] 导入数据...
-mysql -u %DB_USER% -p%DB_PASS% %DB_NAME% < "%DATA_FILE%" 2>nul
+mysql -u%DB_USER% -p%DB_PASS% --default-character-set=utf8mb4 %DB_NAME% -e "SET FOREIGN_KEY_CHECKS=0; source %SQL_DIR%/data.sql;"
 if %errorlevel% equ 0 (
     echo ✅ 数据导入成功
 ) else (
@@ -63,11 +64,8 @@ echo ========================================
 echo ✨ 数据库导入完成！
 echo ========================================
 echo.
-echo 数据库名: %DB_NAME%
-echo 字符集: utf8mb4
+echo 下一步操作：
+echo 1. 打开 application.yml 修改 MySQL 密码
+echo 2. 运行 mvn spring-boot:run 启动项目
 echo.
-echo 已经完成数据库的初始化！下一步请你手动完成操作:
-echo "1. 更新 application.yml 中的数据库密码"
-echo "2. 运行 mvn spring-boot:run 启动项目"
-echo .
 pause
