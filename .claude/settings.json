@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python build_knowledge_base.py)",
+      "Bash(pip list *)",
+      "Bash(pip uninstall *)",
+      "Bash(ls -la ~/.cache/huggingface/hub/models--BAAI--bge-m3/snapshots/*/ 2>/dev/null | head -20 || ls -la ~/.cache/huggingface/hub/ 2>/dev/null | head -10)",
+      "Read(//c/Users/asus/.cache/huggingface/hub/models--BAAI--bge-m3/snapshots/**)",
+      "Read(//c/Users/asus/.cache/huggingface/hub/**)"
+    ]
+  }
+}

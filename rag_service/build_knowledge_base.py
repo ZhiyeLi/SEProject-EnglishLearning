@@ -193,16 +193,20 @@ def build_index():
     emb_service = EmbeddingService()
 
     page_contents = [doc.page_content for doc in texts]
+
+    # Fit TF-IDF on full corpus first (for sparse lexical weights)
+    emb_service.fit_tfidf(page_contents)
+
     print(f"正在编码 {len(page_contents)} 个文本块...")
     vecs = emb_service.embed_documents(page_contents)
 
     dense_vectors = vecs["dense"]
     sparse_vectors = vecs["sparse"]
 
-    # GPU tensor → CPU numpy (FAISS requires numpy)
+    # GPU tensor → CPU numpy (FAISS requires numpy arrays)
     import torch
-    if isinstance(dense_vectors, torch.Tensor):
-        dense_vectors = dense_vectors.cpu().numpy()
+    if hasattr(dense_vectors, "cpu"):
+        dense_vectors = dense_vectors.cpu().numpy().astype("float32")
 
     # Build FAISS dense index
     print(f"正在构建 FAISS 稠密索引 (dim={dense_vectors.shape[1]})...")
