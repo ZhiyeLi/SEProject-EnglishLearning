@@ -1,5 +1,6 @@
-from typing import TypedDict, List, Annotated, Optional, Any, Dict
-from langgraph.graph.message import add_messages
+import operator
+from typing import TypedDict, List, Annotated, Dict
+from langchain_core.documents import Document
 
 
 class AgentState(TypedDict):
@@ -9,8 +10,8 @@ class AgentState(TypedDict):
     checkpoint 按 thread_id 持久化整个状态。
     """
     query: str
-    chat_history: Annotated[List[Dict[str, str]], add_messages]
-    retrieved_docs: List[Any]
+    chat_history: Annotated[List[Dict[str, str]], operator.add]
+    retrieved_docs: List[Document]
     grade_result: str
     rewritten_query: str
     rewrite_count: int
