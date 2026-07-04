@@ -203,10 +203,12 @@ def build_index():
     dense_vectors = vecs["dense"]
     sparse_vectors = vecs["sparse"]
 
-    # GPU tensor → CPU numpy (FAISS requires numpy arrays)
-    import torch
+    # Ensure float32 (GPU fp16 returns float16, FAISS needs float32)
+    import numpy as np
     if hasattr(dense_vectors, "cpu"):
-        dense_vectors = dense_vectors.cpu().numpy().astype("float32")
+        dense_vectors = dense_vectors.cpu().numpy()
+    if dense_vectors.dtype != np.float32:
+        dense_vectors = dense_vectors.astype(np.float32)
 
     # Build FAISS dense index
     print(f"正在构建 FAISS 稠密索引 (dim={dense_vectors.shape[1]})...")
