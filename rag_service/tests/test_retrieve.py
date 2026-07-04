@@ -113,3 +113,43 @@ class TestHybridSearchService:
             doc, score = results[0]
             assert hasattr(doc, 'page_content')
             assert isinstance(score, float)
+
+
+class TestRerankerService:
+    """RerankerService 单元测试。"""
+
+    @pytest.fixture(scope="module")
+    def reranker(self):
+        from retrieval.reranker import RerankerService
+        return RerankerService()
+
+    @pytest.fixture
+    def sample_docs(self):
+        from langchain_core.documents import Document
+        return [
+            (Document(page_content="apple 苹果 一种水果"), 0.5),
+            (Document(page_content="banana 香蕉 热带水果"), 0.3),
+            (Document(page_content="现在完成时表示过去发生的动作对现在的影响"), 0.8),
+        ]
+
+    def test_rerank_returns_correct_count(self, reranker, sample_docs):
+        result = reranker.rerank("apple fruit", sample_docs, top_k=2)
+        assert len(result) == 2
+
+    def test_rerank_relevant_first(self, reranker, sample_docs):
+        result = reranker.rerank("apple fruit", sample_docs, top_k=3)
+        assert "apple" in result[0][0].page_content.lower()
+
+    def test_rerank_empty_input(self, reranker):
+        result = reranker.rerank("query", [], top_k=5)
+        assert result == []
+
+    def test_rerank_scores_are_normalized(self, reranker, sample_docs):
+        result = reranker.rerank("test", sample_docs, top_k=3)
+        for _, score in result:
+            assert 0.0 <= score <= 1.0
+
+    def test_rerank_different_scores_for_different_relevance(self, reranker, sample_docs):
+        result = reranker.rerank("水果", sample_docs, top_k=3)
+        scores = [s for _, s in result]
+        assert len(set(round(s, 4) for s in scores)) > 1
