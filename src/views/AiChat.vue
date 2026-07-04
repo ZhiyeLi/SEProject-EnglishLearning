@@ -112,6 +112,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from "vue";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
 
 import NavBar from "@/components/common/NavBar.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
@@ -308,10 +309,23 @@ const formatChatTime = (t) => new Date(t).toLocaleString();
 
 /* ===================== 路由 ===================== */
 const gotoHome = () => router.push({ name: "Home" });
+const gotoCourse = () => router.push({ name: "Course" });
+const gotoQuestionBank = () => router.push({ name: "QuestionBank" });
+const gotoTimeTable = () => router.push({ name: "TimeTable" });
+const gotoWordCheckIn = () => router.push({ name: "WordCheckIn" });
 const gotoSettings = () => router.push({ name: "Settings" });
+const openSuggestions = () => {
+  ElMessage.info(
+    "AI伴学页面的学习建议入口已统一到顶部导航，可继续从其他页面查看建议内容。",
+  );
+};
 
 const navItems = [
   { label: "首页", onClick: gotoHome },
-  { label: "AI伴学", isActive: true },
+  { label: "课程", onClick: gotoCourse },
+  { label: "题库", onClick: gotoQuestionBank },
+  { label: "时间表", onClick: gotoTimeTable },
+  { label: "单词打卡", onClick: gotoWordCheckIn },
+  { label: "AI伴学", path: "#", isActive: true },
 ];
 </script>

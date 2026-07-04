@@ -4,6 +4,7 @@
  */
 import axios from "axios";
 import { ElMessage } from "element-plus";
+import router from "@/router";
 
 // 动态获取 API 基础 URL
 function getBaseURL() {
@@ -21,12 +22,39 @@ const apiClient = axios.create({
   },
 });
 
+let authErrorToastShown = false;
+
+function isLoginRoute() {
+  const currentRoute = router.currentRoute.value;
+  return currentRoute?.name === "Login" || currentRoute?.path === "/login";
+}
+
+function notifyAuthError(message) {
+  if (isLoginRoute() || authErrorToastShown) {
+    return;
+  }
+
+  authErrorToastShown = true;
+  ElMessage.error(message);
+
+  window.setTimeout(() => {
+    authErrorToastShown = false;
+  }, 1500);
+}
+
+function clearAuthStorage() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userStore");
+}
+
 // 请求拦截器 - 添加token
 apiClient.interceptors.request.use(
   (config) => {
     // 从 localStorage 获取 token
     const token = localStorage.getItem("token");
-    console.log(`[API Debug] ${config.method?.toUpperCase()} ${config.url} - baseURL: ${config.baseURL}`);
+    console.log(
+      `[API Debug] ${config.method?.toUpperCase()} ${config.url} - baseURL: ${config.baseURL}`,
+    );
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -35,7 +63,7 @@ apiClient.interceptors.request.use(
   (error) => {
     console.error("请求错误:", error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // 响应拦截器 - 统一处理响应
@@ -59,17 +87,13 @@ apiClient.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          ElMessage.error("未授权,请重新登录");
-          // 清除token
-          localStorage.removeItem("token");
-          localStorage.removeItem("userStore");
+          notifyAuthError("未授权,请重新登录");
+          clearAuthStorage();
           // 不立即跳转，让调用者处理或路由守卫处理
           break;
         case 403:
-          ElMessage.error("登录已过期或拒绝访问，请重新登录");
-          // 清除token
-          localStorage.removeItem("token");
-          localStorage.removeItem("userStore");
+          notifyAuthError("登录已过期或拒绝访问，请重新登录");
+          clearAuthStorage();
           // 不立即跳转
           break;
         case 404:
@@ -88,7 +112,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;
