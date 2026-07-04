@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  rag-service:
+    build: .
+    container_name: rag-service
+    ports:
+      - "8001:8001"
+    environment:
+      - DEEPBRICKS_API_KEY=${DEEPBRICKS_API_KEY}
+      - DEEPBRICKS_BASE_URL=${DEEPBRICKS_BASE_URL:-https://api.deepbricks.ai/v1}
+    volumes:
+      - ./faiss_index:/app/faiss_index
+      - ./sparse_index:/app/sparse_index
+      - ./checkpoints.db:/app/checkpoints.db
+    restart: unless-stopped
