@@ -305,7 +305,7 @@ import NavBar from "@/components/common/NavBar.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import { aiChatApi } from "@/api/aiChat";
-import { sendRagMessage } from "@/api/rag";
+import { sendRagMessage, sendRagMessageStream } from "@/api/rag";
 
 const router = useRouter();
 
@@ -535,44 +535,65 @@ async function onSend() {
   const assistantMsg = appendAssistantMessagePlaceholder();
   await scrollToBottom();
 
-  let ragSuccess = false;
+  let streamSuccess = false;
+  let sessionId = '';
+
+  // 尝试 SSE 流式输出
+  sendRagMessageStream(text, {
+    onToken(token) {
+      assistantMsg.text += token;
+      scrollToBottom();
+    },
+    onDone(sid) {
+      streamSuccess = true;
+      sessionId = sid;
+      assistantTyping.value = false;
+      scrollToBottom();
+      finalizeMessage(assistantMsg, text, streamSuccess);
+    },
+    onError(err) {
+      console.warn('SSE stream failed, falling back to JSON:', err.message);
+      // SSE 失败，降级为 JSON 模式
+      fallbackJsonMode(assistantMsg, text);
+    }
+  });
+}
+
+// SSE 失败时的 JSON 降级
+async function fallbackJsonMode(assistantMsg, text) {
   try {
     const res = await sendRagMessage(text);
     if (res.code === 200 && res.data && res.data.reply) {
       assistantMsg.text = res.data.reply;
-      ragSuccess = true;
+      assistantTyping.value = false;
+      await scrollToBottom();
+      finalizeMessage(assistantMsg, text, true);
     } else {
-      assistantMsg.text = "[错误] " + (res.message || "请求失败");
+      assistantMsg.text = '[错误] ' + (res.message || '请求失败');
+      assistantTyping.value = false;
+      await scrollToBottom();
     }
   } catch (err) {
-    assistantMsg.text += "\n[错误] " + (err.message || err);
-  } finally {
+    assistantMsg.text = '[错误] ' + (err.message || err);
     assistantTyping.value = false;
     await scrollToBottom();
+  }
+}
 
-    // 只在 RAG 成功时保存助手消息到后端
-    if (ragSuccess && currentChatId.value && assistantMsg.text.trim()) {
-      const fullContent = assistantMsg.text.trim();
-      aiChatApi.saveMessage(currentChatId.value, "assistant", fullContent).catch((error) => {
-        console.error("Failed to save assistant message:", error);
-      });
-    }
+// 保存消息 + 更新标题
+function finalizeMessage(assistantMsg, userText, success) {
+  if (success && currentChatId.value && assistantMsg.text.trim()) {
+    aiChatApi.saveMessage(currentChatId.value, 'assistant', assistantMsg.text.trim()).catch((err) => {
+      console.error('Failed to save assistant message:', err);
+    });
   }
 
-  // 自动生成标题（如果还没有标题的话）
   const currentSession = chatHistory.value.find((c) => c.sessionId === currentChatId.value);
   if (currentSession && !currentSession.title) {
-    const firstUserMsg = messages.value.find((m) => m.type === "user");
-    if (firstUserMsg) {
-      const title = firstUserMsg.text.substring(0, 30);
-      aiChatApi.updateSessionTitle(currentChatId.value, title).catch((error) => {
-        console.error("Failed to update chat title:", error);
-      });
-      currentSession.title = title;
-    }
+    const title = userText.substring(0, 30);
+    aiChatApi.updateSessionTitle(currentChatId.value, title).catch(() => {});
+    currentSession.title = title;
   }
-
-  // 更新会话消息计数
   if (currentSession) {
     currentSession.messageCount = messages.value.length;
   }
