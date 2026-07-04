@@ -100,27 +100,24 @@ class TestGenerateNode:
         state.update(overrides)
         return state
 
-    @pytest.mark.asyncio
-    async def test_generate_node_success(self, monkeypatch):
+    def test_generate_node_success(self, monkeypatch):
         mock_llm = MagicMock()
         mock_llm.invoke.return_value = MagicMock(content="This is the answer.")
         monkeypatch.setattr("graph.nodes.generate._llm", mock_llm)
         from graph.nodes.generate import generate_node
-        result = await generate_node(self._make_state())
+        result = generate_node(self._make_state())
         assert result["answer"] == "This is the answer."
 
-    @pytest.mark.asyncio
-    async def test_generate_node_llm_uninitialized(self, monkeypatch):
+    def test_generate_node_llm_uninitialized(self, monkeypatch):
         monkeypatch.setattr("graph.nodes.generate._llm", None)
         from graph.nodes.generate import generate_node
-        result = await generate_node(self._make_state())
+        result = generate_node(self._make_state())
         assert "未初始化" in result["answer"]
 
-    @pytest.mark.asyncio
-    async def test_generate_node_exception(self, monkeypatch):
+    def test_generate_node_exception(self, monkeypatch):
         mock_llm = MagicMock()
         mock_llm.invoke.side_effect = Exception("Rate limit exceeded")
         monkeypatch.setattr("graph.nodes.generate._llm", mock_llm)
         from graph.nodes.generate import generate_node
-        result = await generate_node(self._make_state())
+        result = generate_node(self._make_state())
         assert "暂时繁忙" in result["answer"]
