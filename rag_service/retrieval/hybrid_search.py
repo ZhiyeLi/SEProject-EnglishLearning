@@ -20,6 +20,14 @@ class HybridSearchService:
         self.all_documents = all_documents
         self._doc_count = len(all_documents)
 
+        # Build inverted index for fast sparse search
+        self._inverted_index: Dict[int, List[Tuple[int, float]]] = {}
+        for doc_idx, doc_sparse in enumerate(self.sparse_vectors):
+            for token_id, weight in doc_sparse.items():
+                if token_id not in self._inverted_index:
+                    self._inverted_index[token_id] = []
+                self._inverted_index[token_id].append((doc_idx, weight))
+
     def search(
         self, query: str, top_k: int = 20, rrf_k: int = 60
     ) -> List[Tuple[Any, float]]:
@@ -68,16 +76,20 @@ class HybridSearchService:
     def _sparse_search(
         self, query_sparse: Dict[int, float], k: int
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """稀疏词权重检索：计算查询与所有文档的稀疏内积。"""
+        """稀疏词权重检索：通过倒排索引计算查询与文档的稀疏内积。"""
         if k <= 0:
             return np.array([]), np.array([])
         scores = np.zeros(self._doc_count, dtype=np.float32)
         for token_id, q_weight in query_sparse.items():
-            for doc_idx, doc_sparse in enumerate(self.sparse_vectors):
-                if token_id in doc_sparse:
-                    scores[doc_idx] += q_weight * doc_sparse[token_id]
-        k = min(k, self._doc_count)
-        indices = np.argsort(scores)[::-1][:k]
+            for doc_idx, doc_weight in self._inverted_index.get(token_id, []):
+                scores[doc_idx] += q_weight * doc_weight
+        effective_k = min(k, self._doc_count)
+        # Use argpartition for O(n) top-k instead of full sort
+        if effective_k >= self._doc_count:
+            indices = np.argsort(scores)[::-1][:effective_k]
+        else:
+            indices = np.argpartition(scores, -effective_k)[-effective_k:]
+            indices = indices[np.argsort(scores[indices])[::-1]]
         return scores[indices], indices
 
     @staticmethod

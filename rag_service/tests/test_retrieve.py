@@ -78,14 +78,19 @@ class TestHybridSearchService:
         assert len(results) > 0
         assert len(results) <= 3
 
-    def test_search_relevant_word_first(self, service):
+    def test_search_relevant_word_in_top_results(self, service):
         results = service.search("abandon", top_k=5)
+        # First result should contain "abandon"
+        assert "abandon" in results[0][0].page_content.lower()
+        # Top results should all be relevant
         top_contents = [r[0].page_content for r in results[:2]]
         assert any("abandon" in c.lower() for c in top_contents)
 
     def test_search_chinese_query(self, service):
         results = service.search("计算机", top_k=3)
         assert len(results) > 0
+        top_contents = [r[0].page_content for r in results]
+        assert any("计算机" in c for c in top_contents)
 
     def test_search_grammar_topic(self, service):
         results = service.search("现在完成时", top_k=3)
@@ -94,6 +99,11 @@ class TestHybridSearchService:
 
     def test_empty_query_handled(self, service):
         results = service.search("", top_k=3)
+        assert isinstance(results, list)
+        assert len(results) == 0
+
+    def test_whitespace_query_handled(self, service):
+        results = service.search("   ", top_k=3)
         assert isinstance(results, list)
         assert len(results) == 0
 
