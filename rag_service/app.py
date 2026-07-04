@@ -107,6 +107,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
 
+import traceback
+
 @app.post("/api/rag_chat", response_model=ChatResponse)
 async def rag_chat(request: ChatRequest):
     if rag_chain is None:
@@ -116,6 +118,7 @@ async def rag_chat(request: ChatRequest):
         response = rag_chain.invoke(request.query)
         return ChatResponse(answer=response)
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

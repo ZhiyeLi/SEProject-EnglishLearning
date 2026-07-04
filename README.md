@@ -162,7 +162,7 @@ Spring Boot 将在 `http://localhost:9090` 启动。
 
 ---
 
-## 三、 Node.js 中间层
+## 三、 Node.js 中间层(不用也可以)
 
 ### 安装与启动
 
