@@ -68,8 +68,11 @@ class EmbeddingService:
             return_sparse=True,
             return_colbert_vecs=False,
         )
+        dense = output["dense_vecs"][0]
+        if hasattr(dense, "cpu"):
+            dense = dense.cpu().numpy()
         return {
-            "dense": output["dense_vecs"][0],
+            "dense": dense,
             "sparse": output["lexical_weights"][0],
         }
 
@@ -83,7 +86,10 @@ class EmbeddingService:
             return_sparse=True,
             return_colbert_vecs=False,
         )
+        dense = output["dense_vecs"]
+        if hasattr(dense, "cpu"):
+            dense = dense.cpu().numpy()
         return {
-            "dense": output["dense_vecs"],
+            "dense": dense,
             "sparse": output["lexical_weights"],
         }

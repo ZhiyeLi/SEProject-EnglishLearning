@@ -199,6 +199,11 @@ def build_index():
     dense_vectors = vecs["dense"]
     sparse_vectors = vecs["sparse"]
 
+    # GPU tensor → CPU numpy (FAISS requires numpy)
+    import torch
+    if isinstance(dense_vectors, torch.Tensor):
+        dense_vectors = dense_vectors.cpu().numpy()
+
     # Build FAISS dense index
     print(f"正在构建 FAISS 稠密索引 (dim={dense_vectors.shape[1]})...")
     faiss.normalize_L2(dense_vectors)
