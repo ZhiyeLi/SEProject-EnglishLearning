@@ -29,7 +29,7 @@ export function sendRagMessage(message) {
  */
 export function sendRagMessageStream(message, { onToken, onDone, onError }) {
   const controller = new AbortController();
-  const RAG_SSE_URL = 'http://localhost:8001/api/rag_chat';
+  const RAG_SSE_URL = '/rag-sse/api/rag_chat';
 
   fetch(RAG_SSE_URL, {
     method: 'POST',

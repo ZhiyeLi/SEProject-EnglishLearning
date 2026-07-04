@@ -10,10 +10,11 @@ module.exports = defineConfig({
         target: "http://localhost:9090",
         changeOrigin: true,
         ws: true,
-        pathRewrite: {
-          // 如果后端API路径已包含/api,则不需要重写
-          // '^/api': ''
-        },
+      },
+      "/rag-sse": {
+        target: "http://localhost:8001",
+        changeOrigin: true,
+        pathRewrite: { "^/rag-sse": "" },
       },
     },
   },
