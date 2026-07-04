@@ -153,3 +153,95 @@ class TestRerankerService:
         result = reranker.rerank("水果", sample_docs, top_k=3)
         scores = [s for _, s in result]
         assert len(set(round(s, 4) for s in scores)) > 1
+
+
+class TestRetrieveNode:
+    """retrieve_node 单元测试。"""
+
+    def test_retrieve_node_with_query(self, monkeypatch):
+        from graph.nodes.retrieve import retrieve_node
+        from langchain_core.documents import Document
+
+        class MockHybrid:
+            def search(self, query, top_k=20):
+                return [(Document(page_content="test doc"), 0.9)]
+        monkeypatch.setattr("graph.nodes.retrieve.hybrid_search", MockHybrid())
+        monkeypatch.setattr("graph.nodes.retrieve.reranker", None)
+
+        state = {
+            "query": "test query",
+            "retrieved_docs": [],
+            "chat_history": [],
+            "grade_result": "",
+            "rewritten_query": "",
+            "rewrite_count": 0,
+            "answer": "",
+            "user_level": "intermediate",
+        }
+        result = retrieve_node(state)
+        assert "retrieved_docs" in result
+        assert len(result["retrieved_docs"]) > 0
+
+    def test_retrieve_node_uses_rewritten_query(self, monkeypatch):
+        from graph.nodes.retrieve import retrieve_node
+        from langchain_core.documents import Document
+
+        captured_query = []
+
+        class MockHybrid:
+            def search(self, query, top_k=20):
+                captured_query.append(query)
+                return [(Document(page_content="rewritten result"), 0.9)]
+        monkeypatch.setattr("graph.nodes.retrieve.hybrid_search", MockHybrid())
+        monkeypatch.setattr("graph.nodes.retrieve.reranker", None)
+
+        state = {
+            "query": "original query",
+            "rewritten_query": "rewritten precise query",
+            "retrieved_docs": [],
+            "chat_history": [],
+            "grade_result": "",
+            "rewrite_count": 0,
+            "answer": "",
+            "user_level": "intermediate",
+        }
+        retrieve_node(state)
+        assert captured_query[0] == "rewritten precise query"
+
+    def test_retrieve_node_empty_query(self, monkeypatch):
+        from graph.nodes.retrieve import retrieve_node
+
+        state = {
+            "query": "",
+            "rewritten_query": "",
+            "retrieved_docs": [],
+            "chat_history": [],
+            "grade_result": "",
+            "rewrite_count": 0,
+            "answer": "",
+            "user_level": "intermediate",
+        }
+        result = retrieve_node(state)
+        assert result["retrieved_docs"] == []
+
+    def test_retrieve_node_hybrid_search_exception(self, monkeypatch):
+        from graph.nodes.retrieve import retrieve_node
+
+        class FailingHybrid:
+            def search(self, query, top_k=20):
+                raise RuntimeError("FAISS index corrupted")
+        monkeypatch.setattr("graph.nodes.retrieve.hybrid_search", FailingHybrid())
+        monkeypatch.setattr("graph.nodes.retrieve.reranker", None)
+
+        state = {
+            "query": "hello",
+            "retrieved_docs": [],
+            "chat_history": [],
+            "grade_result": "",
+            "rewritten_query": "",
+            "rewrite_count": 0,
+            "answer": "",
+            "user_level": "intermediate",
+        }
+        result = retrieve_node(state)
+        assert result["retrieved_docs"] == []
