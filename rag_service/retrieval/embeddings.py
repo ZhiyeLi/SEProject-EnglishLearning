@@ -1,5 +1,6 @@
 import logging
-from typing import List, Dict, Tuple
+import threading
+from typing import List, Dict
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -13,24 +14,42 @@ class EmbeddingService:
     """
 
     _instance = None
+    _lock = threading.Lock()
+    _load_failed = False
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._model = None
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._model = None
         return cls._instance
 
     @property
     def model(self):
         if self._model is None:
-            logger.info("Loading BGE-M3 model (first use, ~2.2GB download if not cached)...")
-            from FlagEmbedding import BGEM3FlagModel
-            self._model = BGEM3FlagModel(
-                'BAAI/bge-m3',
-                use_fp16=False,
-                device="cpu",
-            )
-            logger.info("BGE-M3 model loaded successfully.")
+            with self._lock:
+                if self._model is None:
+                    if self._load_failed:
+                        raise RuntimeError(
+                            "BGE-M3 model previously failed to load; "
+                            "EmbeddingService is unavailable."
+                        )
+                    logger.info(
+                        "Loading BGE-M3 model (first use, ~2.2GB download if not cached)..."
+                    )
+                    try:
+                        from FlagEmbedding import BGEM3FlagModel
+                        self._model = BGEM3FlagModel(
+                            'BAAI/bge-m3',
+                            use_fp16=False,
+                            device="cpu",
+                        )
+                        logger.info("BGE-M3 model loaded successfully.")
+                    except Exception:
+                        EmbeddingService._load_failed = True
+                        logger.exception("Failed to load BGE-M3 model.")
+                        raise
         return self._model
 
     @property
@@ -39,6 +58,8 @@ class EmbeddingService:
 
     def embed_query(self, query: str) -> Dict[str, np.ndarray]:
         """编码单个查询，返回 dense + sparse 向量。"""
+        if not isinstance(query, str) or not query.strip():
+            raise ValueError("query must be a non-empty string")
         output = self.model.encode(
             [query],
             return_dense=True,
@@ -52,6 +73,8 @@ class EmbeddingService:
 
     def embed_documents(self, texts: List[str]) -> Dict[str, np.ndarray]:
         """批量编码文档，返回 dense + sparse 向量。"""
+        if not texts:
+            raise ValueError("texts must not be an empty list")
         output = self.model.encode(
             texts,
             return_dense=True,
