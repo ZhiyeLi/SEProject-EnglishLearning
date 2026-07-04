@@ -66,7 +66,7 @@ def build_generate_messages(state: dict) -> list:
     ]
 
 
-async def generate_node(state: dict) -> dict:
+def generate_node(state: dict) -> dict:
     try:
         if _llm is None:
             return {"answer": "AI 服务未初始化，请检查配置。"}
