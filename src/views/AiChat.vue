@@ -536,7 +536,6 @@ async function onSend() {
   await scrollToBottom();
 
   let streamSuccess = false;
-  let sessionId = '';
 
   // 尝试 SSE 流式输出
   sendRagMessageStream(text, {
@@ -544,9 +543,8 @@ async function onSend() {
       assistantMsg.text += token;
       scrollToBottom();
     },
-    onDone(sid) {
+    onDone() {
       streamSuccess = true;
-      sessionId = sid;
       assistantTyping.value = false;
       scrollToBottom();
       finalizeMessage(assistantMsg, text, streamSuccess);

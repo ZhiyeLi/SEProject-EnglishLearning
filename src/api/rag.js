@@ -48,9 +48,12 @@ export function sendRagMessageStream(message, { onToken, onDone, onError }) {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
+      let done = false;
+      while (!done) {
+        const chunk = await reader.read();
+        done = chunk.done;
         if (done) break;
+        const value = chunk.value;
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
