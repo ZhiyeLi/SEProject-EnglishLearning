@@ -74,6 +74,17 @@ export const questionApi = {
   },
 
   /**
+   * 题目 AI 分析（统一 RAG 入口）
+   * @param {Object} data - 分析上下文
+   */
+  analyzeQuestion(data, config = {}) {
+    return request.post("/api/rag/analyze_question", data, {
+      timeout: 120000,
+      ...config,
+    });
+  },
+
+  /**
    * 提交答案
    * @param {Object} data - 提交数据
    * @param {String} data.mode - 模式

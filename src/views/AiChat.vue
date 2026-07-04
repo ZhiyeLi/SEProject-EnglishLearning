@@ -53,14 +53,14 @@
       <!-- 主聊天区 -->
       <div class="flex-grow flex justify-center">
         <div class="w-full h-[600px] bg-white rounded-lg shadow flex flex-col">
-
           <!-- header -->
-          <div class="bg-emerald-600 text-white p-4">
-            AI 学习助手
-          </div>
+          <div class="bg-emerald-600 text-white p-4">AI 学习助手</div>
 
           <!-- messages -->
-          <div ref="chatContainer" class="flex-grow p-4 overflow-y-auto space-y-3">
+          <div
+            ref="chatContainer"
+            class="flex-grow p-4 overflow-y-auto space-y-3"
+          >
             <div
               v-for="msg in messages"
               :key="msg.id"
@@ -69,9 +69,11 @@
             >
               <div
                 class="max-w-[75%] p-3 rounded-lg"
-                :class="msg.type === 'user'
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-gray-100'"
+                :class="
+                  msg.type === 'user'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-100'
+                "
               >
                 <div v-html="formatMessage(msg.text)" />
                 <div class="text-xs mt-1 opacity-60">
@@ -114,7 +116,6 @@ import { useRouter } from "vue-router";
 import NavBar from "@/components/common/NavBar.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 
-import EndBar from "@/components/common/EndBar.vue";
 import { aiChatApi } from "@/api/aiChat";
 import { sendRagMessage } from "@/api/rag";
 
@@ -166,7 +167,7 @@ const loadSessionMessages = async (sessionId) => {
   const res = await aiChatApi.getSessionMessages(sessionId);
 
   if (res?.code === 200) {
-    messages.value = (res.data || []).map(m => ({
+    messages.value = (res.data || []).map((m) => ({
       id: m.messageId,
       type: m.role === "user" ? "user" : "assistant",
       text: m.content,
@@ -206,7 +207,7 @@ const switchChat = (id) => {
 const deleteChat = async (id) => {
   await aiChatApi.deleteSession(id);
 
-  chatHistory.value = chatHistory.value.filter(c => c.sessionId !== id);
+  chatHistory.value = chatHistory.value.filter((c) => c.sessionId !== id);
 
   if (currentChatId.value === id && chatHistory.value.length > 0) {
     switchChat(chatHistory.value[0].sessionId);
@@ -239,7 +240,6 @@ async function onSend() {
     } else {
       assistantMsg.text = "请求失败";
     }
-
   } catch (e) {
     assistantMsg.text = "错误：" + e.message;
   } finally {
@@ -247,13 +247,19 @@ async function onSend() {
     await scrollToBottom();
 
     if (success && currentChatId.value) {
-      aiChatApi.saveMessage(currentChatId.value, "assistant", assistantMsg.text);
+      aiChatApi.saveMessage(
+        currentChatId.value,
+        "assistant",
+        assistantMsg.text,
+      );
     }
 
-    const session = chatHistory.value.find(c => c.sessionId === currentChatId.value);
+    const session = chatHistory.value.find(
+      (c) => c.sessionId === currentChatId.value,
+    );
 
     if (session && !session.title) {
-      const first = messages.value.find(m => m.type === "user");
+      const first = messages.value.find((m) => m.type === "user");
       if (first) {
         session.title = first.text.slice(0, 30);
         aiChatApi.updateSessionTitle(currentChatId.value, session.title);
@@ -298,8 +304,7 @@ const scrollToBottom = async () => {
 
 const formatMessage = (t) => t.replace(/\n/g, "<br/>");
 
-const formatChatTime = (t) =>
-  new Date(t).toLocaleString();
+const formatChatTime = (t) => new Date(t).toLocaleString();
 
 /* ===================== 路由 ===================== */
 const gotoHome = () => router.push({ name: "Home" });
