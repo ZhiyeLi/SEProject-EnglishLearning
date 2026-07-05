@@ -29,3 +29,5 @@ docs/
 *.njsproj
 *.sln
 *.sw?
+# FAISS 向量索引（运行时自动生成，禁止提交）
+rag_service/faiss_index/
