@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import logging
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
@@ -140,36 +141,53 @@ async def rag_chat(request: ChatRequest, http_request: Request):
 
     accept_header = http_request.headers.get("accept", "")
 
+    def _initial_state():
+        return {
+            "query": query,
+            "chat_history": [],
+            "retrieved_docs": [],
+            "grade_result": "",
+            "rewritten_query": "",
+            "rewrite_count": 0,
+            "answer": "",
+            "user_level": request.user_level or "intermediate",
+        }
+
     # SSE streaming — token-level output
     if "text/event-stream" in accept_header:
         async def event_generator():
-            initial_state = {
-                "query": query,
-                "chat_history": [],
-                "retrieved_docs": [],
-                "grade_result": "",
-                "rewritten_query": "",
-                "rewrite_count": 0,
-                "answer": "",
-                "user_level": request.user_level or "intermediate",
-            }
-
             try:
-                # Step 1: Run retrieval graph
-                state = graph.invoke(initial_state, config=config)
-                docs = state.get("retrieved_docs", [])
+                # Step 1: Run retrieval graph (offload blocking call to thread)
+                state = await asyncio.to_thread(
+                    graph.invoke, _initial_state(), config
+                )
 
                 # Step 2: Stream generation token by token
                 gen_state = {**state, "query": query}
                 from graph.nodes.generate import generate_node_stream
+                full_answer = ""
                 async for token in generate_node_stream(gen_state):
+                    full_answer += token
                     data = json.dumps({"token": token}, ensure_ascii=False)
                     yield f"event: token\ndata: {data}\n\n"
 
+                # Step 3: Persist Q&A pair for multi-turn context
+                if full_answer.strip():
+                    try:
+                        await asyncio.to_thread(
+                            graph.update_state, config,
+                            {"chat_history": [
+                                {"role": "user", "content": query},
+                                {"role": "assistant", "content": full_answer},
+                            ]}
+                        )
+                    except Exception:
+                        logger.warning("Failed to update chat_history", exc_info=True)
+
                 done = json.dumps({"done": True, "session_id": session_id}, ensure_ascii=False)
                 yield f"event: done\ndata: {done}\n\n"
-            except Exception as e:
-                logger.error(f"SSE stream error: {e}", exc_info=True)
+            except Exception:
+                logger.error("SSE stream error", exc_info=True)
                 err = json.dumps({"error": "stream error, retry"}, ensure_ascii=False)
                 yield f"event: error\ndata: {err}\n\n"
 
@@ -186,29 +204,35 @@ async def rag_chat(request: ChatRequest, http_request: Request):
     # JSON full response (backward compat)
     else:
         try:
-            initial_state = {
-                "query": query,
-                "chat_history": [],
-                "retrieved_docs": [],
-                "grade_result": "",
-                "rewritten_query": "",
-                "rewrite_count": 0,
-                "answer": "",
-                "user_level": request.user_level or "intermediate",
-            }
-
-            # Step 1: Run retrieval graph
-            state = graph.invoke(initial_state, config=config)
+            # Step 1: Run retrieval graph (offload blocking call to thread)
+            state = await asyncio.to_thread(
+                graph.invoke, _initial_state(), config
+            )
 
             # Step 2: Generate answer
             from graph.nodes.generate import generate_node
             gen_state = {**state, "query": query}
             result = generate_node(gen_state)
-            return ChatResponse(answer=result.get("answer", ""), session_id=session_id)
+            answer = result.get("answer", "")
 
-        except Exception as e:
-            logger.error(f"RAG chat error: {e}", exc_info=True)
-            raise HTTPException(status_code=500, detail=str(e))
+            # Step 3: Persist Q&A pair for multi-turn context
+            if answer.strip():
+                try:
+                    await asyncio.to_thread(
+                        graph.update_state, config,
+                        {"chat_history": [
+                            {"role": "user", "content": query},
+                            {"role": "assistant", "content": answer},
+                        ]}
+                    )
+                except Exception:
+                    logger.warning("Failed to update chat_history", exc_info=True)
+
+            return ChatResponse(answer=answer, session_id=session_id)
+
+        except Exception:
+            logger.error("RAG chat error", exc_info=True)
+            raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/api/health")

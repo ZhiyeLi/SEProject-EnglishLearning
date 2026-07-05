@@ -299,7 +299,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "@/components/common/NavBar.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
@@ -322,6 +322,8 @@ const messages = ref([
   },
 ]);
 const assistantTyping = ref(false);
+let sseController = null;           // AbortController for active SSE stream
+let streamDone = false;             // guard against double-finalize
 
 // ===== 历史对话管理（从后端加载）=====
 const chatHistory = ref([]);
@@ -512,8 +514,8 @@ const appendUserMessage = (text) => {
   return msg;
 };
 
-const appendAssistantMessagePlaceholder = () => {
-  const msg = {
+function appendAssistantMessagePlaceholder() {
+  messages.value.push({
     id: Date.now() + 1,
     type: "assistant",
     text: "",
@@ -521,65 +523,88 @@ const appendAssistantMessagePlaceholder = () => {
       hour: "2-digit",
       minute: "2-digit",
     }),
-  };
-  messages.value.push(msg);
-  return msg;
-};
+  });
+  // Return index for reactive access via messages.value[idx]
+  return messages.value.length - 1;
+}
 
 async function onSend() {
-  if (!canSend.value) return;
+  // Guard: don't send empty input or while already streaming
+  if (!canSend.value || assistantTyping.value) return;
+
+  // Abort any previous inflight SSE stream
+  if (sseController) {
+    sseController.abort();
+    sseController = null;
+  }
+
   const text = userInput.value.trim();
   appendUserMessage(text);
   userInput.value = "";
   assistantTyping.value = true;
-  const assistantMsg = appendAssistantMessagePlaceholder();
+  const msgIdx = appendAssistantMessagePlaceholder();
   await scrollToBottom();
 
-  let streamSuccess = false;
+  streamDone = false;
 
-  // 尝试 SSE 流式输出
-  sendRagMessageStream(text, {
+  // Attempt SSE streaming
+  sseController = sendRagMessageStream(text, currentChatId.value, {
     onToken(token) {
-      assistantMsg.text += token;
+      // Access via reactive proxy so Vue re-renders
+      if (messages.value[msgIdx]) {
+        messages.value[msgIdx].text += token;
+      }
       scrollToBottom();
     },
     onDone() {
-      streamSuccess = true;
+      if (streamDone) return;
+      streamDone = true;
       assistantTyping.value = false;
+      sseController = null;
       scrollToBottom();
-      finalizeMessage(assistantMsg, text, streamSuccess);
+      finalizeMessage(msgIdx, text, true);
     },
     onError(err) {
-      console.warn('SSE stream failed, falling back to JSON:', err.message);
-      // SSE 失败，降级为 JSON 模式
-      fallbackJsonMode(assistantMsg, text);
+      if (streamDone) return;   // don't fallback if stream already finished
+      console.warn('SSE failed, falling back to JSON:', err.message);
+      sseController = null;
+      fallbackJsonMode(msgIdx, text);
     }
   });
 }
 
-// SSE 失败时的 JSON 降级
-async function fallbackJsonMode(assistantMsg, text) {
+// SSE fallback: use Spring Boot JSON proxy
+async function fallbackJsonMode(msgIdx, text) {
   try {
     const res = await sendRagMessage(text);
     if (res.code === 200 && res.data && res.data.reply) {
-      assistantMsg.text = res.data.reply;
+      if (messages.value[msgIdx]) {
+        messages.value[msgIdx].text = res.data.reply;
+      }
       assistantTyping.value = false;
       await scrollToBottom();
-      finalizeMessage(assistantMsg, text, true);
+      finalizeMessage(msgIdx, text, true);
     } else {
-      assistantMsg.text = '[错误] ' + (res.message || '请求失败');
+      if (messages.value[msgIdx]) {
+        messages.value[msgIdx].text = '[错误] ' + (res.message || '请求失败');
+      }
       assistantTyping.value = false;
       await scrollToBottom();
     }
   } catch (err) {
-    assistantMsg.text = '[错误] ' + (err.message || err);
+    if (messages.value[msgIdx]) {
+      messages.value[msgIdx].text = '[错误] ' + (err.message || err);
+    }
     assistantTyping.value = false;
     await scrollToBottom();
   }
 }
 
-// 保存消息 + 更新标题
-function finalizeMessage(assistantMsg, userText, success) {
+// Save message to backend + auto-title
+function finalizeMessage(msgIdx, userText, success) {
+  const assistantMsg = messages.value[msgIdx];
+  if (!assistantMsg) return;
+
   if (success && currentChatId.value && assistantMsg.text.trim()) {
     aiChatApi.saveMessage(currentChatId.value, 'assistant', assistantMsg.text.trim()).catch((err) => {
       console.error('Failed to save assistant message:', err);
@@ -596,6 +621,14 @@ function finalizeMessage(assistantMsg, userText, success) {
     currentSession.messageCount = messages.value.length;
   }
 }
+
+// Cleanup SSE on component unmount
+onBeforeUnmount(() => {
+  if (sseController) {
+    sseController.abort();
+    sseController = null;
+  }
+});
 
 // 路由跳转
 
