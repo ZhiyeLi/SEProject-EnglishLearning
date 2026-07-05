@@ -17,6 +17,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Project docs & config (not for git)
+docs/
+.claude/
+
 # Editor directories and files
 .idea
 .vscode
