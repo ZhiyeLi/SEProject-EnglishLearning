@@ -1,40 +1,37 @@
 package com.example.english_learning_platform.service.impl;
 
+import com.example.english_learning_platform.dto.FriendRankingDTO;
 import com.example.english_learning_platform.dto.UnreadCountDTO;
 import com.example.english_learning_platform.entity.*;
 import com.example.english_learning_platform.repository.*;
+import com.example.english_learning_platform.service.FriendService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import com.example.english_learning_platform.dto.FriendRankingDTO;
-import com.example.english_learning_platform.repository.UserWordProgressRepository;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public class FriendService {
+public class FriendServiceImpl implements FriendService {
 
-    private static final Logger logger = LoggerFactory.getLogger(FriendService.class);
+    private static final Logger logger = LoggerFactory.getLogger(FriendServiceImpl.class);
 
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final MessageRepository messageRepository;
-
     private final UserWordProgressRepository userWordProgressRepository;
 
-    public FriendService(UserRepository userRepository,
-                        FriendRepository friendRepository,
-                        FriendRequestRepository friendRequestRepository,
-                        MessageRepository messageRepository,
-                         UserWordProgressRepository userWordProgressRepository) {
+    public FriendServiceImpl(UserRepository userRepository,
+                             FriendRepository friendRepository,
+                             FriendRequestRepository friendRequestRepository,
+                             MessageRepository messageRepository,
+                             UserWordProgressRepository userWordProgressRepository) {
         this.userRepository = userRepository;
         this.friendRepository = friendRepository;
         this.friendRequestRepository = friendRequestRepository;
@@ -42,6 +39,7 @@ public class FriendService {
         this.userWordProgressRepository = userWordProgressRepository;
     }
 
+    @Override
     public List<User> searchNewFriends(String keyword, Long currentUserId) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return Collections.emptyList();
@@ -68,6 +66,7 @@ public class FriendService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional
     public FriendRequest sendFriendRequest(Long senderId, Long receiverId) {
         // 防止自己给自己发送请求
@@ -77,23 +76,24 @@ public class FriendService {
 
         // 检查是否已经是好友
         if (friendRepository.existsByUserIdAndFriendId(senderId, receiverId) ||
-            friendRepository.existsByUserIdAndFriendId(receiverId, senderId)) {
+                friendRepository.existsByUserIdAndFriendId(receiverId, senderId)) {
             throw new RuntimeException("已经是好友关系");
         }
-        
+
         // 检查是否已发送过请求
         if (friendRequestRepository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId, "pending")) {
             throw new RuntimeException("已发送过好友请求");
         }
-        
+
         FriendRequest request = new FriendRequest();
         request.setSenderId(senderId);
         request.setReceiverId(receiverId);
         request.setStatus("pending");
-        
+
         return friendRequestRepository.save(request);
     }
-    
+
+    @Override
     public List<Map<String, Object>> getFriendRequests(Long userId) {
         // 查询待处理的好友请求
         List<FriendRequest> requests = friendRequestRepository.findByReceiverIdAndStatus(userId, "pending");
@@ -135,12 +135,13 @@ public class FriendService {
 
         return result;
     }
-    
+
+    @Override
     @Transactional
     public void acceptFriendRequest(Long requestId, Long userId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("好友请求不存在"));
-        
+
         if (!request.getReceiverId().equals(userId)) {
             throw new RuntimeException("无权限操作");
         }
@@ -175,19 +176,21 @@ public class FriendService {
         friendRequestRepository.save(request);
     }
 
+    @Override
     @Transactional
     public void rejectFriendRequest(Long requestId, Long userId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("好友请求不存在"));
-        
+
         if (!request.getReceiverId().equals(userId)) {
             throw new RuntimeException("无权限操作");
         }
-        
+
         request.setStatus("rejected");
         friendRequestRepository.save(request);
     }
-    
+
+    @Override
     public List<Map<String, Object>> getFriendList(Long userId) {
         // 支持双向好友关系：使用 findAllFriendIdsByUserId
         List<Long> friendIds = friendRepository.findAllFriendIdsByUserId(userId);
@@ -217,7 +220,8 @@ public class FriendService {
 
         return result;
     }
-    
+
+    @Override
     @Transactional
     public Message sendMessage(Long senderId, Long receiverId, String content) {
         Message message = new Message();
@@ -225,31 +229,33 @@ public class FriendService {
         message.setReceiverId(receiverId);
         message.setContent(content);
         message.setIfRead(false);
-        
+
         return messageRepository.save(message);
     }
-    
+
+    @Override
     public List<Message> getMessageList(Long userId, Long friendId) {
         return messageRepository.findConversation(userId, friendId);
     }
-    
+
+    @Override
     public Long getUnreadCount(Long userId) {
         return messageRepository.countByReceiverIdAndIfRead(userId, false);
     }
 
-    // 获取按好友分组的未读计数
+    @Override
     public List<UnreadCountDTO> getUnreadCountGroupByFriend(Long userId) {
         return messageRepository.countUnreadByReceiverIdGroupBySenderId(userId);
     }
 
-    // 标记某个好友的消息为已读
+    @Override
     @Transactional
     public void markMessagesAsRead(Long receiverId, Long senderId) {
         // 更新该用户（接收者）收到的、来自某个好友（发送者）的所有未读消息为已读
         messageRepository.updateIfReadByReceiverIdAndSenderId(receiverId, senderId, true);
     }
 
-    // 新增：获取好友周学习单词排行榜
+    @Override
     public List<FriendRankingDTO> getFriendWeeklyRanking(Long currentUserId) {
         // 1. 计算本周时间范围：周一00:00 至 周日23:59:59
         LocalDateTime now = LocalDateTime.now();
@@ -270,9 +276,9 @@ public class FriendService {
             // 保持当前好友顺序的同时把自己放到首位，确保在结果中可见
             uniqueFriendIds.add(0, currentUserId);
         }
-         if (uniqueFriendIds.isEmpty()) {
-             return new ArrayList<>(); // 无好友返回空列表
-         }
+        if (uniqueFriendIds.isEmpty()) {
+            return new ArrayList<>(); // 无好友返回空列表
+        }
 
         // 批量获取好友用户信息，避免 N+1
         List<User> friendUsers = userRepository.findAllById(uniqueFriendIds);
@@ -340,7 +346,7 @@ public class FriendService {
         return finalList;
     }
 
-    // 新增公共方法：去重并过滤 null 与自身 ID，保持原始顺序
+    // 私有工具方法，仅实现类内部使用，不暴露到接口
     private List<Long> dedupeAndFilterFriendIds(Long selfUserId, List<Long> friendIds) {
         if (friendIds == null || friendIds.isEmpty()) {
             return Collections.emptyList();

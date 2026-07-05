@@ -5,6 +5,7 @@ import com.example.english_learning_platform.dto.RegisterRequest;
 import com.example.english_learning_platform.dto.UserDTO;
 import com.example.english_learning_platform.entity.User;
 import com.example.english_learning_platform.repository.UserRepository;
+import com.example.english_learning_platform.service.AuthService;
 import com.example.english_learning_platform.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,13 +15,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class AuthService {
+public class AuthServiceImpl implements AuthService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;

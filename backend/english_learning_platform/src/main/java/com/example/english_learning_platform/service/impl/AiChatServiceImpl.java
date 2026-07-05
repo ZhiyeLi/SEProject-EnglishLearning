@@ -1,4 +1,4 @@
-package com.example.english_learning_platform.service;
+package com.example.english_learning_platform.service.impl;
 
 import com.example.english_learning_platform.dto.AiChatSessionDTO;
 import com.example.english_learning_platform.dto.AiChatMessageDTO;
@@ -8,6 +8,7 @@ import com.example.english_learning_platform.repository.AiChatSessionRepository;
 import com.example.english_learning_platform.repository.AiChatMessageRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.english_learning_platform.service.AiChatService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -16,12 +17,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class AiChatService {
+public class AiChatServiceImpl implements AiChatService {
 
     private final AiChatSessionRepository sessionRepository;
     private final AiChatMessageRepository messageRepository;
 
-    public AiChatService(AiChatSessionRepository sessionRepository,
+    public AiChatServiceImpl(AiChatSessionRepository sessionRepository,
                         AiChatMessageRepository messageRepository) {
         this.sessionRepository = sessionRepository;
         this.messageRepository = messageRepository;
