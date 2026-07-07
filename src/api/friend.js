@@ -34,6 +34,11 @@ export const friendApi = {
     return request.get("/api/friends/list");
   },
 
+   // 删除好友
+  deleteFriend(friendId) {
+    return request.post("/api/friends/delete", { friendId });
+  },
+
   // 发送消息
   sendMessage(data) {
     return request.post("/api/friends/message", data);

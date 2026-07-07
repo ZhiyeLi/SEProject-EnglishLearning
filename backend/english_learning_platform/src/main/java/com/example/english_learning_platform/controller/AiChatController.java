@@ -4,6 +4,7 @@ import com.example.english_learning_platform.dto.ApiResponse;
 import com.example.english_learning_platform.dto.AiChatSessionDTO;
 import com.example.english_learning_platform.dto.AiChatMessageDTO;
 import com.example.english_learning_platform.service.AiChatService;
+import com.example.english_learning_platform.service.impl.AiChatServiceImpl;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
