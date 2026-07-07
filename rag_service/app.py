@@ -22,8 +22,8 @@ DEEPBRICKS_BASE_URL = os.getenv("DEEPBRICKS_BASE_URL", "https://api.deepbricks.a
 
 def init_rag():
     global vectorstore, retriever, rag_chain
-    # index_path = os.path.join(os.path.dirname(__file__), 'faiss_index')
-    index_path = r"C:\Users\MI\Desktop\faiss_index"
+    index_path = os.path.join(os.path.dirname(__file__), 'faiss_index')
+    # index_path = r"C:\Users\MI\Desktop\faiss_index"
     if not os.path.exists(index_path):
         print("警告: 找不到 FAISS 索引。请先运行 build_knowledge_base.py。")
         return
