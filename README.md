@@ -145,81 +145,111 @@ Node.js 服务将在 `http://localhost:3000` 启动。
 
 ---
 
-## RAG AI 智能助教
+  RAG AI 智能助教
 
-RAG（检索增强生成）模块为 AI 学习助手提供知识库支持的智能对话功能。
+  RAG（检索增强生成）模块为 AI 学习助手提供知识库支持的智能对话功能。
 
-### 架构
+  架构
 
-```
-Vue 前端 → Spring Boot → Python RAG 服务 → DeepBricks LLM API
-                ↑
-          FAISS 向量库（本地）
-          - 单词（23,574 条）
-          - 语法（27 条）
-          - 作文模板（10 条）
-```
+  Vue 前端 → Spring Boot → Python RAG 服务 → DeepBricks LLM API
+                  ↑
+            FAISS 向量库（本地）
+            - 单词（23,574 条）
+            - 语法（27 条）
+            - 作文模板（10 条）
 
-### 第一步：安装 Python 依赖
+  第一步：安装 Python 依赖
 
-```bash
-cd rag_service
-python -m venv venv
-venv\Scripts\activate       # Windows
-# source venv/bin/activate  # macOS/Linux
-pip install -r requirements.txt
-```
+  cd rag_service
+  python -m venv venv
 
-### 第二步：配置 API Key
+  # Windows (PowerShell)
+  venv\Scripts\Activate
 
-```bash
-cp .env.example .env
-```
+  # Windows (Git Bash) / macOS / Linux
+  # source venv/bin/activate
 
-编辑 `rag_service/.env`，填入你的 API Key：
+  pip install -r requirements.txt
 
-```
-DEEPBRICKS_API_KEY=sk-xxxxxxxxxxxxx
-DEEPBRICKS_BASE_URL=https://api.deepbricks.ai/v1
-```
+  ▎ 注意：如果 PowerShell 报 "running scripts is disabled" 错误，先执行：
+  ▎ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-**注意：`.env` 文件已被 gitignore，不会提交到仓库。每个开发者需要自行创建。**
+  第二步：配置 API Key
 
-### 第三步：构建知识库索引
+  在 rag_service\ 目录下已有 .env 文件，如需修改 API Key，直接编辑即可：
 
-```bash
-cd rag_service
-python build_knowledge_base.py
-```
+  DEEPBRICKS_API_KEY=sk-xxxxxxxxxxxxx
+  DEEPBRICKS_BASE_URL=https://api.deepbricks.ai/v1
 
-首次运行会自动下载 `BAAI/bge-small-zh-v1.5` 嵌入模型（约 100MB），生成 FAISS 索引。
+  注意：.env 文件已被 gitignore，不会提交到仓库。
 
-### 第四步：启动 RAG 服务
+  第三步：构建知识库索引
 
-```bash
-python app.py
-```
+  # 确保已激活 venv 虚拟环境（提示符显示 (venv)）
+  cd rag_service
+  python build_knowledge_base.py
 
-RAG 服务将在 `http://localhost:8001` 启动。
+  首次运行会自动下载 BAAI/bge-m3 嵌入模型（约 2GB），生成 FAISS 索引。GPU 编码约需 1
+  分钟，CPU 编码约需 1.5 小时。
 
-### 扩充知识库
+  第四步：启动 RAG 服务
 
-向以下 CSV 文件添加新行，然后重新运行 `build_knowledge_base.py`：
+  # 确保已激活 venv 虚拟环境（提示符显示 (venv)）
+  # 确保在 rag_service 目录下
+  python app.py
 
-| 数据类型 | 路径 | 说明 |
-|---------|------|------|
-| 单词 | `单词数据集/*.csv` | 四级/六级/牛津3000/托福雅思词汇 |
-| 语法 | `语法数据集/grammar.csv` | 时态、语态、从句、虚拟语气等 |
-| 作文 | `作文模板数据集/writing_templates.csv` | 议论文、应用文、图表作文模板 |
+  RAG 服务将在 http://localhost:8001 启动。
 
-### 启动顺序（全部服务）
+  验证是否启动成功：
 
-| 顺序 | 服务 | 目录 | 端口 |
-|------|------|------|------|
-| 1 | MySQL | 系统服务 | 3306 |
-| 2 | Python RAG | `rag_service/` | 8001 |
-| 3 | Spring Boot | `backend/english_learning_platform/` | 9090 |
-| 4 | Node.js（可选） | `server/` | 3000 |
-| 5 | Vue 前端 | 项目根目录 | 8081 |
+  # PowerShell
+  Invoke-WebRequest -Uri http://localhost:8001/api/health | Select-Object -Expand
+  Content
 
-全部启动后，打开 `http://localhost:8081` 即可使用。
+  # 或 Git Bash
+  curl http://localhost:8001/api/health
+  # → {"status":"ok","graph_initialized":true}
+
+  扩充知识库
+
+  向以下 CSV 文件添加新行，然后重新运行 build_knowledge_base.py：
+
+  ┌─────────┬─────────────────────────────────────┬────────────────────────────────┐
+  │ 数据类  │                路径                 │              说明              │
+  │   型    │                                     │                                │
+  ├─────────┼─────────────────────────────────────┼────────────────────────────────┤
+  │ 单词    │ 单词数据集/*.csv                    │ 四级/六级/牛津3000/托福雅思词  │
+  │         │                                     │ 汇                             │
+  ├─────────┼─────────────────────────────────────┼────────────────────────────────┤
+  │ 语法    │ 语法数据集/grammar.csv              │ 时态、语态、从句、虚拟语气等   │
+  ├─────────┼─────────────────────────────────────┼────────────────────────────────┤
+  │ 作文    │ 作文模板数据集/writing_templates.cs │ 议论文、应用文、图表作文模板   │
+  │         │ v                                   │                                │
+  └─────────┴─────────────────────────────────────┴────────────────────────────────┘
+
+  用 Docker 启动（可选）
+
+  # 先创建缺失的目录
+  mkdir rag_service\sparse_index
+  cd rag_service
+  docker-compose up -d
+
+  启动顺序（全部服务）
+
+  ┌──────┬─────────────────┬────────────────────────────────────┬──────┐
+  │ 顺序 │      服务       │                目录                │ 端口 │
+  ├──────┼─────────────────┼────────────────────────────────────┼──────┤
+  │ 1    │ MySQL           │ 系统服务                           │ 3306 │
+  ├──────┼─────────────────┼────────────────────────────────────┼──────┤
+  │ 2    │ Python RAG      │ rag_service/                       │ 8001 │
+  ├──────┼─────────────────┼────────────────────────────────────┼──────┤
+  │ 3    │ Spring Boot     │ backend/english_learning_platform/ │ 9090 │
+  ├──────┼─────────────────┼────────────────────────────────────┼──────┤
+  │ 4    │ Node.js（可选） │ server/                            │ 3000 │
+  ├──────┼─────────────────┼────────────────────────────────────┼──────┤
+  │ 5    │ Vue 前端        │ 项目根目录                         │ 8081 │
+  └──────┴─────────────────┴────────────────────────────────────┴──────┘
+
+  全部启动后，打开 http://localhost:8081 即可使用。
+
+ ---
