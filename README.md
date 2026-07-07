@@ -151,14 +151,14 @@ RAG（检索增强生成）模块为 AI 学习助手提供知识库支持的智�
 
 ### 架构
 
-```
-Vue 前端 → Spring Boot → Python RAG 服务 → DeepBricks LLM API
-                ↑
-          FAISS 向量库（本地）
-          - 单词（23,574 条）
-          - 语法（27 条）
-          - 作文模板（10 条）
-```
+  ```
+  Vue 前端 → Spring Boot → Python RAG 服务 → DeepBricks LLM API
+                  ↑
+            FAISS 向量库（本地）
+            - 单词（23,574 条）
+            - 语法（27 条）
+            - 作文模板（10 条）
+  ```
 
 ### 第一步：安装 Python 依赖
 
@@ -194,7 +194,7 @@ python build_knowledge_base.py
 
 首次运行会自动下载 `BAAI/bge-small-zh-v1.5` 嵌入模型（约 100MB），生成 FAISS 索引。
 
-### 第四步：启动 RAG 服务
+### 第四步：启动 RAG 服务，确保在`rag_service`目录下运行
 
 ```bash
 python app.py
@@ -212,7 +212,15 @@ RAG 服务将在 `http://localhost:8001` 启动。
 | 语法 | `语法数据集/grammar.csv` | 时态、语态、从句、虚拟语气等 |
 | 作文 | `作文模板数据集/writing_templates.csv` | 议论文、应用文、图表作文模板 |
 
-### 启动顺序（全部服务）
+###  如果用 Docker 启动
+
+   需要先创建缺失的 sparse_index/ 目录：
+
+   mkdir rag_service/sparse_index
+   cd rag_service
+   docker-compose up -d
+
+ ### 启动顺序（全部服务）
 
 | 顺序 | 服务 | 目录 | 端口 |
 |------|------|------|------|
