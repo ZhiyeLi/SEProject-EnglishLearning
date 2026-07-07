@@ -6,6 +6,7 @@ import com.example.english_learning_platform.entity.FriendRequest;
 import com.example.english_learning_platform.entity.Message;
 import com.example.english_learning_platform.entity.User;
 import com.example.english_learning_platform.service.FriendService;
+import com.example.english_learning_platform.service.impl.FriendServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 import com.example.english_learning_platform.dto.FriendRankingDTO;
@@ -116,6 +117,21 @@ public class FriendController {
             Long userId = (Long) request.getAttribute("userId");
             List<Map<String, Object>> friends = friendService.getFriendList(userId);
             return ApiResponse.success(friends);
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    // 删除好友接口
+    @PostMapping("/delete")
+    public ApiResponse<String> deleteFriend(
+            HttpServletRequest request,
+            @RequestBody Map<String, Long> data) {
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            Long friendId = data.get("friendId");
+            friendService.deleteFriend(userId, friendId);
+            return ApiResponse.success("已删除好友");
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
         }

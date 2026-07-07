@@ -931,6 +931,11 @@ const searchResults = ref([]);
 // 好友请求弹窗相关响应式变量
 const showFriendRequestModal = ref(false);
 
+// 滚动事件处理函数（顶层声明，全局可访问）
+let scrollHandler = null;
+// 搜索防抖定时器也挪到顶层，方便统一清理
+let searchTimer = null;
+
 onMounted(async () => {
   await fetchFriendList(); // 加载好友列表
   await fetchFriendRequests(); // 加载好友请求列表
@@ -954,13 +959,17 @@ onMounted(async () => {
 
   // 页面滚动时导航栏样式变化（保持原样）
   const header = document.querySelector("header");
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 10) {
-      header.classList.add("shadow");
-    } else {
-      header.classList.remove("shadow");
-    }
-  });
+  if (header) {
+    // 给顶层变量赋值
+    scrollHandler = () => {
+      if (window.scrollY > 10) {
+        header.classList.add("shadow");
+      } else {
+        header.classList.remove("shadow");
+      }
+    };
+    window.addEventListener("scroll", scrollHandler);
+  }
 });
 
 // 计算当前日期字符串
@@ -1136,8 +1145,6 @@ const fetchFriendList = async () => {
   }
 };
 
-//添加好友弹窗部分
-let searchTimer = null; // 搜索防抖定时器
 // 监听搜索关键词，调用后端接口搜索用户
 watch(searchFriendValue, (val) => {
   // 1. 清空之前的定时器（防抖）
@@ -1398,6 +1405,18 @@ const clearMessagePoll = () => {
 // 页面销毁时清理轮询
 onBeforeUnmount(() => {
   clearMessagePoll();
+  
+  // 清理滚动事件监听
+  if (scrollHandler) {
+    window.removeEventListener("scroll", scrollHandler);
+    scrollHandler = null;
+  }
+  
+  // 清理搜索防抖定时器
+  if (searchTimer) {
+    clearTimeout(searchTimer);
+    searchTimer = null;
+  }
 });
 
 // 学习建议弹窗部分
