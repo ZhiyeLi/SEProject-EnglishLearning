@@ -70,4 +70,8 @@ public interface FriendService {
      * 获取好友本周学习单词排行榜（包含自己）
      */
     List<FriendRankingDTO> getFriendWeeklyRanking(Long currentUserId);
+    /**
+     * 删除好友（双向删除）
+     */
+    void deleteFriend(Long userId, Long friendId);
 }

@@ -359,4 +359,20 @@ public class FriendServiceImpl implements FriendService {
         }
         return new ArrayList<>(unique);
     }
+    @Override
+    @Transactional
+    public void deleteFriend(Long userId, Long friendId) {
+
+        // 判断是否是好友
+        if (!friendRepository.existsByUserIdAndFriendId(userId, friendId)
+                && !friendRepository.existsByUserIdAndFriendId(friendId, userId)) {
+            throw new RuntimeException("好友不存在");
+        }
+
+        // 删除 user -> friend
+        friendRepository.deleteByUserIdAndFriendId(userId, friendId);
+
+        // 删除 friend -> user
+        friendRepository.deleteByUserIdAndFriendId(friendId, userId);
+    }
 }

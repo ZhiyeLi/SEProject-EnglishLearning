@@ -11,18 +11,21 @@ import java.util.Optional;
 
 @Repository
 public interface FriendRepository extends JpaRepository<Friend, Long> {
+
     List<Friend> findByUserId(Long userId);
-    
+
     @Query("SELECT f FROM Friend f WHERE (f.userId = ?1 AND f.friendId = ?2) OR (f.userId = ?2 AND f.friendId = ?1)")
     Optional<Friend> findFriendship(Long userId1, Long userId2);
-    
+
     boolean existsByUserIdAndFriendId(Long userId, Long friendId);
 
-    /**
-     * 查询当前用户的所有好友ID（双向：当前用户是userId 或 friendId）
-     * 增强健壮性，避免漏查好友
-     */
+    void deleteByUserIdAndFriendId(Long userId, Long friendId);
+
     @Query("SELECT CASE WHEN f.userId = :userId THEN f.friendId ELSE f.userId END " +
             "FROM Friend f WHERE f.userId = :userId OR f.friendId = :userId")
     List<Long> findAllFriendIdsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT f FROM Friend f WHERE (f.userId = :userId1 AND f.friendId = :userId2) OR (f.userId = :userId2 AND f.friendId = :userId1)")
+    List<Friend> findFriendshipsBetweenUsers(@Param("userId1") Long userId1,
+                                             @Param("userId2") Long userId2);
 }
