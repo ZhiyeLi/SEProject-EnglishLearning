@@ -58,12 +58,22 @@
                     :class="friend.id === currentFriendId ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''"
                   >
                     <template #actions>
-                      <button
-                        class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
-                        @click="selectFriend(friend)"
-                      >
-                        <i class="fas fa-comment" />
-                      </button>
+                      <div class="flex items-center gap-1">
+                        <button
+                          class="text-gray-600 hover:text-emerald-600 p-1 rounded-full hover:bg-emerald-50 transition-colors"
+                          @click="selectFriend(friend)"
+                        >
+                          <i class="fas fa-comment" />
+                        </button>
+                        <!-- 删除好友按钮 -->
+                        <button
+                          class="text-red-500 hover:text-red-600 p-1 rounded-full hover:bg-red-50 transition-colors"
+                          @click.stop.prevent="removeFriend(friend)"
+                          title="删除好友"
+                        >
+                          <i class="fas fa-trash-alt" />
+                        </button>
+                      </div>
                     </template>
                   </FriendItem>
                   <!-- 未读消息标志 -->
@@ -834,6 +844,32 @@ const rejectFriendRequest = async (index) => {
   } catch (err) {
     console.error('拒绝好友请求失败：', err);
     alert(err.response?.data?.message || '网络异常，操作失败');
+  }
+};
+
+// 删除好友处理
+const removeFriend = async (friend) => {
+  if (!friend?.id) return;
+  const confirmed = window.confirm(`确定要删除好友 ${friend.name || '该用户'} 吗？`);
+  if (!confirmed) return;
+
+  try {
+    const res = await friendApi.deleteFriend(friend.id);
+    if (res.code === 200) {
+      if (String(currentFriendId.value) === String(friend.id)) {
+        currentFriendId.value = '';
+        currentFriend.value = null;
+        messageList.value = [];
+      }
+      await fetchFriendList();
+      await fetchUnreadCounts();
+      alert(res.message || '已删除好友');
+    } else {
+      throw new Error(res.message || '删除失败');
+    }
+  } catch (err) {
+    console.error('删除好友失败：', err);
+    alert(err.response?.data?.message || err.message || '网络异常，删除失败');
   }
 };
 

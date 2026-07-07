@@ -120,6 +120,21 @@ public class FriendController {
             return ApiResponse.error(e.getMessage());
         }
     }
+
+    // 删除好友接口
+    @PostMapping("/delete")
+    public ApiResponse<String> deleteFriend(
+            HttpServletRequest request,
+            @RequestBody Map<String, Long> data) {
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            Long friendId = data.get("friendId");
+            friendService.deleteFriend(userId, friendId);
+            return ApiResponse.success("已删除好友");
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
     
     @PostMapping("/message")
     public ApiResponse<Message> sendMessage(

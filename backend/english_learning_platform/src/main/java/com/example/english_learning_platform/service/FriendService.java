@@ -187,6 +187,21 @@ public class FriendService {
         request.setStatus("rejected");
         friendRequestRepository.save(request);
     }
+
+    // 删除好友关系
+    @Transactional
+    public void deleteFriend(Long currentUserId, Long friendId) {
+        if (currentUserId == null || friendId == null || currentUserId.equals(friendId)) {
+            throw new RuntimeException("好友信息无效");
+        }
+
+        List<Friend> friendships = friendRepository.findFriendshipsBetweenUsers(currentUserId, friendId);
+        if (friendships == null || friendships.isEmpty()) {
+            return;
+        }
+
+        friendRepository.deleteAll(friendships);
+    }
     
     public List<Map<String, Object>> getFriendList(Long userId) {
         // 支持双向好友关系：使用 findAllFriendIdsByUserId
