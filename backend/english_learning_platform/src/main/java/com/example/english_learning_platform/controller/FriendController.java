@@ -6,6 +6,7 @@ import com.example.english_learning_platform.entity.FriendRequest;
 import com.example.english_learning_platform.entity.Message;
 import com.example.english_learning_platform.entity.User;
 import com.example.english_learning_platform.service.FriendService;
+import com.example.english_learning_platform.service.impl.FriendServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 import com.example.english_learning_platform.dto.FriendRankingDTO;
