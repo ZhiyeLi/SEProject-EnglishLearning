@@ -987,7 +987,7 @@ import {
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { questionApi } from "@/api/question";
-import { renderMarkdownToSafeHtml } from "@/utils/markdown";
+// import { renderMarkdownToSafeHtml } from "@/utils/markdown";
 
 export default {
   name: "ExamPractice",

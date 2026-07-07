@@ -113,102 +113,12 @@
     <!-- 页脚 -->
     <EndBar />
     <!-- 学习建议弹窗 -->
-    <teleport to="body">
-      <div
-        v-if="showSuggestionsModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
-        @click="handleSuggestionsBackdropClick"
-      >
-        <div
-          class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[70vh] overflow-hidden transform transition-all"
-          @click.stop
-        >
-          <!-- 弹窗头部 -->
-          <div
-            class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-blue-50"
-          >
-            <div class="flex justify-between items-center">
-              <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                <i class="fas fa-lightbulb text-yellow-500 mr-3" />
-                课程学习建议
-              </h2>
-              <button
-                class="text-gray-400 hover:text-gray-600 transition-colors"
-                @click="showSuggestionsModal = false"
-              >
-                <i class="fas fa-times text-2xl" />
-              </button>
-            </div>
-          </div>
-
-          <!-- 弹窗内容 -->
-          <div
-            class="px-8 py-6 overflow-y-auto"
-            style="max-height: calc(70vh - 140px)"
-          >
-            <div class="space-y-4">
-              <!-- 建议内容 -->
-              <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-3">
-                  <span class="text-emerald-600">{{
-                    suggestionsData[currentSuggestionIndex].title
-                  }}</span>
-                </h3>
-                <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                  {{ suggestionsData[currentSuggestionIndex].content }}
-                </p>
-              </div>
-
-              <!-- 建议标签 -->
-              <div class="flex flex-wrap gap-2 pt-4">
-                <span
-                  v-for="tag in suggestionsData[currentSuggestionIndex].tags"
-                  :key="tag"
-                  class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm"
-                >
-                  {{ tag }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 弹窗底部 - 翻页控制 -->
-          <div
-            class="px-8 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center"
-          >
-            <button
-              :disabled="currentSuggestionIndex === 0"
-              class="px-6 py-2 rounded-lg font-medium transition-all"
-              :class="
-                currentSuggestionIndex === 0
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-              "
-              @click="previousSuggestion"
-            >
-              <i class="fas fa-chevron-left mr-2" />上一条
-            </button>
-
-            <div class="text-gray-600 font-medium">
-              {{ currentSuggestionIndex + 1 }} / {{ suggestionsData.length }}
-            </div>
-
-            <button
-              :disabled="currentSuggestionIndex === suggestionsData.length - 1"
-              class="px-6 py-2 rounded-lg font-medium transition-all"
-              :class="
-                currentSuggestionIndex === suggestionsData.length - 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-              "
-              @click="nextSuggestion"
-            >
-              下一条<i class="fas fa-chevron-right ml-2" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </teleport>
+    <SuggestionModal
+      :visible="showSuggestionsModal"
+      title="学习建议"
+      :items="suggestionsData"
+      @close="showSuggestionsModal = false"
+    />
     <!-- 编辑资料对话框（引入组件） -->
     <EditPassword v-model:open="isEditpwdOpen" /><!-- 双向绑定对话框显示状态 -->
     <!-- 编辑资料对话框（引入组件） -->
@@ -225,6 +135,7 @@ import ActionButtons from "@/components/common/ActionButtons.vue";
 import EndBar from "@/components/common/EndBar.vue";
 import EditPassword from "@/components/profile/EditPassword.vue"; // 引入编辑组件
 import EditEmail from "@/components/profile/EditEmail.vue"; // 引入编辑组件
+import SuggestionModal from "@/components/common/SuggestionModal.vue";
 import { getSettings } from "@/api/settings";
 
 const router = useRouter();
@@ -411,7 +322,6 @@ const navItems = [
 ];
 // ===== 学习建议弹窗相关逻辑 =====
 const showSuggestionsModal = ref(false);
-const currentSuggestionIndex = ref(0);
 // 课程相关的学习建议数据
 const suggestionsData = ref([
   {
@@ -446,25 +356,6 @@ const suggestionsData = ref([
   },
 ]);
 
-// 下一条建议
-const nextSuggestion = () => {
-  if (currentSuggestionIndex.value < suggestionsData.value.length - 1) {
-    currentSuggestionIndex.value++;
-  }
-};
-
-// 上一条建议
-const previousSuggestion = () => {
-  if (currentSuggestionIndex.value > 0) {
-    currentSuggestionIndex.value--;
-  }
-};
-
-// 点击弹窗背景关闭
-const handleSuggestionsBackdropClick = () => {
-  showSuggestionsModal.value = false;
-  currentSuggestionIndex.value = 0;
-};
 </script>
 
 <style scoped>

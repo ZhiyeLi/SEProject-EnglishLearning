@@ -8,3 +8,4 @@ export { questionApi } from "./question";
 export { friendApi } from "./friend";
 export * as settingsApi from "./settings";
 export { optionsApi } from "./options";
+export { courseApi } from "./course";
