@@ -17,6 +17,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Project docs & config (not for git)
+docs/
+.claude/
+
 # Editor directories and files
 .idea
 .vscode
@@ -25,3 +29,5 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+# FAISS 向量索引（运行时自动生成，禁止提交）
+rag_service/faiss_index/

@@ -1,10 +1,12 @@
 import os
 import glob
+import faiss
+import pickle
+import numpy as np
 import pandas as pd
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
+from retrieval.embeddings import EmbeddingService
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -186,20 +188,56 @@ def build_index():
     texts = text_splitter.split_documents(all_documents)
     print(f"切割后共 {len(texts)} 个文本块。")
 
-    print("正在初始化本地 Embedding 模型（首次运行会自动下载）...")
-    embeddings = HuggingFaceEmbeddings(
-        model_name="BAAI/bge-small-zh-v1.5",
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},
-    )
+    # BGE-M3 embedding
+    print("正在初始化 BGE-M3 Embedding 模型（首次运行会自动下载 ~2.2GB）...")
+    emb_service = EmbeddingService()
 
-    print("正在构建 FAISS 索引...")
-    vectorstore = FAISS.from_documents(texts, embeddings)
+    page_contents = [doc.page_content for doc in texts]
 
-    index_path = os.path.join(os.path.dirname(__file__), 'faiss_index')
-    vectorstore.save_local(index_path)
-    print(f"FAISS 索引已成功保存至: {index_path}")
-    print(f"索引统计: 单词+语法+作文模板，共 {len(texts)} 个向量")
+    # Fit TF-IDF on full corpus first (for sparse lexical weights)
+    emb_service.fit_tfidf(page_contents)
+
+    print(f"正在编码 {len(page_contents)} 个文本块...")
+    vecs = emb_service.embed_documents(page_contents)
+
+    dense_vectors = vecs["dense"]
+    sparse_vectors = vecs["sparse"]
+
+    # Ensure float32 (GPU fp16 returns float16, FAISS needs float32)
+    import numpy as np
+    if hasattr(dense_vectors, "cpu"):
+        dense_vectors = dense_vectors.cpu().numpy()
+    if dense_vectors.dtype != np.float32:
+        dense_vectors = dense_vectors.astype(np.float32)
+
+    # Build FAISS dense index
+    print(f"正在构建 FAISS 稠密索引 (dim={dense_vectors.shape[1]})...")
+    faiss.normalize_L2(dense_vectors)
+    dense_index = faiss.IndexFlatIP(dense_vectors.shape[1])
+    dense_index.add(dense_vectors)
+
+    # Save
+    index_dir = os.path.join(os.path.dirname(__file__), 'faiss_index')
+    os.makedirs(index_dir, exist_ok=True)
+
+    dense_path = os.path.join(index_dir, 'faiss_index')
+    faiss.write_index(dense_index, dense_path)
+    print(f"FAISS 稠密索引已保存至: {dense_path}")
+
+    sparse_path = os.path.join(index_dir, 'sparse_vectors.pkl')
+    with open(sparse_path, 'wb') as f:
+        pickle.dump(sparse_vectors, f)
+    print(f"稀疏向量已保存至: {sparse_path}")
+
+    docs_path = os.path.join(index_dir, 'documents.pkl')
+    with open(docs_path, 'wb') as f:
+        pickle.dump(texts, f)
+    print(f"文档已保存至: {docs_path}")
+
+    print(f"\n索引构建完成！")
+    print(f"  - 文档数: {len(texts)}")
+    print(f"  - 稠密维度: {dense_vectors.shape[1]}")
+    print(f"  - 稀疏词表大小: 每个文档独立词权重")
 
 
 if __name__ == "__main__":

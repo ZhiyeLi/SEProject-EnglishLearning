@@ -1,0 +1,17 @@
+[
+    {"query": "abandon 是什么意思？", "expected_word": "abandon", "expected_level": "四级词汇", "type": "单词"},
+    {"query": "beautiful", "expected_word": "beautiful", "expected_level": "四级词汇", "type": "单词"},
+    {"query": "现在完成时怎么用？", "expected_topic": "现在完成时", "expected_level": "四级词汇", "type": "语法"},
+    {"query": "定语从句", "expected_topic": "定语从句", "type": "语法"},
+    {"query": "议论文怎么写？", "expected_title": "议论文三段式", "type": "作文模板"},
+    {"query": "英文书信格式", "expected_title": "英文书信格式", "type": "作文模板"},
+    {"query": "computer 的定义", "expected_word": "computer", "expected_level": "四级词汇", "type": "单词"},
+    {"query": "present perfect", "expected_topic": "现在完成时", "type": "语法"},
+    {"query": "beautiful 的同义词", "expected_word": "beautiful", "type": "单词"},
+    {"query": "如何写议论文", "expected_title": "议论文三段式", "type": "作文模板"},
+    {"query": "7843290", "no_platform_recommendation": true, "type": "不相关"},
+    {"query": "asdfghj", "no_platform_recommendation": true, "type": "不相关"},
+    {"query": "computer 的例句", "expected_word": "computer", "type": "单词"},
+    {"query": "什么是现在完成时", "expected_topic": "现在完成时", "expected_level": "四级词汇", "type": "语法"},
+    {"query": "letter format", "expected_title": "英文书信格式", "type": "作文模板"}
+]

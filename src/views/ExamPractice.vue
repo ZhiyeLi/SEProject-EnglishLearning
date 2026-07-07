@@ -15,7 +15,10 @@
           </button>
 
           <!-- 考试模式显示试卷信息 -->
-          <div v-if="mode === 'exam'" class="flex items-center gap-3 ml-4">
+          <div
+            v-if="mode === 'exam'"
+            class="flex items-center gap-3 ml-4"
+          >
             <span class="text-lg font-bold text-gray-800">
               {{ paperInfo.name }}
             </span>
@@ -33,7 +36,10 @@
           </div>
 
           <!-- 单题模式显示题目信息 -->
-          <div v-else class="flex items-center gap-3 ml-4">
+          <div
+            v-else
+            class="flex items-center gap-3 ml-4"
+          >
             <span class="text-lg font-bold text-gray-800">
               {{ questionInfo.sectionName || questionInfo.title }}
             </span>
@@ -96,10 +102,15 @@
         class="bg-white rounded-lg shadow-sm p-12 text-center"
       >
         <i class="fas fa-spinner fa-spin text-4xl text-emerald-500 mb-4" />
-        <div class="text-gray-600">加载中...</div>
+        <div class="text-gray-600">
+          加载中...
+        </div>
       </div>
 
-      <div v-else class="flex flex-col gap-6">
+      <div
+        v-else
+        class="flex flex-col gap-6"
+      >
         <!-- 主内容区域 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- 左侧：题目区域 -->
@@ -135,15 +146,15 @@
                     formatTime(
                       Math.max(
                         0,
-                        audioCurrentTime - (currentQuestion.audioStartSec || 0),
-                      ),
+                        audioCurrentTime - (currentQuestion.audioStartSec || 0)
+                      )
                     )
                   }}
                   /
                   {{
                     formatTime(
                       (currentQuestion.audioEndSec || audioDuration) -
-                        (currentQuestion.audioStartSec || 0),
+                        (currentQuestion.audioStartSec || 0)
                     )
                   }}
                 </div>
@@ -185,7 +196,10 @@
             </div>
 
             <!-- 材料文本 (阅读题等) -->
-            <div v-if="currentQuestion.materialText" class="mb-6">
+            <div
+              v-if="currentQuestion.materialText"
+              class="mb-6"
+            >
               <div class="prose max-w-none">
                 <div
                   class="text-gray-700 leading-relaxed whitespace-pre-wrap"
@@ -195,13 +209,16 @@
             </div>
 
             <!-- 材料图片 -->
-            <div v-if="currentQuestion.materialImage" class="mb-6">
+            <div
+              v-if="currentQuestion.materialImage"
+              class="mb-6"
+            >
               <img
                 :src="getResourceUrl(currentQuestion.materialImage)"
                 alt="题目图片"
                 class="w-full rounded-lg shadow-sm"
                 @error="handleImageError"
-              />
+              >
             </div>
           </div>
 
@@ -231,9 +248,7 @@
                         v-html="item.content"
                       />
                       <!-- 调试信息：显示题型 -->
-                      <span class="text-xs text-gray-400 ml-2"
-                        >[{{ item.itemType || "unknown" }}]</span
-                      >
+                      <span class="text-xs text-gray-400 ml-2">[{{ item.itemType || "unknown" }}]</span>
                     </div>
                   </div>
                 </div>
@@ -242,8 +257,8 @@
                 <div
                   v-if="
                     item.itemType === 'choice' ||
-                    item.itemType === 'multiple' ||
-                    item.itemType === 'multi_choice'
+                      item.itemType === 'multiple' ||
+                      item.itemType === 'multi_choice'
                   "
                   class="ml-11 space-y-2"
                 >
@@ -263,7 +278,7 @@
                       :checked="isOptionSelected(item.id, option.key)"
                       class="mt-1 w-4 h-4 text-emerald-500 focus:ring-emerald-500"
                       @change="selectOption(item.id, option.key, 'single')"
-                    />
+                    >
                     <input
                       v-else
                       type="checkbox"
@@ -271,7 +286,7 @@
                       :checked="isOptionSelected(item.id, option.key)"
                       class="mt-1 w-4 h-4 text-emerald-500 focus:ring-emerald-500"
                       @change="selectOption(item.id, option.key, 'multiple')"
-                    />
+                    >
                     <span class="flex-1 text-gray-700">
                       <span class="font-medium">{{ option.key }}.</span>
                       {{ option.value }}
@@ -283,11 +298,11 @@
                 <div
                   v-else-if="
                     item.itemType === 'essay' ||
-                    item.itemType === 'text' ||
-                    item.itemType === 'fill' ||
-                    item.itemType === 'blank' ||
-                    item.itemType === 'writing' ||
-                    item.itemType === 'translation'
+                      item.itemType === 'text' ||
+                      item.itemType === 'fill' ||
+                      item.itemType === 'blank' ||
+                      item.itemType === 'writing' ||
+                      item.itemType === 'translation'
                   "
                   class="ml-11"
                 >
@@ -298,7 +313,7 @@
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="请输入答案"
                     @input="handleTextInput(item.id, $event.target.value)"
-                  />
+                  >
                   <textarea
                     v-else
                     :value="getUserAnswer(item.id)"
@@ -310,7 +325,10 @@
                 </div>
 
                 <!-- 插入题 (托福) - 选择 A/B/C/D 位置 -->
-                <div v-else-if="item.itemType === 'insert'" class="ml-11">
+                <div
+                  v-else-if="item.itemType === 'insert'"
+                  class="ml-11"
+                >
                   <div class="text-sm text-gray-600 mb-3">
                     <i class="fas fa-info-circle mr-1" />
                     请选择句子应插入的位置 (A/B/C/D)
@@ -340,7 +358,10 @@
                 </div>
 
                 <!-- 其他未识别的题型 - 提供默认输入框 -->
-                <div v-else class="ml-11">
+                <div
+                  v-else
+                  class="ml-11"
+                >
                   <textarea
                     :value="getUserAnswer(item.id)"
                     rows="4"
@@ -403,9 +424,7 @@
             >
               <div class="text-sm font-medium text-gray-700 mb-2">
                 {{ getSectionTypeLabel(section.type) }}
-                <span class="text-gray-400 ml-1"
-                  >({{ section.items.length }}题)</span
-                >
+                <span class="text-gray-400 ml-1">({{ section.items.length }}题)</span>
               </div>
               <div class="flex flex-wrap gap-2">
                 <button
@@ -438,7 +457,9 @@
       @click.self="showSubmitModal = false"
     >
       <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-        <h3 class="text-xl font-bold text-gray-800 mb-4">确认提交？</h3>
+        <h3 class="text-xl font-bold text-gray-800 mb-4">
+          确认提交？
+        </h3>
         <p class="text-gray-600 mb-6">
           {{
             mode === "exam"
@@ -475,7 +496,9 @@
           >
             <i class="fas fa-check text-3xl text-emerald-500" />
           </div>
-          <h3 class="text-2xl font-bold text-gray-800 mb-2">提交成功！</h3>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">
+            提交成功！
+          </h3>
 
           <!-- 统计信息 -->
           <div class="grid grid-cols-2 gap-4 my-6">
@@ -483,19 +506,25 @@
               <div class="text-2xl font-bold text-emerald-600">
                 {{ resultScore }}
               </div>
-              <div class="text-sm text-gray-600">得分</div>
+              <div class="text-sm text-gray-600">
+                得分
+              </div>
             </div>
             <div class="bg-blue-50 rounded-lg p-3">
               <div class="text-2xl font-bold text-blue-600">
                 {{ resultAccuracy }}%
               </div>
-              <div class="text-sm text-gray-600">正确率</div>
+              <div class="text-sm text-gray-600">
+                正确率
+              </div>
             </div>
             <div class="bg-green-50 rounded-lg p-3">
               <div class="text-2xl font-bold text-green-600">
                 {{ resultCorrectCount }}/{{ resultObjectiveCount }}
               </div>
-              <div class="text-sm text-gray-600">客观题正确</div>
+              <div class="text-sm text-gray-600">
+                客观题正确
+              </div>
             </div>
           </div>
 
@@ -544,19 +573,25 @@
                   <div class="text-lg font-bold text-emerald-600">
                     {{ resultScore }}分
                   </div>
-                  <div class="text-xs text-gray-500">总分</div>
+                  <div class="text-xs text-gray-500">
+                    总分
+                  </div>
                 </div>
                 <div class="text-center">
                   <div class="text-lg font-bold text-blue-600">
                     {{ resultAccuracy }}%
                   </div>
-                  <div class="text-xs text-gray-500">正确率</div>
+                  <div class="text-xs text-gray-500">
+                    正确率
+                  </div>
                 </div>
                 <div class="text-center">
                   <div class="text-lg font-bold text-green-600">
                     {{ resultCorrectCount }}/{{ resultObjectiveCount }}
                   </div>
-                  <div class="text-xs text-gray-500">客观题</div>
+                  <div class="text-xs text-gray-500">
+                    客观题
+                  </div>
                 </div>
 
                 <!-- 图例 -->
@@ -678,8 +713,8 @@
                 <div
                   v-if="
                     detail.materialText ||
-                    detail.materialImage ||
-                    detail.audioUrl
+                      detail.materialImage ||
+                      detail.audioUrl
                   "
                   class="mb-4"
                 >
@@ -695,9 +730,7 @@
                       >
                         <i class="fas fa-headphones" /> 含音频
                       </span>
-                      <span class="text-gray-400 text-xs ml-auto"
-                        >点击展开/收起</span
-                      >
+                      <span class="text-gray-400 text-xs ml-auto">点击展开/收起</span>
                     </summary>
                     <div class="px-4 pb-4">
                       <!-- 听力音频播放器 - 支持片段播放 -->
@@ -758,13 +791,16 @@
                         />
                       </div>
                       <!-- 材料图片 -->
-                      <div v-if="detail.materialImage" class="mb-4">
+                      <div
+                        v-if="detail.materialImage"
+                        class="mb-4"
+                      >
                         <img
                           :src="getResourceUrl(detail.materialImage)"
                           alt="题目图片"
                           class="max-w-full rounded-lg shadow-sm"
                           @error="handleImageError"
-                        />
+                        >
                       </div>
                       <!-- 材料文本 -->
                       <div
@@ -777,7 +813,10 @@
                 </div>
 
                 <!-- 题目内容 -->
-                <div class="mb-4 text-gray-800" v-html="detail.content" />
+                <div
+                  class="mb-4 text-gray-800"
+                  v-html="detail.content"
+                />
 
                 <!-- 选择题展示 -->
                 <div
@@ -805,7 +844,10 @@
                         v-if="isCorrectOption(detail, option.key)"
                         class="fas fa-check text-green-600"
                       />
-                      <i v-else class="fas fa-times text-red-600" />
+                      <i
+                        v-else
+                        class="fas fa-times text-red-600"
+                      />
                       你的选择
                     </span>
                     <span
@@ -825,7 +867,9 @@
                 >
                   <div class="flex items-start gap-4">
                     <div class="flex-1">
-                      <div class="text-sm text-gray-500 mb-1">你的答案</div>
+                      <div class="text-sm text-gray-500 mb-1">
+                        你的答案
+                      </div>
                       <div
                         class="font-medium"
                         :class="
@@ -843,8 +887,13 @@
                         </span>
                       </div>
                     </div>
-                    <div v-if="!detail.isCorrect" class="flex-1">
-                      <div class="text-sm text-gray-500 mb-1">正确答案</div>
+                    <div
+                      v-if="!detail.isCorrect"
+                      class="flex-1"
+                    >
+                      <div class="text-sm text-gray-500 mb-1">
+                        正确答案
+                      </div>
                       <div class="font-medium text-green-700">
                         {{ formatCorrectAnswer(detail.correctAnswer) }}
                       </div>
@@ -853,7 +902,10 @@
                 </div>
 
                 <!-- 主观题展示（写作/口语） -->
-                <div v-else class="mb-4">
+                <div
+                  v-else
+                  class="mb-4"
+                >
                   <!-- 用户答案 -->
                   <div
                     class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
@@ -895,156 +947,6 @@
                   </div>
                   <div class="text-gray-700">
                     {{ detail.explanation }}
-                  </div>
-                </div>
-
-                <!-- AI 智能解析（客观题） -->
-                <div
-                  v-if="
-                    detail.isObjective !== false && !isListeningDetail(detail)
-                  "
-                  class="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg"
-                >
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="text-sm font-medium text-emerald-800">
-                      <i class="fas fa-robot text-emerald-600 mr-1" />
-                      AI智能解析
-                    </div>
-                    <button
-                      class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
-                      :disabled="getDetailAiState(detail).loading"
-                      @click="runAiObjectiveExplain(detail)"
-                    >
-                      <i class="fas fa-magic mr-2" />
-                      {{
-                        getDetailAiState(detail).loading
-                          ? "生成中..."
-                          : "AI智能解析"
-                      }}
-                    </button>
-                  </div>
-
-                  <div
-                    v-if="getDetailAiState(detail).error"
-                    class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3"
-                  >
-                    <i class="fas fa-exclamation-circle mr-1" />
-                    {{ getDetailAiState(detail).error }}
-                  </div>
-
-                  <div v-else>
-                    <div
-                      v-if="getDetailAiState(detail).html"
-                      class="prose prose-sm max-w-none"
-                      v-html="getDetailAiState(detail).html"
-                    />
-
-                    <div
-                      v-if="getDetailAiState(detail).loading"
-                      class="mt-3 flex items-center gap-3 text-sm text-gray-600"
-                    >
-                      <div class="bg-white p-3 rounded-lg">
-                        <div class="flex gap-1">
-                          <div
-                            class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                            style="animation-delay: 0s"
-                          />
-                          <div
-                            class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                            style="animation-delay: 0.2s"
-                          />
-                          <div
-                            class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                            style="animation-delay: 0.4s"
-                          />
-                        </div>
-                      </div>
-                      <span>AI 正在生成解析...</span>
-                    </div>
-
-                    <div
-                      v-if="
-                        !getDetailAiState(detail).loading &&
-                        !getDetailAiState(detail).html
-                      "
-                      class="text-sm text-gray-600"
-                    >
-                      点击右侧按钮生成 AI 解析（后端统一 RAG）。
-                    </div>
-                  </div>
-                </div>
-
-                <!-- AI 作文精批（仅写作/翻译主观题） -->
-                <div
-                  v-else-if="isWritingOrTranslationDetail(detail)"
-                  class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
-                >
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="text-sm font-medium text-blue-800">
-                      <i class="fas fa-robot text-blue-600 mr-1" />
-                      AI作文精批
-                    </div>
-                    <button
-                      class="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
-                      :disabled="getDetailAiState(detail).loading"
-                      @click="runAiWritingReview(detail)"
-                    >
-                      <i class="fas fa-pen mr-2" />
-                      {{
-                        getDetailAiState(detail).loading
-                          ? "精批中..."
-                          : "AI作文精批"
-                      }}
-                    </button>
-                  </div>
-
-                  <div
-                    v-if="getDetailAiState(detail).error"
-                    class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3"
-                  >
-                    <i class="fas fa-exclamation-circle mr-1" />
-                    {{ getDetailAiState(detail).error }}
-                  </div>
-
-                  <div v-else>
-                    <div
-                      v-if="getDetailAiState(detail).html"
-                      class="prose prose-sm max-w-none"
-                      v-html="getDetailAiState(detail).html"
-                    />
-
-                    <div
-                      v-if="getDetailAiState(detail).loading"
-                      class="mt-3 flex items-center gap-3 text-sm text-gray-600"
-                    >
-                      <div class="bg-white p-3 rounded-lg">
-                        <div class="flex gap-1">
-                          <div
-                            class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                            style="animation-delay: 0s"
-                          />
-                          <div
-                            class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                            style="animation-delay: 0.2s"
-                          />
-                          <div
-                            class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                            style="animation-delay: 0.4s"
-                          />
-                        </div>
-                      </div>
-                      <span>AI 正在精批中...</span>
-                    </div>
-
-                    <div
-                      v-if="
-                        !getDetailAiState(detail).loading &&
-                        !getDetailAiState(detail).html
-                      "
-                      class="text-sm text-gray-600"
-                    >
-                      点击右侧按钮生成精批与改写建议（仅写作/翻译）。
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1131,9 +1033,6 @@ export default {
     const resultCorrectCount = ref(0);
     const resultObjectiveCount = ref(0);
 
-    // AI 智能解析/作文精批（按 subItemId 独立维护状态）
-    const detailAiStates = reactive({});
-
     // 详情页音频控制
     const detailAudioRefs = reactive({}); // { subItemId: audioElement }
     const detailAudioStates = reactive({}); // { subItemId: { playing, currentTime, duration } }
@@ -1149,7 +1048,7 @@ export default {
       const questionId = currentQuestion.value.id;
       if (!questionId) return [];
       return subItems.value.filter(
-        (item) => item.parentQuestionId === questionId,
+        (item) => item.parentQuestionId === questionId
       );
     });
 
@@ -1195,7 +1094,7 @@ export default {
       const currentInSegment = audioCurrentTime.value - startSec;
       return Math.max(
         0,
-        Math.min(100, (currentInSegment / segmentDuration) * 100),
+        Math.min(100, (currentInSegment / segmentDuration) * 100)
       );
     });
 
@@ -1259,7 +1158,7 @@ export default {
     // 判断是否已作答
     const hasAnswered = (questionId) => {
       const items = subItems.value.filter(
-        (item) => item.parentQuestionId === questionId,
+        (item) => item.parentQuestionId === questionId
       );
       return items.some((item) => userAnswers[item.id]);
     };
@@ -1335,7 +1234,7 @@ export default {
       // 将 ■ 替换为可点击的标记
       return text.replace(
         /■/g,
-        '<span class="insert-marker cursor-pointer text-blue-600 font-bold hover:bg-blue-100 px-1">[■]</span>',
+        '<span class="insert-marker cursor-pointer text-blue-600 font-bold hover:bg-blue-100 px-1">[■]</span>'
       );
     };
 
@@ -1375,7 +1274,7 @@ export default {
 
       audioPlayer.value.currentTime = Math.max(
         startSec,
-        Math.min(endSec, newTime),
+        Math.min(endSec, newTime)
       );
     };
 
@@ -1467,12 +1366,12 @@ export default {
         if (isFavorited.value) {
           await questionApi.removeFavorite(
             mode.value === "exam" ? "paper" : "question",
-            id,
+            id
           );
         } else {
           await questionApi.addFavorite(
             mode.value === "exam" ? "paper" : "question",
-            id,
+            id
           );
         }
         isFavorited.value = !isFavorited.value;
@@ -1497,7 +1396,7 @@ export default {
           if (isEmpty) {
             unansweredItems.push({
               questionIndex: questions.value.findIndex(
-                (q) => q.id === item.parentQuestionId,
+                (q) => q.id === item.parentQuestionId
               ),
               itemIndex: idx,
               itemId: item.id,
@@ -1780,219 +1679,6 @@ export default {
       return answer;
     };
 
-    const stripHtml = (html) => {
-      if (!html) return "";
-      return String(html)
-        .replace(/<br\s*\/?\s*>/gi, "\n")
-        .replace(/<\/?p\s*>/gi, "\n")
-        .replace(/<[^>]+>/g, "")
-        .replace(/&nbsp;/g, " ")
-        .trim();
-    };
-
-    const truncateText = (text, maxLen = 2500) => {
-      if (!text) return "";
-      const str = String(text);
-      if (str.length <= maxLen) return str;
-      return `${str.slice(0, maxLen)}\n...(内容过长已截断)...`;
-    };
-
-    const hasMeaningfulAnswer = (answer) => {
-      if (answer === null || answer === undefined) return false;
-      if (Array.isArray(answer)) return answer.length > 0;
-      if (typeof answer === "string") return answer.trim().length > 0;
-      return true;
-    };
-
-    const getParentQuestion = (detail) => {
-      const parentId = detail?.parentQuestionId;
-      if (!parentId) return null;
-      return questions.value.find((q) => q.id === parentId) || null;
-    };
-
-    const normalizeOptions = (options) => {
-      if (!options) return [];
-      if (Array.isArray(options)) return options;
-      if (typeof options === "string") {
-        try {
-          const parsed = JSON.parse(options);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
-      }
-      return [];
-    };
-
-    // 听力题：通常带音频资源，且父题 sectionType 为 listening
-    const isListeningDetail = (detail) => {
-      if (detail?.audioUrl) return true;
-      const parent = getParentQuestion(detail);
-      return parent?.sectionType === "listening";
-    };
-
-    // 仅写作/翻译（在数据层面二者都归到 sectionType=writing）才展示精批入口
-    const isWritingOrTranslationDetail = (detail) => {
-      if (detail?.isObjective !== false) return false;
-      const parent = getParentQuestion(detail);
-      return parent?.sectionType === "writing";
-    };
-
-    const getDetailAiState = (detail) => {
-      const key = detail?.subItemId;
-      if (!key) return { text: "", html: "", loading: false, error: "" };
-
-      if (!detailAiStates[key]) {
-        detailAiStates[key] = {
-          text: "",
-          html: "",
-          loading: false,
-          error: "",
-          controller: null,
-        };
-      }
-      return detailAiStates[key];
-    };
-
-    const buildAnalyzeQuestionPayload = (detail, type) => {
-      const parent = getParentQuestion(detail);
-      return {
-        mode: type,
-        question: {
-          id: parent?.id || questionInfo.id || null,
-          paperId:
-            parent?.paperId || questionInfo.paperId || paperInfo.id || null,
-          sectionType:
-            parent?.sectionType || currentQuestion.value.sectionType || "",
-          sectionName:
-            parent?.sectionName || currentQuestion.value.sectionName || "",
-          title: parent?.title || currentQuestion.value.title || "",
-          category:
-            parent?.category ||
-            questionInfo.category ||
-            paperInfo.category ||
-            "",
-          year: parent?.year || paperInfo.year || null,
-          materialText: truncateText(
-            parent?.materialText ||
-              currentQuestion.value.materialText ||
-              detail?.materialText ||
-              "",
-            3500,
-          ),
-          materialImage:
-            parent?.materialImage ||
-            currentQuestion.value.materialImage ||
-            detail?.materialImage ||
-            "",
-          audioUrl:
-            parent?.audioUrl ||
-            currentQuestion.value.audioUrl ||
-            detail?.audioUrl ||
-            "",
-          audioStartSec:
-            parent?.audioStartSec ??
-            currentQuestion.value.audioStartSec ??
-            detail?.audioStartSec ??
-            0,
-          audioEndSec:
-            parent?.audioEndSec ??
-            currentQuestion.value.audioEndSec ??
-            detail?.audioEndSec ??
-            0,
-        },
-        subItem: {
-          id: detail?.subItemId || null,
-          itemType: detail?.itemType || "",
-          content: stripHtml(detail?.content),
-          options: normalizeOptions(detail?.options),
-          correctAnswer: detail?.correctAnswer || [],
-          explanation: stripHtml(detail?.explanation),
-          isObjective: detail?.isObjective,
-          scoreObtained: detail?.scoreObtained,
-        },
-        userAnswer: detail?.userAnswer,
-      };
-    };
-
-    const runAiForDetail = async (detail, type) => {
-      const state = getDetailAiState(detail);
-
-      // 未作答直接提示，不请求 API
-      if (!hasMeaningfulAnswer(detail?.userAnswer)) {
-        state.loading = false;
-        state.text = "";
-        state.html = "";
-        state.error = "该题未作答，无法生成 AI 解析/精批。";
-        return;
-      }
-
-      // 取消上一次请求
-      if (state.controller) {
-        try {
-          state.controller.abort();
-        } catch (e) {
-          // ignore
-        }
-      }
-
-      const controller = new AbortController();
-      state.controller = controller;
-      state.loading = true;
-      state.text = "";
-      state.html = "";
-      state.error = "";
-
-      try {
-        const response = await questionApi.analyzeQuestion(
-          buildAnalyzeQuestionPayload(detail, type),
-          { signal: controller.signal },
-        );
-
-        const answer = response?.data?.answer || response?.data?.reply || "";
-        if (!answer) {
-          state.error = "AI 返回内容为空，请稍后重试。";
-          return;
-        }
-
-        state.text = answer;
-        state.html = renderMarkdownToSafeHtml(answer);
-      } catch (err) {
-        // 用户关闭弹窗/重复点击导致的取消不提示错误
-        if (
-          err?.name === "AbortError" ||
-          err?.name === "CanceledError" ||
-          err?.code === "ERR_CANCELED"
-        ) {
-          return;
-        }
-        state.error =
-          err?.response?.data?.message || err?.message || String(err);
-      } finally {
-        if (state.controller === controller) {
-          state.loading = false;
-          state.controller = null;
-        }
-      }
-    };
-
-    const runAiObjectiveExplain = async (detail) => {
-      // 听力题不接入 AI 智能解析（避免音频材料导致的接口异常）
-      if (isListeningDetail(detail)) {
-        const state = getDetailAiState(detail);
-        state.loading = false;
-        state.text = "";
-        state.html = "";
-        state.error = "听力题暂不支持 AI 智能解析。";
-        return;
-      }
-      await runAiForDetail(detail, "objective");
-    };
-
-    const runAiWritingReview = async (detail) => {
-      await runAiForDetail(detail, "writing");
-    };
-
     // 滚动到指定详情
     const scrollToDetail = (subItemId) => {
       const element = document.getElementById(`detail-${subItemId}`);
@@ -2162,22 +1848,6 @@ export default {
       }
     });
 
-    // 监听详情弹窗关闭：终止 AI 流式请求
-    watch(showDetailModal, (visible) => {
-      if (visible) return;
-      Object.values(detailAiStates).forEach((s) => {
-        if (s?.controller) {
-          try {
-            s.controller.abort();
-          } catch (e) {
-            // ignore
-          }
-          s.controller = null;
-        }
-        if (s) s.loading = false;
-      });
-    });
-
     // 监听全屏变化
     const handleFullscreenChange = () => {
       isFullscreen.value = !!document.fullscreenElement;
@@ -2193,17 +1863,6 @@ export default {
       if (audioPlayer.value) {
         audioPlayer.value.pause();
       }
-
-      // 退出页面时终止所有 AI 流式请求
-      Object.values(detailAiStates).forEach((s) => {
-        if (s?.controller) {
-          try {
-            s.controller.abort();
-          } catch (e) {
-            // ignore
-          }
-        }
-      });
     });
 
     return {
@@ -2280,12 +1939,6 @@ export default {
       isCorrectOption,
       formatUserAnswer,
       formatCorrectAnswer,
-      // AI 解析/精批
-      getDetailAiState,
-      runAiObjectiveExplain,
-      runAiWritingReview,
-      isWritingOrTranslationDetail,
-      isListeningDetail,
       scrollToDetail,
       // 详情页音频控制
       detailAudioRefs,
