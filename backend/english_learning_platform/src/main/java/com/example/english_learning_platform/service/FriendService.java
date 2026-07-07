@@ -5,6 +5,7 @@ import com.example.english_learning_platform.dto.UnreadCountDTO;
 import com.example.english_learning_platform.entity.FriendRequest;
 import com.example.english_learning_platform.entity.Message;
 import com.example.english_learning_platform.entity.User;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -70,4 +71,9 @@ public interface FriendService {
      * 获取好友本周学习单词排行榜（包含自己）
      */
     List<FriendRankingDTO> getFriendWeeklyRanking(Long currentUserId);
+
+    /**
+     * 删除好友关系
+     */
+    void deleteFriend(Long userId, Long friendId);
 }
