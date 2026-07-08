@@ -19,6 +19,7 @@
             class="input-icon"
           />
           <input
+            id="register-username"
             v-model="form.username"
             type="text"
             required
@@ -43,6 +44,7 @@
             class="input-icon"
           />
           <input
+            id="register-email"
             v-model="form.email"
             type="email"
             required
@@ -67,6 +69,7 @@
             class="input-icon"
           />
           <input
+            id="register-password"
             v-model="form.password"
             :type="pwdVisible ? 'text' : 'password'"
             required
@@ -96,6 +99,7 @@
             class="input-icon"
           />
           <input
+            id="register-confirm-password"
             v-model="form.confirmPwd"
             :type="pwdVisible ? 'text' : 'password'"
             required
@@ -124,6 +128,24 @@
         </p>
       </div>
 
+      <div
+        v-if="captchaRequired"
+        class="captcha-group"
+      >
+        <RecaptchaWidget
+          :site-key="recaptchaSiteKey"
+          :reset-signal="recaptchaResetSignal"
+          @verified="handleCaptchaVerified"
+          @expired="handleCaptchaExpired"
+        />
+        <p
+          v-if="errors.captcha"
+          class="error-tip"
+        >
+          {{ errors.captcha }}
+        </p>
+      </div>
+
       <!-- 注册按钮（禁用条件：加载中/表单未通过前端校验） -->
       <div class="btn-group">
         <button
@@ -135,7 +157,8 @@
               !form.email ||
               !form.password ||
               !form.confirmPwd ||
-              form.password !== form.confirmPwd
+              form.password !== form.confirmPwd ||
+              (captchaRequired && !recaptchaToken)
           "
         >
           <span v-if="!isLoading">注册</span>
@@ -159,6 +182,7 @@
 <script setup>
 import { ref, reactive } from "vue";
 import { authApi } from "@/api";
+import RecaptchaWidget from "./RecaptchaWidget.vue";
 
 // 接收父组件传递的 props
 const props = defineProps({
@@ -189,10 +213,15 @@ const errors = reactive({
   email: "",
   password: "",
   confirmPwd: "",
+  captcha: "",
 });
 
 // 加载状态（防止重复提交）
 const isLoading = ref(false);
+const captchaRequired = ref(false);
+const recaptchaToken = ref("");
+const recaptchaResetSignal = ref(0);
+const recaptchaSiteKey = process.env.VUE_APP_RECAPTCHA_SITE_KEY || "";
 
 // 切换密码显示/隐藏
 const togglePwdVisible = () => {
@@ -206,6 +235,7 @@ const handleRegister = async () => {
   errors.email = "";
   errors.password = "";
   errors.confirmPwd = "";
+  errors.captcha = "";
 
   // 用户名校验（4-20位，支持字母、数字、下划线）
   const usernameReg = /^[a-zA-Z0-9_]{4,20}$/;
@@ -233,6 +263,11 @@ const handleRegister = async () => {
     return;
   }
 
+  if (captchaRequired.value && !recaptchaToken.value) {
+    errors.captcha = "请先完成人机验证";
+    return;
+  }
+
   try {
     isLoading.value = true;
     // 2. 调用后端注册接口
@@ -240,9 +275,18 @@ const handleRegister = async () => {
       username: form.username,
       email: form.email,
       password: form.password,
+      recaptchaToken: recaptchaToken.value,
     });
 
     // 3. 标准化响应处理
+    if (response.code === 200 && response.data?.requireCaptcha) {
+      captchaRequired.value = true;
+      recaptchaToken.value = "";
+      recaptchaResetSignal.value += 1;
+      errors.captcha = response.message || "请先完成人机验证";
+      return;
+    }
+
     if (response.code === 200) {
       // 注册成功：通知父组件跳转
       alert("注册成功！请前往登录");
@@ -265,6 +309,15 @@ const handleRegister = async () => {
   } finally {
     isLoading.value = false;
   }
+};
+
+const handleCaptchaVerified = (token) => {
+  recaptchaToken.value = token;
+  errors.captcha = "";
+};
+
+const handleCaptchaExpired = () => {
+  recaptchaToken.value = "";
 };
 </script>
 

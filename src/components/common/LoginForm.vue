@@ -20,6 +20,7 @@
             class="input-icon"
           />
           <input
+            id="login-username"
             v-model="form.username"
             type="text"
             required
@@ -44,6 +45,7 @@
             class="input-icon"
           />
           <input
+            id="login-password"
             v-model="form.password"
             :type="pwdVisible ? 'text' : 'password'"
             required
@@ -73,11 +75,29 @@
         >忘记密码？</a>
       </div>
 
+      <div
+        v-if="captchaRequired"
+        class="captcha-group"
+      >
+        <RecaptchaWidget
+          :site-key="recaptchaSiteKey"
+          :reset-signal="recaptchaResetSignal"
+          @verified="handleCaptchaVerified"
+          @expired="handleCaptchaExpired"
+        />
+        <p
+          v-if="errors.captcha"
+          class="error-tip"
+        >
+          {{ errors.captcha }}
+        </p>
+      </div>
+
       <!-- 登录按钮（带loading状态） -->
       <button
         type="submit"
         class="neu-btn auth-btn login-btn"
-        :disabled="isLoading"
+        :disabled="isLoading || (captchaRequired && !recaptchaToken)"
       >
         <span v-if="!isLoading">登录</span>
         <span v-if="isLoading">登录中...</span>
@@ -124,6 +144,7 @@
                     class="input-icon"
                   />
                   <input
+                    id="forgot-account"
                     v-model="forgotForm.account"
                     :type="isPhone ? 'tel' : 'email'"
                     required
@@ -169,6 +190,7 @@
                   class="input-icon"
                 />
                 <input
+                  id="forgot-code"
                   v-model="forgotForm.verifyCode"
                   type="text"
                   required
@@ -193,6 +215,7 @@
                   class="input-icon"
                 />
                 <input
+                  id="forgot-new-password"
                   v-model="forgotForm.newPassword"
                   :type="newPwdVisible ? 'text' : 'password'"
                   required
@@ -222,6 +245,7 @@
                   class="input-icon"
                 />
                 <input
+                  id="forgot-confirm-password"
                   v-model="forgotForm.confirmPassword"
                   :type="newPwdVisible ? 'text' : 'password'"
                   required
@@ -265,6 +289,7 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { useUserStore } from '../../store/modules/user'; // 导入userStore
+import RecaptchaWidget from './RecaptchaWidget.vue';
 
 // 父组件传递的props
 const props = defineProps({
@@ -290,11 +315,16 @@ const form = reactive({
 // 登录错误提示
 const errors = reactive({
   username: '',
-  password: ''
+  password: '',
+  captcha: ''
 });
 
 // 加载状态
 const isLoading = ref(false);
+const captchaRequired = ref(false);
+const recaptchaToken = ref('');
+const recaptchaResetSignal = ref(0);
+const recaptchaSiteKey = process.env.VUE_APP_RECAPTCHA_SITE_KEY || '';
 
 // 切换密码显示/隐藏
 const togglePwdVisible = () => {
@@ -306,6 +336,7 @@ const handleLogin = async () => {
   // 表单验证
   errors.username = '';
   errors.password = '';
+  errors.captcha = '';
   if (!form.username) {
     errors.username = '请输入用户名';
     return;
@@ -314,18 +345,32 @@ const handleLogin = async () => {
     errors.password = '请输入密码';
     return;
   }
+  if (captchaRequired.value && !recaptchaToken.value) {
+    errors.captcha = '请先完成人机验证';
+    return;
+  }
 
   try {
     isLoading.value = true;
     // 调用store中的登录方法
     const result = await userStore.login({
       username: form.username,
-      password: form.password
+      password: form.password,
+      recaptchaToken: recaptchaToken.value
     });
 
     if (result.success) {
+      captchaRequired.value = false;
+      recaptchaToken.value = '';
       emit('loginSuccess');
     } else {
+      if (result.requireCaptcha) {
+        captchaRequired.value = true;
+        recaptchaToken.value = '';
+        recaptchaResetSignal.value += 1;
+        errors.captcha = result.message || '请先完成人机验证';
+        return;
+      }
       if (result.message.includes('用户名')) {
         errors.username = result.message;
       } else {
@@ -339,6 +384,15 @@ const handleLogin = async () => {
     isLoading.value = false;
   }
   
+};
+
+const handleCaptchaVerified = (token) => {
+  recaptchaToken.value = token;
+  errors.captcha = '';
+};
+
+const handleCaptchaExpired = () => {
+  recaptchaToken.value = '';
 };
 
 // ---------------------- 忘记密码功能 ----------------------

@@ -10,6 +10,7 @@ export const authApi = {
       userName: data.username,
       userPassword: data.password,
       userEmail: data.email,
+      recaptchaToken: data.recaptchaToken,
     });
   },
 
@@ -18,6 +19,7 @@ export const authApi = {
     return request.post("/api/auth/login", {
       userName: data.username,
       userPassword: data.password,
+      recaptchaToken: data.recaptchaToken,
     });
   },
 

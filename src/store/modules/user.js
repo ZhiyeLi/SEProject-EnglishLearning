@@ -23,14 +23,26 @@ export const useUserStore = defineStore("user", {
         const response = await authApi.login({
           username: loginData.username,
           password: loginData.password,
+          recaptchaToken: loginData.recaptchaToken,
         });
 
-        if (response.code === 200) {
+        if (response.code === 200 && response.data?.requireCaptcha) {
+          localStorage.removeItem("token");
+          this.isLogin = false;
+          return {
+            success: false,
+            requireCaptcha: true,
+            message: response.message,
+          };
+        }
+
+        if (response.code === 200 && response.data?.token) {
           localStorage.setItem("token", response.data.token);
           this.loginSuccess(response.data);
           return { success: true };
         } else {
-          return { success: false, message: response.message };
+          localStorage.removeItem("token");
+          return { success: false, message: response.message || "登录失败" };
         }
       } catch (error) {
         console.error("登录接口异常：", error);
