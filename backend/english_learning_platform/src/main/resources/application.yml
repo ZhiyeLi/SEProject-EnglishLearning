@@ -75,4 +75,4 @@ auth:
     max-attempts: 5
 
 recaptcha:
-  secret: ${RECAPTCHA_SECRET:6Leg1UktAAAAAO8R8b-WcBW_JJh3JNSIxAESo-JC}
+  secret: ${填入reCAPTCHA密钥}
